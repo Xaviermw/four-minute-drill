@@ -21,8 +21,37 @@ export function getSupabase(): SupabaseClient | null {
   if (!isLeaderboardEnabled) return null;
   if (!client) {
     client = createClient(url!, anonKey!, {
-      auth: { persistSession: false },
+      // Persist the anonymous session so a returning visitor keeps the same
+      // identity (their scores stay "theirs" across reloads/sessions).
+      auth: { persistSession: true, autoRefreshToken: true },
     });
   }
   return client;
+}
+
+/**
+ * Ensures there's a signed-in session, creating a Supabase *anonymous* user on
+ * first use (no email/password -- invisible to the player). Returns the user id,
+ * or null when the leaderboard is disabled. Throws if anonymous sign-ins aren't
+ * enabled on the project (see SUPABASE_SETUP.md).
+ */
+export async function ensureAnonSession(): Promise<string | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { data: existing } = await supabase.auth.getSession();
+  if (existing.session) return existing.session.user.id;
+
+  const { data, error } = await supabase.auth.signInAnonymously();
+  if (error) throw new Error(error.message);
+  return data.user?.id ?? null;
+}
+
+/** Returns the current user id if a session already exists, without creating
+ * one (used to highlight "you" on the board for people who've already played). */
+export async function getCurrentUserId(): Promise<string | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user.id ?? null;
 }

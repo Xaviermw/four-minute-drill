@@ -5,13 +5,14 @@ import { rosterFromIdList } from "../share/sharedLineup";
 import { useGameDispatch } from "../state/GameStateProvider";
 import { outcomeLabel } from "../share/shareText";
 import { fetchTopScores, type LeaderboardRow } from "./leaderboardApi";
-import { isLeaderboardEnabled } from "./supabaseClient";
+import { getCurrentUserId, isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
 export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const { manifest } = useManifest();
   const dispatch = useGameDispatch();
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -21,6 +22,9 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
       return;
     }
     let cancelled = false;
+    // getCurrentUserId doesn't create a session -- only players who've already
+    // submitted have one, so we can highlight their rows as "you".
+    getCurrentUserId().then((id) => !cancelled && setUserId(id));
     fetchTopScores(100)
       .then((data) => !cancelled && setRows(data))
       .catch((err) => !cancelled && setError(err instanceof Error ? err.message : "Could not load leaderboard."));
@@ -75,9 +79,12 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           {rows && rows.length > 0 && (
             <ol className="leaderboard-list">
               {rows.map((row, i) => (
-                <li className="leaderboard-row" key={row.id}>
+                <li className={`leaderboard-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.id}>
                   <span className="lb-rank">{i + 1}</span>
-                  <span className="lb-name">{row.name}</span>
+                  <span className="lb-name">
+                    {row.name}
+                    {userId && row.user_id === userId && <span className="lb-you">you</span>}
+                  </span>
                   <span className="lb-ovr" title="Team overall">
                     {row.team_ovr} OVR
                   </span>

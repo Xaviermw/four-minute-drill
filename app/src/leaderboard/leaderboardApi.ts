@@ -2,7 +2,7 @@ import type { DraftedRoster } from "../types/roster";
 import type { DriveChoice, DriveLog } from "../types/simResult";
 import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
-import { getSupabase } from "./supabaseClient";
+import { ensureAnonSession, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
 
@@ -26,6 +26,8 @@ export interface LeaderboardRow {
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
+  /** The (anonymous) user who submitted it -- used to highlight "you". */
+  user_id: string | null;
 }
 
 /** The payload we insert (server fills id/created_at). */
@@ -63,6 +65,10 @@ export function buildSubmission(name: string, driveLog: DriveLog, roster: Drafte
 export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank: number }> {
   const supabase = getSupabase();
   if (!supabase) throw new Error("Leaderboard is not configured.");
+
+  // Sign in anonymously first so the row is owned by a stable user id (the DB
+  // defaults scores.user_id to auth.uid(), and RLS requires an authed session).
+  await ensureAnonSession();
 
   const { error } = await supabase.from(TABLE).insert(entry);
   if (error) throw new Error(error.message);

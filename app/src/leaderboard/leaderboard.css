@@ -157,6 +157,25 @@
   border-radius: var(--radius);
 }
 
+.leaderboard-row.is-you {
+  border-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 10%, var(--bg-1));
+}
+
+.lb-you {
+  margin-left: 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bg-0);
+  background: var(--amber);
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
 .lb-rank {
   font-family: var(--font-display);
   font-weight: 700;

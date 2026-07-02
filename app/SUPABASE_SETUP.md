@@ -38,19 +38,29 @@ prevent a forged submission.
 
 ## 3. Enable Row-Level Security + policies
 
+The app signs each player in as a Supabase **anonymous user** (no email/password
+— invisible to the player) so every score is owned by a stable `user_id`. That
+enables "your scores" highlighting and keeps submissions tied to an identity.
+
 ```sql
 alter table public.scores enable row level security;
+
+-- Own each row by the (anonymous) auth user who inserted it.
+alter table public.scores add column if not exists user_id uuid default auth.uid();
 
 -- Anyone may read the leaderboard.
 create policy "scores are public"
   on public.scores for select
   using (true);
 
--- Anyone may insert, but only well-formed rows within sane bounds.
-create policy "anon can submit bounded scores"
+-- Only a signed-in (incl. anonymous) session may insert, its row must be
+-- owned by that user, and the payload must be well-formed within sane bounds.
+create policy "authed can submit bounded scores"
   on public.scores for insert
+  to authenticated
   with check (
-    score >= 0 and score <= 1000
+    auth.uid() = user_id
+    and score >= 0 and score <= 1000
     and char_length(name) between 1 and 20
     and jsonb_typeof(roster) = 'array'
     and jsonb_array_length(roster) = 6
@@ -58,6 +68,11 @@ create policy "anon can submit bounded scores"
 ```
 
 There is intentionally **no** update/delete policy, so entries are append-only.
+
+### Enable anonymous sign-ins
+
+In the dashboard: **Authentication → Sign In / Providers → Anonymous sign-ins → Enable**.
+Without this, submitting a score fails with "Anonymous sign-ins are disabled".
 
 ## 4. Point the app at it
 
