@@ -102,3 +102,74 @@ export async function fetchTopScores(limit = 100): Promise<LeaderboardRow[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as LeaderboardRow[];
 }
+
+// ---- Win-streak leaderboard ----
+// A streak is consecutive winning drives; its value is the points banked during
+// the run. A loss resets it. The server (record_drive RPC) does the aggregation
+// atomically so it can't race across drives.
+
+const STREAK_TABLE = "streaks";
+const NAME_KEY = "fmd_name";
+
+/** One player's streak row. */
+export interface StreakRow {
+  user_id: string;
+  name: string;
+  best_points: number;
+  best_wins: number;
+  current_points: number;
+  current_wins: number;
+}
+
+/** The display name the player last submitted, remembered so streak rows and
+ * the submit box carry it without re-asking. */
+export function getStoredName(): string {
+  try {
+    return localStorage.getItem(NAME_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function setStoredName(name: string): void {
+  try {
+    localStorage.setItem(NAME_KEY, name.trim().slice(0, 20));
+  } catch {
+    /* ignore storage failures */
+  }
+}
+
+/** Records a finished drive into the caller's streak (win extends + banks
+ * points, loss resets). No-op when the leaderboard is disabled; never throws
+ * to the caller (a failed streak update shouldn't disrupt the result screen). */
+export async function recordDrive(driveLog: DriveLog, name: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    await ensureAnonSession();
+    const { error } = await supabase.rpc("record_drive", {
+      p_won: driveLog.won,
+      p_points: driveLog.score,
+      p_name: name.trim().slice(0, 20) || null,
+    });
+    if (error) throw error;
+  } catch {
+    /* streak tracking is best-effort */
+  }
+}
+
+/** Fetches the top win-streaks by banked points, highest first. */
+export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from(STREAK_TABLE)
+    .select("user_id,name,best_points,best_wins,current_points,current_wins")
+    .gt("best_points", 0)
+    .order("best_points", { ascending: false })
+    .order("updated_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as StreakRow[];
+}

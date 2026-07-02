@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { buildSubmission, submitScore } from "./leaderboardApi";
+import { buildSubmission, getStoredName, setStoredName, submitScore } from "./leaderboardApi";
 import { isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
@@ -18,7 +18,7 @@ export function SubmitScorePanel({
   roster: DraftedRoster;
   onView: () => void;
 }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(getStoredName);
   const [state, setState] = useState<"idle" | "submitting" | "done">("idle");
   const [rank, setRank] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +34,7 @@ export function SubmitScorePanel({
     }
     setState("submitting");
     setError(null);
+    setStoredName(trimmed); // remember for the streak board + next time
     try {
       const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster));
       setRank(newRank);

@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
 import { DriveFieldVisualizer } from "../drive/DriveFieldVisualizer";
 import { PlayByPlayFeed } from "../drive/PlayByPlayFeed";
 import { SharePanel } from "../../share/SharePanel";
 import { SubmitScorePanel } from "../../leaderboard/SubmitScorePanel";
+import { getStoredName, recordDrive } from "../../leaderboard/leaderboardApi";
 import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
+import type { DriveLog } from "../../types/simResult";
 import "../drive/drive.css";
 import "./result.css";
 
@@ -35,6 +37,16 @@ export function ResultScreen() {
   const { open: openLeaderboard } = useLeaderboardUI();
   const [replaying, setReplaying] = useState(false);
   const [replayError, setReplayError] = useState<string | null>(null);
+  // Record each finished drive into the player's win-streak exactly once (a win
+  // extends + banks points, a loss ends the run). Guarded by the drive-log
+  // identity so re-renders / StrictMode don't double-count.
+  const recordedLog = useRef<DriveLog | null>(null);
+  useEffect(() => {
+    if (state.phase !== "result") return;
+    if (recordedLog.current === state.driveLog) return;
+    recordedLog.current = state.driveLog;
+    void recordDrive(state.driveLog, getStoredName());
+  }, [state]);
 
   if (state.phase !== "result") return null;
   const { driveLog, roster } = state;
