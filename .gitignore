@@ -16,6 +16,11 @@ data-pipeline/output/
 **/__pycache__/
 *.pyc
 
+# Playwright
+test-results/
+playwright-report/
+.playwright/
+
 # OS / editor
 .DS_Store
 Thumbs.db
