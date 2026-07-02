@@ -54,6 +54,18 @@ create policy "scores are public"
   on public.scores for select
   using (true);
 
+-- Severe-name filter, mirrored from src/leaderboard/nameFilter.ts: normalize
+-- (lowercase, fold leetspeak, strip non-letters) then reject severe terms.
+-- Deliberately excludes terms that occur inside innocent names (Scunthorpe).
+create or replace function public.name_ok(p_name text)
+returns boolean language sql immutable as $$
+  select regexp_replace(
+           translate(lower(coalesce(p_name, '')), '013457$@!', 'oieastsai'),
+           '[^a-z]', '', 'g'
+         ) !~ '(nigger|nigga|faggot|chink|kike|retard|nazi|hitler|fuck|shit)'
+$$;
+grant execute on function public.name_ok(text) to anon, authenticated;
+
 -- Only a signed-in (incl. anonymous) session may insert, its row must be
 -- owned by that user, and the payload must be well-formed within sane bounds.
 create policy "authed can submit bounded scores"
@@ -63,6 +75,7 @@ create policy "authed can submit bounded scores"
     auth.uid() = user_id
     and score >= 0 and score <= 1000
     and char_length(name) between 1 and 20
+    and public.name_ok(name)
     and jsonb_typeof(roster) = 'array'
     and jsonb_array_length(roster) = 6
   );
@@ -111,6 +124,9 @@ declare
 begin
   if auth.uid() is null then
     raise exception 'not authenticated';
+  end if;
+  if nm is not null and not public.name_ok(nm) then
+    nm := null;  -- keep prior/Anonymous rather than failing the streak update
   end if;
   insert into public.streaks (user_id, name, current_points, current_wins, best_points, best_wins)
   values (

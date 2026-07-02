@@ -6,6 +6,7 @@ import { PlayByPlayFeed } from "../drive/PlayByPlayFeed";
 import { SharePanel } from "../../share/SharePanel";
 import { SubmitScorePanel } from "../../leaderboard/SubmitScorePanel";
 import { getStoredName, recordDrive } from "../../leaderboard/leaderboardApi";
+import { isNameAllowed } from "../../leaderboard/nameFilter";
 import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import type { DriveLog } from "../../types/simResult";
@@ -45,7 +46,10 @@ export function ResultScreen() {
     if (state.phase !== "result") return;
     if (recordedLog.current === state.driveLog) return;
     recordedLog.current = state.driveLog;
-    void recordDrive(state.driveLog, getStoredName());
+    // Don't propagate a disallowed stored name to the streak row; the server
+    // keeps the prior/Anonymous name when we send "".
+    const storedName = getStoredName();
+    void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "");
   }, [state]);
 
   if (state.phase !== "result") return null;

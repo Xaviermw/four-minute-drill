@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { buildSubmission, getStoredName, setStoredName, submitScore } from "./leaderboardApi";
+import { isNameAllowed } from "./nameFilter";
 import { isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
@@ -30,6 +31,10 @@ export function SubmitScorePanel({
     const trimmed = name.trim();
     if (!trimmed) {
       setError("Enter a name first.");
+      return;
+    }
+    if (!isNameAllowed(trimmed)) {
+      setError("Pick a different name.");
       return;
     }
     setState("submitting");
