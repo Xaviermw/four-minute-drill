@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npx vitest run*)",
+      "PowerShell(npm run build*)",
+      "PowerShell(npx vite --host*)",
+      "PowerShell(npm run dev*)",
+      "PowerShell(npm view*)"
+    ]
+  }
+}

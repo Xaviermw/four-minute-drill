@@ -1,0 +1,34 @@
+# Situational bucket definitions shared by build_player_dataset.py and
+# mirrored by the TS engine in app/src/engine/situational.ts. Keep both in
+# sync manually if these change.
+
+distance_buckets:
+  - { id: short, max_ydstogo: 3 }
+  - { id: medium, max_ydstogo: 7 }
+  - { id: long, max_ydstogo: 99 }
+
+# field_zone is measured by yardline_100: distance (yards) to the opponent's goal line.
+field_zones:
+  - { id: own_territory, min_yardline_100: 60, max_yardline_100: 100 }
+  - { id: midfield, min_yardline_100: 40, max_yardline_100: 60 }
+  - { id: red_zone, min_yardline_100: 10, max_yardline_100: 40 }
+  - { id: goal_line, min_yardline_100: 0, max_yardline_100: 10 }
+
+downs: [1, 2, 3, 4]
+
+min_sample_threshold: 8
+
+# Pass depth tiers, derived from air_yards (not nflfastR's pass_length, which
+# is only binary short/deep) -- gives us a real "intermediate" option.
+depth_tiers:
+  - { id: short, max_air_yards: 9 }
+  - { id: medium, max_air_yards: 19 }
+  - { id: deep, max_air_yards: 999 }
+
+# Field goal kick distance tiers (kick_distance = yardline_100 + 18).
+kick_distance_buckets:
+  - { id: under30, max_kick_distance: 29 }
+  - { id: "30s", max_kick_distance: 39 }
+  - { id: "40s", max_kick_distance: 49 }
+  - { id: "50s", max_kick_distance: 59 }
+  - { id: "60plus", max_kick_distance: 999 }

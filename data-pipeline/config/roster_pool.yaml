@@ -1,0 +1,173 @@
+# Curated draft pool. Each entry is hand-vetted; resolve_players.py fails the
+# build loudly if a name doesn't resolve to a real nflverse player id.
+#
+# tier: star | starter | scrub  (flavor/UI only, does not affect simulation)
+# gsis_id: optional manual override, use when name-matching is ambiguous
+#
+# Pull window is seasons 2015-2025 (see fetch_pbp.py), so the pool is limited
+# to players with snaps in that window.
+
+players:
+  # ---- QB ----
+  - { display_name: "Patrick Mahomes", position: QB, tier: star }
+  - { display_name: "Josh Allen", position: QB, tier: star }
+  - { display_name: "Lamar Jackson", position: QB, tier: star }
+  - { display_name: "Joe Burrow", position: QB, tier: star }
+  - { display_name: "Jalen Hurts", position: QB, tier: star }
+  - { display_name: "Aaron Rodgers", position: QB, tier: star }
+  - { display_name: "Tom Brady", position: QB, tier: star }
+  - { display_name: "Drew Brees", position: QB, tier: star }
+  - { display_name: "Russell Wilson", position: QB, tier: star }
+  - { display_name: "Justin Herbert", position: QB, tier: star }
+  - { display_name: "C.J. Stroud", position: QB, tier: star }
+  - { display_name: "Dak Prescott", position: QB, tier: starter }
+  - { display_name: "Matthew Stafford", position: QB, tier: starter }
+  - { display_name: "Kirk Cousins", position: QB, tier: starter }
+  - { display_name: "Derek Carr", position: QB, tier: starter }
+  - { display_name: "Jared Goff", position: QB, tier: starter }
+  - { display_name: "Baker Mayfield", position: QB, tier: starter }
+  - { display_name: "Geno Smith", position: QB, tier: starter }
+  - { display_name: "Tua Tagovailoa", position: QB, tier: starter }
+  - { display_name: "Trevor Lawrence", position: QB, tier: starter }
+  - { display_name: "Sam Darnold", position: QB, tier: starter }
+  - { display_name: "Bo Nix", position: QB, tier: starter }
+  - { display_name: "Brock Purdy", position: QB, tier: starter }
+  - { display_name: "Mike Glennon", position: QB, tier: scrub }
+  - { display_name: "Brandon Weeden", position: QB, tier: scrub }
+  - { display_name: "Blaine Gabbert", position: QB, tier: scrub }
+  - { display_name: "Mike White", position: QB, tier: scrub }
+  - { display_name: "Joshua Dobbs", position: QB, tier: scrub }
+  - { display_name: "Brandon Allen", position: QB, tier: scrub }
+  - { display_name: "Drew Stanton", position: QB, tier: scrub }
+  - { display_name: "Case Keenum", position: QB, tier: scrub }
+  - { display_name: "Nathan Peterman", position: QB, tier: scrub }
+  - { display_name: "Trevor Siemian", position: QB, tier: scrub }
+  # -- recent additions --
+  - { display_name: "Jayden Daniels", position: QB, tier: star }
+  - { display_name: "Jordan Love", position: QB, tier: starter }
+  - { display_name: "Kyler Murray", position: QB, tier: starter }
+  - { display_name: "Caleb Williams", position: QB, tier: starter }
+  - { display_name: "Anthony Richardson", position: QB, tier: starter }
+  # -- 2025 rookies --
+  - { display_name: "Cam Ward", position: QB, tier: starter }
+  - { display_name: "Jaxson Dart", position: QB, tier: starter }
+
+  # ---- RB ----
+  - { display_name: "Christian McCaffrey", position: RB, tier: star }
+  - { display_name: "Saquon Barkley", position: RB, tier: star }
+  - { display_name: "Derrick Henry", position: RB, tier: star }
+  - { display_name: "Ezekiel Elliott", position: RB, tier: star }
+  - { display_name: "Todd Gurley", position: RB, tier: star }
+  - { display_name: "Le'Veon Bell", position: RB, tier: star }
+  - { display_name: "Alvin Kamara", position: RB, tier: star }
+  - { display_name: "Bijan Robinson", position: RB, tier: star }
+  - { display_name: "Jahmyr Gibbs", position: RB, tier: star }
+  - { display_name: "Jonathan Taylor", position: RB, tier: starter }
+  - { display_name: "Josh Jacobs", position: RB, tier: starter }
+  - { display_name: "Aaron Jones", position: RB, tier: starter }
+  - { display_name: "Joe Mixon", position: RB, tier: starter }
+  - { display_name: "James Conner", position: RB, tier: starter }
+  - { display_name: "David Montgomery", position: RB, tier: starter }
+  - { display_name: "Tony Pollard", position: RB, tier: starter }
+  - { display_name: "Rhamondre Stevenson", position: RB, tier: starter }
+  - { display_name: "Najee Harris", position: RB, tier: starter }
+  - { display_name: "Kareem Hunt", position: RB, tier: starter }
+  - { display_name: "Mike Davis", position: RB, tier: scrub }
+  - { display_name: "Latavius Murray", position: RB, tier: scrub }
+  - { display_name: "Trenton Cannon", position: RB, tier: scrub }
+  - { display_name: "Wendell Smallwood", position: RB, tier: scrub }
+  - { display_name: "Spencer Ware", position: RB, tier: scrub }
+  - { display_name: "Javorius Allen", position: RB, tier: scrub }
+  - { display_name: "Marlon Mack", position: RB, tier: scrub }
+  - { display_name: "Devontae Booker", position: RB, tier: scrub }
+  - { display_name: "Damien Williams", position: RB, tier: scrub }
+  # -- recent additions --
+  - { display_name: "Breece Hall", position: RB, tier: star }
+  - { display_name: "De'Von Achane", position: RB, tier: star }
+  - { display_name: "Kyren Williams", position: RB, tier: starter }
+  - { display_name: "Kenneth Walker III", position: RB, tier: starter }
+  - { display_name: "James Cook", position: RB, tier: starter }
+  # -- 2025 rookies --
+  - { display_name: "Ashton Jeanty", position: RB, tier: star }
+  - { display_name: "Omarion Hampton", position: RB, tier: starter }
+  - { display_name: "TreVeyon Henderson", position: RB, tier: starter }
+  - { display_name: "Quinshon Judkins", position: RB, tier: starter }
+  - { display_name: "Cam Skattebo", position: RB, tier: starter }
+  - { display_name: "Kaleb Johnson", position: RB, tier: scrub }
+
+  # ---- WR ----
+  - { display_name: "Tyreek Hill", position: WR, tier: star }
+  - { display_name: "Justin Jefferson", position: WR, tier: star }
+  - { display_name: "Davante Adams", position: WR, tier: star }
+  - { display_name: "CeeDee Lamb", position: WR, tier: star }
+  - { display_name: "Ja'Marr Chase", position: WR, tier: star }
+  - { display_name: "Stefon Diggs", position: WR, tier: star }
+  - { display_name: "Julio Jones", position: WR, tier: star }
+  - { display_name: "DeAndre Hopkins", position: WR, tier: star }
+  - { display_name: "Antonio Brown", position: WR, tier: star }
+  - { display_name: "Odell Beckham", position: WR, tier: star }
+  - { display_name: "A.J. Brown", position: WR, tier: star }
+  - { display_name: "Amon-Ra St. Brown", position: WR, tier: star }
+  - { display_name: "Puka Nacua", position: WR, tier: star }
+  - { display_name: "Mike Evans", position: WR, tier: starter }
+  - { display_name: "Keenan Allen", position: WR, tier: starter }
+  - { display_name: "Chris Godwin", position: WR, tier: starter }
+  - { display_name: "DK Metcalf", position: WR, tier: starter }
+  - { display_name: "Terry McLaurin", position: WR, tier: starter }
+  - { display_name: "Tee Higgins", position: WR, tier: starter }
+  - { display_name: "Brandin Cooks", position: WR, tier: starter }
+  - { display_name: "Jakobi Meyers", position: WR, tier: starter }
+  - { display_name: "Diontae Johnson", position: WR, tier: starter }
+  - { display_name: "Curtis Samuel", position: WR, tier: starter }
+  - { display_name: "Marquez Valdes-Scantling", position: WR, tier: scrub }
+  - { display_name: "Greg Ward", position: WR, tier: scrub }
+  - { display_name: "Olamide Zaccheaus", position: WR, tier: scrub }
+  - { display_name: "Steven Sims", position: WR, tier: scrub }
+  - { display_name: "Trent Sherfield", position: WR, tier: scrub }
+  - { display_name: "Ryan Switzer", position: WR, tier: scrub }
+  - { display_name: "Cody Latimer", position: WR, tier: scrub }
+  - { display_name: "Bruce Ellington", position: WR, tier: scrub }
+  # -- recent additions --
+  - { display_name: "Malik Nabers", position: WR, tier: star }
+  - { display_name: "Marvin Harrison Jr.", position: WR, tier: star }
+  - { display_name: "Nico Collins", position: WR, tier: star }
+  - { display_name: "Garrett Wilson", position: WR, tier: star }
+  - { display_name: "Drake London", position: WR, tier: star }
+  - { display_name: "Cooper Kupp", position: WR, tier: star }
+  - { display_name: "Jaylen Waddle", position: WR, tier: starter }
+  - { display_name: "Chris Olave", position: WR, tier: starter }
+  # -- 2025 rookies --
+  - { display_name: "Tetairoa McMillan", position: WR, tier: star }
+  - { display_name: "Emeka Egbuka", position: WR, tier: star }
+  - { display_name: "Travis Hunter", position: WR, tier: starter }
+  - { display_name: "Matthew Golden", position: WR, tier: starter }
+  - { display_name: "Luther Burden", position: WR, tier: starter }
+
+  # ---- TE ----
+  - { display_name: "Travis Kelce", position: TE, tier: star }
+  - { display_name: "George Kittle", position: TE, tier: star }
+  - { display_name: "Rob Gronkowski", position: TE, tier: star }
+  - { display_name: "Mark Andrews", position: TE, tier: star }
+  - { display_name: "Sam LaPorta", position: TE, tier: star }
+  - { display_name: "Brock Bowers", position: TE, tier: star }
+  - { display_name: "T.J. Hockenson", position: TE, tier: starter }
+  - { display_name: "Dallas Goedert", position: TE, tier: starter }
+  - { display_name: "Evan Engram", position: TE, tier: starter }
+  - { display_name: "David Njoku", position: TE, tier: starter }
+  - { display_name: "Pat Freiermuth", position: TE, tier: starter }
+  - { display_name: "Cole Kmet", position: TE, tier: starter }
+  - { display_name: "Jonnu Smith", position: TE, tier: starter }
+  - { display_name: "Hunter Henry", position: TE, tier: starter }
+  - { display_name: "Jordan Reed", position: TE, tier: starter }
+  - { display_name: "Ricky Seals-Jones", position: TE, tier: scrub }
+  - { display_name: "Luke Willson", position: TE, tier: scrub }
+  - { display_name: "C.J. Uzomah", position: TE, tier: scrub }
+  # -- recent additions --
+  - { display_name: "Trey McBride", position: TE, tier: star }
+  - { display_name: "Kyle Pitts", position: TE, tier: starter }
+  - { display_name: "Dalton Kincaid", position: TE, tier: starter }
+  - { display_name: "Jake Ferguson", position: TE, tier: starter }
+  # -- 2025 rookies --
+  - { display_name: "Tyler Warren", position: TE, tier: star }
+  - { display_name: "Colston Loveland", position: TE, tier: starter }
+  - { display_name: "Mason Taylor", position: TE, tier: starter }

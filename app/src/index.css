@@ -1,0 +1,135 @@
+:root {
+  /* ---- Surfaces (deep slate-navy, not flat black) ---- */
+  --bg-0: #080b11;
+  --bg-1: #0d121b;
+  --surface-1: #161d2a;
+  --surface-2: #1d2735;
+  --surface-3: #26334699;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.16);
+
+  /* ---- Text ---- */
+  --text: #eef2f8;
+  --muted: #8c99ad;
+  --dim: #57637a;
+
+  /* ---- Brand / accents ---- */
+  --grass: #22c55e;
+  --grass-bright: #34e07a;
+  --grass-deep: #15994a;
+  --amber: #ffc233;
+  --sky: #5b9dff;
+  --win: #34d058;
+  --loss: #f1556a;
+
+  /* ---- Tier colors ---- */
+  --tier-star: #ffc233;
+  --tier-starter: #5ad1c4;
+  --tier-scrub: #f0808f;
+
+  /* ---- Field ---- */
+  --turf-light: #2c8f4e;
+  --turf-dark: #1c6b39;
+
+  /* ---- Shape & shadow ---- */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.4);
+
+  /* ---- Type ---- */
+  --font-body: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Inter", system-ui, sans-serif;
+
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: dark;
+  color: var(--text);
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(34, 197, 94, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(91, 157, 255, 0.05), transparent 55%),
+    var(--bg-0);
+  background-attachment: fixed;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+  line-height: 1.05;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+/* Eyebrow / section labels */
+.eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dim);
+}
+
+::selection {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+/* Scrollbar polish */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-2) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #313e52;
+  background-clip: padding-box;
+}

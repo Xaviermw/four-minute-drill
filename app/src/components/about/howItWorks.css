@@ -1,0 +1,126 @@
+.how-it-works-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+.how-it-works-link:hover {
+  color: var(--text);
+}
+
+.hiw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(4, 6, 10, 0.78);
+  backdrop-filter: blur(3px);
+}
+
+.hiw-modal {
+  width: min(620px, 100%);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+}
+
+.hiw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.hiw-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 1.5rem;
+}
+
+.hiw-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.hiw-close:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.hiw-body {
+  overflow-y: auto;
+  padding: 0.5rem 1.35rem 1.5rem;
+}
+
+.hiw-section {
+  margin-top: 1.25rem;
+}
+
+.hiw-section h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.hiw-section p {
+  margin: 0 0 0.6rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.hiw-section strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.hiw-list {
+  margin: 0 0 0.6rem;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hiw-list li {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.hiw-note {
+  border-left: 2px solid var(--amber);
+  padding-left: 0.75rem;
+  font-size: 0.88rem !important;
+}
+
+.hiw-formula {
+  margin-top: 0.5rem !important;
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  font-size: 0.95rem;
+  color: var(--amber) !important;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}

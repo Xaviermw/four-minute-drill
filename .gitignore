@@ -1,0 +1,23 @@
+# Node / app
+node_modules/
+app/dist/
+app/dist-ssr/
+
+# Env / secrets (never commit)
+*.local
+.env
+.env.*
+!.env.local.example
+
+# Python data-pipeline
+data-pipeline/venv/
+data-pipeline/cache/
+data-pipeline/output/
+**/__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.suo
+*.swp

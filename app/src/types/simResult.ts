@@ -1,0 +1,51 @@
+import type { PlayCall } from "../engine/playOptions";
+import type { OutcomeRecord, PlayerRole } from "./player";
+import type { RosterSlotKey } from "./roster";
+
+/** A user's input on a single down: the play they called plus, when the clock
+ * was running, the snap tempo they chose. (seed, choices) + the roster fully
+ * reproduce a drive deterministically -- used for share links and leaderboard
+ * verification/replay. */
+export interface DriveChoice {
+  call: PlayCall;
+  tempoSeconds?: number;
+}
+
+export interface PlayResult {
+  playNumber: number;
+  down: number;
+  distance: number;
+  fieldPosition: number;
+  role: PlayerRole | "kicker" | "special";
+  ballCarrier: RosterSlotKey;
+  ballCarrierName: string;
+  outcome: OutcomeRecord;
+  description: string;
+}
+
+export type DriveEndReason =
+  | "WIN_TOUCHDOWN"
+  | "WIN_FIELD_GOAL"
+  | "LOSS_TURNOVER"
+  | "LOSS_TURNOVER_ON_DOWNS"
+  | "LOSS_CLOCK_EXPIRED"
+  | "LOSS_MISSED_FIELD_GOAL";
+
+export interface ScoreBreakdown {
+  basePoints: number;
+  baseLabel: string; // "Touchdown" | "Field Goal" | "No Score"
+  rosterMultiplier: number;
+  clockMultiplier: number;
+  total: number;
+}
+
+export interface DriveLog {
+  plays: PlayResult[];
+  endReason: DriveEndReason;
+  won: boolean;
+  score: number;
+  scoreBreakdown: ScoreBreakdown;
+  /** Seed + ordered choices fully reproduce this drive given the roster. */
+  seed: number;
+  choices: DriveChoice[];
+}

@@ -1,0 +1,21 @@
+# Curated kicker draft pool. Same shape/spirit as roster_pool.yaml.
+# tier: star | starter | scrub (flavor/UI only, does not affect simulation)
+# gsis_id: optional manual override, use when name-matching is ambiguous
+
+kickers:
+  - { display_name: "Justin Tucker", tier: star }
+  - { display_name: "Harrison Butker", tier: star }
+  - { display_name: "Daniel Carlson", tier: star }
+  - { display_name: "Younghoe Koo", tier: star }
+  - { display_name: "Matt Prater", tier: starter }
+  - { display_name: "Greg Zuerlein", tier: starter }
+  - { display_name: "Tyler Bass", tier: starter }
+  - { display_name: "Evan McPherson", tier: starter }
+  - { display_name: "Jake Elliott", tier: starter }
+  - { display_name: "Wil Lutz", tier: starter }
+  - { display_name: "Cody Parkey", tier: scrub }
+  - { display_name: "Roberto Aguayo", tier: scrub }
+  - { display_name: "Blair Walsh", tier: scrub }
+  - { display_name: "Josh Lambo", tier: scrub }
+  - { display_name: "Mike Nugent", tier: scrub }
+  - { display_name: "Brett Maher", tier: scrub }
