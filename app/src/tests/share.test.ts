@@ -31,6 +31,7 @@ const wonLog = (score: number, endReason: string): DriveLog =>
     scoreBreakdown: { basePoints: 7, baseLabel: "Touchdown", rosterMultiplier: 1, clockMultiplier: 1, total: score },
     seed: 1,
     choices: [],
+    clockSecondsRemaining: 42,
   }) as DriveLog;
 
 describe("lineup code", () => {

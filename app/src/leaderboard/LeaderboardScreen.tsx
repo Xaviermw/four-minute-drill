@@ -4,6 +4,7 @@ import { startDrive } from "../data/startDrive";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { useGameDispatch } from "../state/GameStateProvider";
 import { outcomeLabel } from "../share/shareText";
+import { formatClock } from "../utils/formatting";
 import { fetchTopScores, type LeaderboardRow } from "./leaderboardApi";
 import { getCurrentUserId, isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
@@ -89,6 +90,9 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                     {row.team_ovr} OVR
                   </span>
                   <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
+                  <span className="lb-time" title="Time left when they scored">
+                    ⏱ {formatClock(row.time_remaining)}
+                  </span>
                   <span className="lb-score">{row.score}</span>
                   <button
                     type="button"

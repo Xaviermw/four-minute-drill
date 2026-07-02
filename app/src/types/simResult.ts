@@ -48,4 +48,7 @@ export interface DriveLog {
   /** Seed + ordered choices fully reproduce this drive given the roster. */
   seed: number;
   choices: DriveChoice[];
+  /** Game clock (seconds) left when the drive ended -- what's shown on the
+   * leaderboard and what feeds the time bonus. 0 if the clock expired. */
+  clockSecondsRemaining: number;
 }

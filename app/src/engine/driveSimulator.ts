@@ -418,8 +418,9 @@ export function createDriveSession(
   function getLog(): DriveLog {
     if (!endReason) throw new Error("Drive has not ended yet");
     const won = endReason === "WIN_TOUCHDOWN" || endReason === "WIN_FIELD_GOAL";
+    const clockSecondsRemaining = Math.max(0, Math.round(clock));
     const scoreBreakdown = computeScore(endReason, roster, Math.max(0, clock));
-    return { plays, endReason, won, score: scoreBreakdown.total, scoreBreakdown, seed, choices };
+    return { plays, endReason, won, score: scoreBreakdown.total, scoreBreakdown, seed, choices, clockSecondsRemaining };
   }
 
   function getSituation(): DriveSituation {

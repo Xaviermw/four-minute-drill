@@ -148,7 +148,7 @@
 
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 2rem 1fr auto auto auto;
+  grid-template-columns: 2rem 1fr auto auto auto auto;
   align-items: center;
   gap: 0.6rem;
   padding: 0.55rem 0.7rem;
@@ -204,6 +204,13 @@
   white-space: nowrap;
 }
 
+.lb-time {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .lb-score {
   font-family: var(--font-display);
   font-weight: 700;
@@ -239,7 +246,7 @@
 
 @media (min-width: 540px) {
   .leaderboard-row {
-    grid-template-columns: 2rem 1fr auto auto auto auto;
+    grid-template-columns: 2rem 1fr auto auto auto auto auto;
   }
   .lb-play {
     grid-column: auto;

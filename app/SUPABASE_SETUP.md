@@ -24,6 +24,7 @@ create table public.scores (
   score int not null,
   outcome text not null,
   team_ovr int not null,
+  time_remaining int not null default 0,  -- clock (s) left when they scored
   roster jsonb not null,   -- array of { gsisId, name, position, rating }
   seed bigint not null,
   choices jsonb not null   -- ordered [{ call: {...}, tempoSeconds? }]

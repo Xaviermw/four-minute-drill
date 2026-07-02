@@ -23,6 +23,8 @@ export interface LeaderboardRow {
   score: number;
   outcome: string;
   team_ovr: number;
+  /** Game clock (seconds) left when they scored -- less is more clutch. */
+  time_remaining: number;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -36,6 +38,7 @@ export interface LeaderboardSubmission {
   score: number;
   outcome: string;
   team_ovr: number;
+  time_remaining: number;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -55,6 +58,7 @@ export function buildSubmission(name: string, driveLog: DriveLog, roster: Drafte
     score: driveLog.score,
     outcome: driveLog.endReason,
     team_ovr: teamOverall(roster),
+    time_remaining: driveLog.clockSecondsRemaining,
     roster: rosterToPlayers(roster),
     seed: driveLog.seed,
     choices: driveLog.choices,
