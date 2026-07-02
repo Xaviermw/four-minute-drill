@@ -46,8 +46,9 @@ def _to_outcome_record(row, role):
     if role in ("passer", "receiver"):
         is_complete = bool(row["complete_pass"] == 1)
     return {
-        "yards": float(row["yards_gained"]) if pd.notna(row["yards_gained"]) else 0.0,
-        "epa": float(row["epa"]) if pd.notna(row["epa"]) else 0.0,
+        # nflfastR yards_gained are whole numbers; store as int to shrink the
+        # shipped JSON (the app never read the epa field, so it's dropped).
+        "yards": int(round(row["yards_gained"])) if pd.notna(row["yards_gained"]) else 0,
         "isTouchdown": is_touchdown,
         "isTurnover": bool(row["interception"] == 1 or row["fumble_lost"] == 1),
         "isSack": bool(row["sack"] == 1),

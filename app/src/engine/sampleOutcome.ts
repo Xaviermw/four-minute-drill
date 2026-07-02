@@ -105,19 +105,19 @@ function simulateFromRates(
   if (role === "passer") {
     if (rng.next() < (rates.sackRate ?? 0.06)) {
       const yards = -(2 + Math.floor(rng.next() * 6));
-      return { yards, epa: -1, isTouchdown: false, isTurnover: false, isSack: true, isComplete: false, isFirstDown: false, depthTier: null, isScramble: false };
+      return { yards, isTouchdown: false, isTurnover: false, isSack: true, isComplete: false, isFirstDown: false, depthTier: null, isScramble: false };
     }
     const isComplete = rng.next() < (rates.completionPct ?? 0.6);
     if (!isComplete) {
       const incompletePool = 1 - (rates.completionPct ?? 0.6);
       const isInt = incompletePool > 0 && rng.next() < (rates.intRate ?? 0.02) / incompletePool;
-      return { yards: 0, epa: isInt ? -3 : -0.5, isTouchdown: false, isTurnover: isInt, isSack: false, isComplete: false, isFirstDown: false, depthTier, isScramble: false };
+      return { yards: 0, isTouchdown: false, isTurnover: isInt, isSack: false, isComplete: false, isFirstDown: false, depthTier, isScramble: false };
     }
     const baseYards = Math.max(0, (rates.yardsPerAttempt ?? 6) * (0.4 + rng.next() * 1.2));
     const yards = clampYards(Math.round(baseYards), fieldPosition);
     const isTouchdown = isGoalLine && rng.next() < (rates.passTdRate ?? 0.04) * 4;
     const isFirstDown = yards >= 10 || rng.next() < (rates.firstDownRate ?? 0.3);
-    return { yards, epa: yards / 8, isTouchdown, isTurnover: false, isSack: false, isComplete: true, isFirstDown, depthTier, isScramble: false };
+    return { yards, isTouchdown, isTurnover: false, isSack: false, isComplete: true, isFirstDown, depthTier, isScramble: false };
   }
 
   if (role === "rusher") {
@@ -126,19 +126,19 @@ function simulateFromRates(
     const isFumble = rng.next() < (rates.fumbleRate ?? 0.007);
     const isTouchdown = !isFumble && isGoalLine && rng.next() < (rates.rushTdRate ?? 0.03) * 4;
     const isFirstDown = !isFumble && (yards >= 10 || rng.next() < (rates.firstDownRate ?? 0.25));
-    return { yards, epa: yards / 10, isTouchdown, isTurnover: isFumble, isSack: false, isComplete: null, isFirstDown, depthTier: null, isScramble: false };
+    return { yards, isTouchdown, isTurnover: isFumble, isSack: false, isComplete: null, isFirstDown, depthTier: null, isScramble: false };
   }
 
   // receiver
   const isComplete = rng.next() < (rates.catchRate ?? 0.65);
   if (!isComplete) {
-    return { yards: 0, epa: -0.5, isTouchdown: false, isTurnover: false, isSack: false, isComplete: false, isFirstDown: false, depthTier, isScramble: false };
+    return { yards: 0, isTouchdown: false, isTurnover: false, isSack: false, isComplete: false, isFirstDown: false, depthTier, isScramble: false };
   }
   const baseYards = Math.max(0, (rates.yardsPerTarget ?? 7) / (rates.catchRate ?? 0.65) * (0.4 + rng.next() * 1.2));
   const yards = clampYards(Math.round(baseYards), fieldPosition);
   const isTouchdown = isGoalLine && rng.next() < (rates.receivingTdRate ?? 0.05) * 4;
   const isFirstDown = yards >= 10 || rng.next() < (rates.firstDownRate ?? 0.35);
-  return { yards, epa: yards / 8, isTouchdown, isTurnover: false, isSack: false, isComplete: true, isFirstDown, depthTier, isScramble: false };
+  return { yards, isTouchdown, isTurnover: false, isSack: false, isComplete: true, isFirstDown, depthTier, isScramble: false };
 }
 
 export interface SampleContext {
@@ -227,7 +227,7 @@ export function rollQbSackOutcome(
     return pooled[Math.floor(rng.next() * pooled.length)];
   }
   const yards = -(2 + Math.floor(rng.next() * 6));
-  return { yards, epa: -1.2, isTouchdown: false, isTurnover: false, isSack: true, isComplete: false, isFirstDown: false, depthTier: null, isScramble: false };
+  return { yards, isTouchdown: false, isTurnover: false, isSack: true, isComplete: false, isFirstDown: false, depthTier: null, isScramble: false };
 }
 
 function poolScrambleOutcomesForDown(dataset: PlayerDataset, down: number): OutcomeRecord[] {
@@ -307,7 +307,7 @@ export function rollBlendedInterception(
   const receiverRates = getShrunkDepthRates(receiverDataset, "receiver", depth, leagueAverageRates);
   const blendedIntRate = QB_OUTCOME_WEIGHT * (qbRates.intRate ?? 0.02) + RECEIVER_OUTCOME_WEIGHT * (receiverRates.intRate ?? 0.02);
   if (rng.next() >= blendedIntRate) return null;
-  return { yards: 0, epa: -3, isTouchdown: false, isTurnover: true, isSack: false, isComplete: false, isFirstDown: false, depthTier: depth, isScramble: false };
+  return { yards: 0, isTouchdown: false, isTurnover: true, isSack: false, isComplete: false, isFirstDown: false, depthTier: depth, isScramble: false };
 }
 
 /**

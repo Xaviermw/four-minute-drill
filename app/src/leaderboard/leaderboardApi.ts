@@ -67,7 +67,7 @@ export function buildSubmission(name: string, driveLog: DriveLog, roster: Drafte
 
 /** Inserts a score and returns its all-time rank (1 = best). Throws on failure. */
 export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank: number }> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) throw new Error("Leaderboard is not configured.");
 
   // Sign in anonymously first so the row is owned by a stable user id (the DB
@@ -90,7 +90,7 @@ export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank:
 
 /** Fetches the top scores, highest first. Returns [] when disabled. */
 export async function fetchTopScores(limit = 100): Promise<LeaderboardRow[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return [];
 
   const { data, error } = await supabase
@@ -143,7 +143,7 @@ export function setStoredName(name: string): void {
  * points, loss resets). No-op when the leaderboard is disabled; never throws
  * to the caller (a failed streak update shouldn't disrupt the result screen). */
 export async function recordDrive(driveLog: DriveLog, name: string): Promise<void> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return;
   try {
     await ensureAnonSession();
@@ -160,7 +160,7 @@ export async function recordDrive(driveLog: DriveLog, name: string): Promise<voi
 
 /** Fetches the top win-streaks by banked points, highest first. */
 export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return [];
 
   const { data, error } = await supabase

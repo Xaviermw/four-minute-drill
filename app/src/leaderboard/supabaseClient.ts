@@ -1,10 +1,15 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Lazily-created Supabase client built from Vite env vars. The leaderboard is
  * entirely optional: if either var is missing (e.g. local dev or a fork without
  * a backend), `isLeaderboardEnabled` is false and all leaderboard UI hides --
  * the rest of the app is unaffected.
+ *
+ * `@supabase/supabase-js` is imported dynamically (only the type is imported
+ * statically, which is erased at build) so the library stays out of the initial
+ * bundle -- it loads on first leaderboard use. `getSupabase()` therefore returns
+ * a promise.
  *
  * The key here is the PUBLIC anon key, which is safe to ship in the bundle as
  * long as row-level-security policies are enabled on the table (see
@@ -15,18 +20,20 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 export const isLeaderboardEnabled = Boolean(url && anonKey);
 
-let client: SupabaseClient | null = null;
+let clientPromise: Promise<SupabaseClient> | null = null;
 
-export function getSupabase(): SupabaseClient | null {
+export function getSupabase(): Promise<SupabaseClient> | null {
   if (!isLeaderboardEnabled) return null;
-  if (!client) {
-    client = createClient(url!, anonKey!, {
-      // Persist the anonymous session so a returning visitor keeps the same
-      // identity (their scores stay "theirs" across reloads/sessions).
-      auth: { persistSession: true, autoRefreshToken: true },
-    });
+  if (!clientPromise) {
+    clientPromise = import("@supabase/supabase-js").then(({ createClient }) =>
+      createClient(url!, anonKey!, {
+        // Persist the anonymous session so a returning visitor keeps the same
+        // identity (their scores stay "theirs" across reloads/sessions).
+        auth: { persistSession: true, autoRefreshToken: true },
+      })
+    );
   }
-  return client;
+  return clientPromise;
 }
 
 /**
@@ -36,7 +43,7 @@ export function getSupabase(): SupabaseClient | null {
  * enabled on the project (see SUPABASE_SETUP.md).
  */
 export async function ensureAnonSession(): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return null;
 
   const { data: existing } = await supabase.auth.getSession();
@@ -50,7 +57,7 @@ export async function ensureAnonSession(): Promise<string | null> {
 /** Returns the current user id if a session already exists, without creating
  * one (used to highlight "you" on the board for people who've already played). */
 export async function getCurrentUserId(): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) return null;
   const { data } = await supabase.auth.getSession();
   return data.session?.user.id ?? null;

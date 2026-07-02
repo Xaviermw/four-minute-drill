@@ -1,5 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { LeaderboardScreen } from "./LeaderboardScreen";
+import { createContext, lazy, Suspense, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+
+// Lazy so the leaderboard modal (+ its supabase code path) stays out of the
+// initial bundle; only loaded when a player opens it.
+const LeaderboardScreen = lazy(() =>
+  import("./LeaderboardScreen").then((m) => ({ default: m.LeaderboardScreen }))
+);
 
 interface LeaderboardUIValue {
   open: () => void;
@@ -18,7 +23,11 @@ export function LeaderboardUIProvider({ children }: { children: ReactNode }) {
   return (
     <LeaderboardUIContext.Provider value={value}>
       {children}
-      {isOpen && <LeaderboardScreen onClose={close} />}
+      {isOpen && (
+        <Suspense fallback={null}>
+          <LeaderboardScreen onClose={close} />
+        </Suspense>
+      )}
     </LeaderboardUIContext.Provider>
   );
 }

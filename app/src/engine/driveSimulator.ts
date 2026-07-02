@@ -220,7 +220,7 @@ export interface DriveStepResult {
 
 function makeOutcome(partial: Partial<OutcomeRecord>): OutcomeRecord {
   return {
-    yards: 0, epa: 0, isTouchdown: false, isTurnover: false, isSack: false,
+    yards: 0, isTouchdown: false, isTurnover: false, isSack: false,
     isComplete: null, isFirstDown: false, depthTier: null, isScramble: false,
     ...partial,
   };

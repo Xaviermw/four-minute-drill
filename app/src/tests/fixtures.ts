@@ -3,7 +3,6 @@ import type { KickerDataset, KickerDistanceBucket, KickDistanceTier, OutcomeReco
 function outcome(partial: Partial<OutcomeRecord> = {}): OutcomeRecord {
   return {
     yards: 5,
-    epa: 0.5,
     isTouchdown: false,
     isTurnover: false,
     isSack: false,

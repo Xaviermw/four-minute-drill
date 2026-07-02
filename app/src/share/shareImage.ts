@@ -1,7 +1,8 @@
-import { toBlob } from "html-to-image";
-
-/** Snapshots an off-screen card node to a PNG Blob at 2x for crisp social use. */
+/** Snapshots an off-screen card node to a PNG Blob at 2x for crisp social use.
+ * html-to-image is imported dynamically so it stays out of the initial bundle
+ * (only needed when a player actually saves/shares an image). */
 export async function nodeToPngBlob(node: HTMLElement): Promise<Blob> {
+  const { toBlob } = await import("html-to-image");
   const blob = await toBlob(node, {
     pixelRatio: 2,
     cacheBust: true,

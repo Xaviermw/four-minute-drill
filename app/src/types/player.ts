@@ -6,7 +6,6 @@ export type KickDistanceTier = "under30" | "30s" | "40s" | "50s" | "60plus";
 
 export interface OutcomeRecord {
   yards: number;
-  epa: number;
   isTouchdown: boolean;
   isTurnover: boolean;
   isSack: boolean;
