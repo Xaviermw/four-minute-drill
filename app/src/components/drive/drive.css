@@ -10,8 +10,8 @@
 
 /* ---- Broadcast scoreboard ---- */
 .scoreboard {
-  display: flex;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -22,7 +22,6 @@
 }
 
 .sb-cell {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,10 +29,6 @@
   gap: 0.15rem;
   padding: 0.6rem 0.5rem;
   background: linear-gradient(180deg, var(--surface-1), var(--bg-1));
-}
-
-.sb-togo {
-  flex: 0 0 22%;
 }
 
 .sb-label {
@@ -48,10 +43,15 @@
 .sb-value {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.7rem;
+  font-size: clamp(1.3rem, 3.6vw, 1.7rem);
   line-height: 1;
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sb-deficit {
+  color: var(--loss);
 }
 
 .sb-clock-value {
@@ -63,9 +63,20 @@
   animation: clock-flash 1s steps(2, jump-none) infinite;
 }
 
+.sb-clock-value.critical {
+  color: var(--loss);
+  animation: clock-flash 0.5s steps(2, jump-none) infinite;
+}
+
 @keyframes clock-flash {
   50% {
-    opacity: 0.55;
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 560px) {
+  .scoreboard {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -411,11 +422,43 @@
   background: rgba(203, 213, 225, 0.07);
 }
 
+/* ---- Stakes strip ---- */
+.stakes-strip {
+  text-align: center;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+}
+.stakes-deficit {
+  color: var(--loss);
+}
+
 /* ---- Tempo control ---- */
 .tempo-control {
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px dashed var(--line);
+}
+
+.tempo-control.stopped {
+  opacity: 0.72;
+}
+
+.tempo-stopped-chip {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
 }
 
 .tempo-control-top {

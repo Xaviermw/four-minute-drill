@@ -23,7 +23,7 @@ export function DriveScreen() {
   const [tempoSeconds, setTempoSeconds] = useState(MANUAL_TEMPO_RANGE.min);
 
   if (state.phase !== "driving") return null;
-  const { roster, session } = state;
+  const { roster, session, scenario } = state;
 
   const options = session.getOptions();
   const situation = session.getSituation();
@@ -57,7 +57,12 @@ export function DriveScreen() {
         down={situation.down}
         distance={situation.distance}
         clockSeconds={situation.clockSeconds}
+        scoreDiff={scenario.scoreDiff}
       />
+
+      <p className="stakes-strip">
+        <span className="stakes-deficit">Down by {-scenario.scoreDiff}</span> · one drive to win it
+      </p>
 
       {lastPlay && (
         <p
@@ -70,24 +75,30 @@ export function DriveScreen() {
       )}
 
       <div className="play-panel">
-        {situation.clockRunning && (
-          <div className="tempo-control">
-            <div className="tempo-control-top">
-              <span className="tempo-label">Snap tempo</span>
+        <div className={`tempo-control ${situation.clockRunning ? "" : "stopped"}`}>
+          <div className="tempo-control-top">
+            <span className="tempo-label">Snap tempo</span>
+            {situation.clockRunning ? (
               <span className="tempo-readout">{tempoSeconds}s</span>
-            </div>
-            <input
-              type="range"
-              className="tempo-slider"
-              min={MANUAL_TEMPO_RANGE.min}
-              max={MANUAL_TEMPO_RANGE.max}
-              value={tempoSeconds}
-              disabled={resolving}
-              onChange={(e) => setTempoSeconds(Number(e.target.value))}
-            />
-            <p className="tempo-hint">Snap quick to save clock, or milk it if you've got time to spare.</p>
+            ) : (
+              <span className="tempo-stopped-chip">Clock stopped</span>
+            )}
           </div>
-        )}
+          <input
+            type="range"
+            className="tempo-slider"
+            min={MANUAL_TEMPO_RANGE.min}
+            max={MANUAL_TEMPO_RANGE.max}
+            value={tempoSeconds}
+            disabled={resolving || !situation.clockRunning}
+            onChange={(e) => setTempoSeconds(Number(e.target.value))}
+          />
+          <p className="tempo-hint">
+            {situation.clockRunning
+              ? "Snap quick to save clock, or milk it if you've got time to spare."
+              : "Clock's stopped — this snap costs nothing extra."}
+          </p>
+        </div>
 
         {resolving ? (
           <p className="anticipation-indicator">Calling the play&hellip;</p>

@@ -1,5 +1,5 @@
 import type { PlayResult } from "../../types/simResult";
-import { ordinalDown } from "../../utils/formatting";
+import { formatBallOn, ordinalDown } from "../../utils/formatting";
 import "./drive.css";
 
 export function PlayByPlayFeed({ plays }: { plays: PlayResult[] }) {
@@ -8,7 +8,7 @@ export function PlayByPlayFeed({ plays }: { plays: PlayResult[] }) {
       {plays.map((p) => (
         <li key={p.playNumber} className={p.outcome.isTouchdown ? "touchdown" : p.outcome.isTurnover ? "turnover" : ""}>
           <span className="play-situation">
-            {ordinalDown(p.down)} &amp; {p.distance} from the {p.fieldPosition}
+            {ordinalDown(p.down)} &amp; {p.distance} · {formatBallOn(p.fieldPosition)}
           </span>
           <span className="play-description">{p.description}</span>
         </li>

@@ -9,6 +9,13 @@ export function formatClock(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+/** Football-convention ball spot from yards-to-end-zone (yardline_100). */
+export function formatBallOn(fieldPosition: number): string {
+  if (fieldPosition > 50) return `OWN ${100 - fieldPosition}`;
+  if (fieldPosition === 50) return "MIDFIELD";
+  return `AWAY ${fieldPosition}`;
+}
+
 /** Formats a payout multiplier for display, e.g. 1.8 -> "×1.8". */
 export function formatPayout(multiplier: number): string {
   return `×${multiplier.toFixed(1)}`;
