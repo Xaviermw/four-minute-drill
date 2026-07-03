@@ -166,22 +166,35 @@ export function setStoredName(name: string): void {
   }
 }
 
+/** The streak after recording a drive. On a win, streak_* is the now-active
+ * run; on a loss, it's the run that just ended (pre-reset). */
+export interface StreakUpdate {
+  won: boolean;
+  streak_points: number;
+  streak_wins: number;
+  best_points: number;
+  best_wins: number;
+}
+
 /** Records a finished drive into the caller's streak (win extends + banks
- * points, loss resets). No-op when the leaderboard is disabled; never throws
- * to the caller (a failed streak update shouldn't disrupt the result screen). */
-export async function recordDrive(driveLog: DriveLog, name: string): Promise<void> {
+ * points, loss resets) and returns the resulting streak so the UI can show it.
+ * No-op (null) when the leaderboard is disabled; never throws to the caller (a
+ * failed streak update shouldn't disrupt the result screen). */
+export async function recordDrive(driveLog: DriveLog, name: string): Promise<StreakUpdate | null> {
   const supabase = await getSupabase();
-  if (!supabase) return;
+  if (!supabase) return null;
   try {
     await ensureAnonSession();
-    const { error } = await supabase.rpc("record_drive", {
+    const { data, error } = await supabase.rpc("record_drive", {
       p_won: driveLog.won,
       p_points: driveLog.score,
       p_name: name.trim().slice(0, 20) || null,
     });
     if (error) throw error;
+    return (data as StreakUpdate) ?? null;
   } catch {
     /* streak tracking is best-effort */
+    return null;
   }
 }
 

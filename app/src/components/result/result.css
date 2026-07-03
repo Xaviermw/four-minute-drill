@@ -176,3 +176,32 @@
   background: rgba(255, 255, 255, 0.04);
   transform: translateY(-2px);
 }
+
+/* ---- Streak banners (free-play win streak + daily-day streak) ---- */
+.streak-banner {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  padding: 0.7rem 1rem;
+  margin: 1rem auto 0;
+  max-width: 30rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+}
+.streak-banner.active {
+  color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 12%, var(--surface-1));
+  border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+}
+.streak-banner.ended {
+  color: var(--muted);
+  background: var(--surface-1);
+}
+.streak-banner.ended strong {
+  color: var(--text);
+}
+.streak-best {
+  color: var(--win);
+}

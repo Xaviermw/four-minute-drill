@@ -5,7 +5,9 @@ import { SubmitScorePanel } from "../leaderboard/SubmitScorePanel";
 import { SharePanel } from "../share/SharePanel";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { useMode } from "../state/ModeProvider";
+import { DailyStreakBadge } from "../components/result/StreakBanners";
 import { formatChallengeDate, secondsUntilNextChallenge } from "./dailyChallenge";
+import { dailyStreakDisplay } from "./dailyStreak";
 import type { DailyRecord } from "./dailyState";
 import "../components/result/result.css";
 import "./daily.css";
@@ -32,6 +34,7 @@ export function DailyDone({ record }: { record: DailyRecord }) {
 
   const { driveLog } = record;
   const roster = manifest ? rosterFromIdList(record.rosterIds, manifest) : null;
+  const streak = dailyStreakDisplay(challengeId, driveLog.won);
 
   return (
     <div className="screen result-screen">
@@ -46,6 +49,8 @@ export function DailyDone({ record }: { record: DailyRecord }) {
           <span className="result-score-unit">points</span>
         </div>
       </div>
+
+      <DailyStreakBadge days={streak.days} best={streak.best} state={streak.state} />
 
       {roster ? (
         <>

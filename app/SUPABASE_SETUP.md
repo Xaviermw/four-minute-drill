@@ -150,6 +150,11 @@ $$;
 grant execute on function public.record_drive(boolean, int, text) to authenticated;
 ```
 
+> **Note:** migration `007_record_drive_returns.sql` later changes `record_drive`
+> to **return the updated streak as json** (so the result screen can show
+> "you're on an N-win streak"). Use that version — it's otherwise identical.
+> The Wordle-style *daily* streak is tracked device-locally (no table).
+
 ## 4. Point the app at it
 
 Create `app/.env.local` (gitignored — `*.local`):

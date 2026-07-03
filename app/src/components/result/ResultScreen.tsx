@@ -5,13 +5,15 @@ import { DriveFieldVisualizer } from "../drive/DriveFieldVisualizer";
 import { PlayByPlayFeed } from "../drive/PlayByPlayFeed";
 import { SharePanel } from "../../share/SharePanel";
 import { SubmitScorePanel } from "../../leaderboard/SubmitScorePanel";
-import { getStoredName, recordDrive } from "../../leaderboard/leaderboardApi";
+import { getStoredName, recordDrive, type StreakUpdate } from "../../leaderboard/leaderboardApi";
 import { isNameAllowed } from "../../leaderboard/nameFilter";
 import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
+import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
+import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
 import type { DriveLog } from "../../types/simResult";
 import "../drive/drive.css";
 import "./result.css";
@@ -43,9 +45,12 @@ export function ResultScreen() {
   const isDaily = mode === "daily";
   const [replaying, setReplaying] = useState(false);
   const [replayError, setReplayError] = useState<string | null>(null);
+  const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
+  const [daily, setDaily] = useState<{ days: number; best: number; state: DailyStreakState } | null>(null);
   // Record each finished drive exactly once (guarded by drive-log identity so
   // re-renders / StrictMode don't double-count). Daily drives are banked to the
-  // one-shot record; free-play drives feed the win-streak board.
+  // one-shot record + the daily-day streak; free-play drives feed the win-streak
+  // board (whose updated value we show back to the player).
   const recordedLog = useRef<DriveLog | null>(null);
   useEffect(() => {
     if (state.phase !== "result") return;
@@ -58,11 +63,13 @@ export function ResultScreen() {
         rosterIds: LINEUP_SLOT_ORDER.map((slot) => state.roster[slot].gsisId),
         submitted: false,
       });
+      if (state.driveLog.won) recordDailyWin(challengeId);
+      setDaily(dailyStreakDisplay(challengeId, state.driveLog.won));
     } else {
       // Don't propagate a disallowed stored name to the streak row; the server
       // keeps the prior/Anonymous name when we send "".
       const storedName = getStoredName();
-      void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "");
+      void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "").then(setFreeStreak);
     }
   }, [state, mode, challengeId, saveDaily]);
 
@@ -104,6 +111,9 @@ export function ResultScreen() {
           </div>
         )}
       </div>
+
+      {daily && <DailyStreakBadge days={daily.days} best={daily.best} state={daily.state} />}
+      {freeStreak && <FreeStreakBanner streak={freeStreak} />}
 
       {driveLog.won && (
         <div className="score-receipt">
