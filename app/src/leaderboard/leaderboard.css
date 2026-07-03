@@ -310,3 +310,20 @@
     margin-top: 0;
   }
 }
+
+/* Loading skeleton rows */
+.lb-skeleton {
+  height: 3.1rem;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--surface-1) 25%, var(--surface-2) 50%, var(--surface-1) 75%);
+  background-size: 200% 100%;
+  animation: lb-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes lb-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}

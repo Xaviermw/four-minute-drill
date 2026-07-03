@@ -32,7 +32,23 @@ export function DraftScreen() {
   const [transitioning, setTransitioning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      return !localStorage.getItem("fmd_seen_intro");
+    } catch {
+      return false;
+    }
+  });
   const isDaily = mode === "daily";
+
+  function dismissIntro() {
+    try {
+      localStorage.setItem("fmd_seen_intro", "1");
+    } catch {
+      /* ignore */
+    }
+    setShowIntro(false);
+  }
   // In daily mode the pool is seeded by the date so everyone gets the same
   // three options per slot; free play redraws randomly on each new draft.
   const slotOptions = useMemo(
@@ -85,6 +101,24 @@ export function DraftScreen() {
             : "Each position gives you 3 random options — no searching the whole league. The weaker your roster, the bigger the score if you somehow pull it off."}
         </p>
       </header>
+      {showIntro && (
+        <div className="coach-strip">
+          <button type="button" className="coach-dismiss" onClick={dismissIntro} aria-label="Dismiss">
+            ✕
+          </button>
+          <ul>
+            <li>
+              <strong>×Payout</strong> is your score multiplier — weaker players pay more.
+            </li>
+            <li>
+              <strong>You call every play</strong> — run, pass, or kick.
+            </li>
+            <li>
+              <strong>Daily = one shot</strong>, with a new drill at midnight UTC.
+            </li>
+          </ul>
+        </div>
+      )}
       <TeamPanel slots={SLOTS} roster={roster} />
       {!draftComplete && (
         <div className={`draft-slot-transition ${transitioning ? "fading" : ""}`}>

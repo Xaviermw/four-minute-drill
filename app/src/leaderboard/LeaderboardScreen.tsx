@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
 import { payoutMultiplier } from "../engine";
@@ -8,6 +8,7 @@ import { outcomeLabel } from "../share/shareText";
 import { useGameDispatch } from "../state/GameStateProvider";
 import { useMode } from "../state/ModeProvider";
 import { formatClock, formatPayout } from "../utils/formatting";
+import { useModalBehavior } from "../utils/useModalBehavior";
 import {
   fetchDailyScores,
   fetchTopScores,
@@ -25,11 +26,13 @@ function ScoreList({
   userId,
   loadingId,
   onPlay,
+  playLabel,
 }: {
   rows: LeaderboardRow[];
   userId: string | null;
   loadingId: string | null;
   onPlay: (row: LeaderboardRow) => void;
+  playLabel: string;
 }) {
   return (
     <ol className="leaderboard-list">
@@ -49,9 +52,19 @@ function ScoreList({
           </span>
           <span className="lb-score">{row.score}</span>
           <button type="button" className="lb-play" onClick={() => onPlay(row)} disabled={loadingId !== null}>
-            {loadingId === row.id ? "…" : "Play this lineup"}
+            {loadingId === row.id ? "…" : playLabel}
           </button>
         </li>
+      ))}
+    </ol>
+  );
+}
+
+function SkeletonRows({ count = 5 }: { count?: number }) {
+  return (
+    <ol className="leaderboard-list">
+      {Array.from({ length: count }, (_, i) => (
+        <li className="lb-skeleton" key={i} />
       ))}
     </ol>
   );
@@ -68,6 +81,8 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalBehavior(modalRef, onClose);
 
   useEffect(() => {
     if (!isLeaderboardEnabled) {
@@ -115,7 +130,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="leaderboard-overlay" role="dialog" aria-modal="true" aria-label="Leaderboard" onClick={onClose}>
-      <div className="leaderboard-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="leaderboard-modal" ref={modalRef} onClick={(e) => e.stopPropagation()}>
         <header className="leaderboard-modal-header">
           <h2 className="leaderboard-heading">🏆 Leaderboard</h2>
           <button type="button" className="leaderboard-close" onClick={onClose} aria-label="Close">
@@ -151,7 +166,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
             </p>
           )}
           {error && <p className="error">{error}</p>}
-          {isLeaderboardEnabled && activeData === null && !error && <p className="leaderboard-empty">Loading…</p>}
+          {isLeaderboardEnabled && activeData === null && !error && <SkeletonRows />}
 
           {/* ---- Today's Drill ---- */}
           {tab === "daily" && daily !== null && (
@@ -160,7 +175,13 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
               {daily.length === 0 ? (
                 <p className="leaderboard-empty">No scores yet today — be the first to post one.</p>
               ) : (
-                <ScoreList rows={daily} userId={userId} loadingId={loadingId} onPlay={playLineup} />
+                <ScoreList
+                  rows={daily}
+                  userId={userId}
+                  loadingId={loadingId}
+                  onPlay={playLineup}
+                  playLabel="Try in Free Play"
+                />
               )}
             </>
           )}
@@ -170,7 +191,13 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
             rows.length === 0 ? (
               <p className="leaderboard-empty">No scores yet — be the first to put one up.</p>
             ) : (
-              <ScoreList rows={rows} userId={userId} loadingId={loadingId} onPlay={playLineup} />
+              <ScoreList
+                rows={rows}
+                userId={userId}
+                loadingId={loadingId}
+                onPlay={playLineup}
+                playLabel="Play this lineup"
+              />
             )
           )}
 

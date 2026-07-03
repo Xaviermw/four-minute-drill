@@ -1,23 +1,31 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useModalBehavior } from "../../utils/useModalBehavior";
 import "./howItWorks.css";
 
-/** Footer link + modal explaining where OVR ratings, play outcomes, and the
- * final score come from. Self-contained (own open state) so it can sit anywhere. */
+/** Footer link + modal explaining where payout, play outcomes, and the final
+ * score come from. Self-contained (own open state) so it can sit anywhere. */
 export function HowItWorks() {
   const [open, setOpen] = useState(false);
-
   return (
     <>
       <button type="button" className="how-it-works-link" onClick={() => setOpen(true)}>
         How it works
       </button>
+      {open && <HowItWorksModal onClose={() => setOpen(false)} />}
+    </>
+  );
+}
 
-      {open && (
-        <div className="hiw-overlay" role="dialog" aria-modal="true" aria-label="How it works" onClick={() => setOpen(false)}>
-          <div className="hiw-modal" onClick={(e) => e.stopPropagation()}>
+function HowItWorksModal({ onClose }: { onClose: () => void }) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalBehavior(modalRef, onClose);
+
+  return (
+    <div className="hiw-overlay" role="dialog" aria-modal="true" aria-label="How it works" onClick={onClose}>
+      <div className="hiw-modal" ref={modalRef} onClick={(e) => e.stopPropagation()}>
             <header className="hiw-header">
               <h2 className="hiw-heading">How it works</h2>
-              <button type="button" className="hiw-close" onClick={() => setOpen(false)} aria-label="Close">
+              <button type="button" className="hiw-close" onClick={onClose} aria-label="Close">
                 ✕
               </button>
             </header>
@@ -74,7 +82,5 @@ export function HowItWorks() {
             </div>
           </div>
         </div>
-      )}
-    </>
   );
 }

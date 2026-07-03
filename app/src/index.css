@@ -68,6 +68,21 @@
   }
 }
 
+/* Consistent keyboard focus ring + press feedback across interactive controls. */
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+.cta-button:active,
+.ghost-button:active,
+.play-option-button:active:not(:disabled),
+.share-button:active,
+.lb-play:active:not(:disabled),
+.header-leaderboard-button:active,
+.player-card:active:not(.read-only) {
+  transform: scale(0.98);
+}
+
 body {
   margin: 0;
   min-height: 100svh;
