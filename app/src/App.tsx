@@ -7,7 +7,9 @@ import { LeaderboardUIProvider, useLeaderboardUI } from "./leaderboard/Leaderboa
 import { isLeaderboardEnabled } from "./leaderboard/supabaseClient";
 import { useSharedLineupDeepLink } from "./share/useSharedLineupDeepLink";
 import { GameStateProvider, useGameState } from "./state/GameStateProvider";
+import { ModeProvider, useMode } from "./state/ModeProvider";
 import "./App.css";
+import "./daily/daily.css";
 
 function Screens() {
   const state = useGameState();
@@ -19,6 +21,20 @@ function Screens() {
     case "result":
       return <ResultScreen />;
   }
+}
+
+function ModeToggle() {
+  const { mode, setMode } = useMode();
+  return (
+    <div className="mode-toggle" role="tablist" aria-label="Game mode">
+      <button type="button" className={mode === "daily" ? "active" : ""} onClick={() => setMode("daily")}>
+        Daily
+      </button>
+      <button type="button" className={mode === "free" ? "active" : ""} onClick={() => setMode("free")}>
+        Free Play
+      </button>
+    </div>
+  );
 }
 
 function AppBody() {
@@ -36,6 +52,7 @@ function AppBody() {
           </span>
         </div>
         <div className="app-header-right">
+          <ModeToggle />
           {isLeaderboardEnabled && (
             <button type="button" className="header-leaderboard-button" onClick={openLeaderboard}>
               🏆 Leaderboard
@@ -65,9 +82,11 @@ function App() {
   return (
     <DataProvider>
       <GameStateProvider>
-        <LeaderboardUIProvider>
-          <AppBody />
-        </LeaderboardUIProvider>
+        <ModeProvider>
+          <LeaderboardUIProvider>
+            <AppBody />
+          </LeaderboardUIProvider>
+        </ModeProvider>
       </GameStateProvider>
     </DataProvider>
   );

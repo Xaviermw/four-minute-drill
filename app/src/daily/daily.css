@@ -1,0 +1,36 @@
+.daily-countdown {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 1.25rem 0 0;
+}
+.daily-countdown strong {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--amber);
+}
+
+/* Header mode toggle (Daily / Free) */
+.mode-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mode-toggle button {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+}
+.mode-toggle button.active {
+  color: var(--bg-0);
+  background: var(--amber);
+}

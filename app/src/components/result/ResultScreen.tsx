@@ -9,6 +9,9 @@ import { getStoredName, recordDrive } from "../../leaderboard/leaderboardApi";
 import { isNameAllowed } from "../../leaderboard/nameFilter";
 import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
+import { useMode } from "../../state/ModeProvider";
+import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
+import { formatChallengeDate } from "../../daily/dailyChallenge";
 import type { DriveLog } from "../../types/simResult";
 import "../drive/drive.css";
 import "./result.css";
@@ -36,21 +39,32 @@ export function ResultScreen() {
   const dispatch = useGameDispatch();
   const { manifest } = useManifest();
   const { open: openLeaderboard } = useLeaderboardUI();
+  const { mode, challengeId, saveDaily, markSubmitted, setMode } = useMode();
+  const isDaily = mode === "daily";
   const [replaying, setReplaying] = useState(false);
   const [replayError, setReplayError] = useState<string | null>(null);
-  // Record each finished drive into the player's win-streak exactly once (a win
-  // extends + banks points, a loss ends the run). Guarded by the drive-log
-  // identity so re-renders / StrictMode don't double-count.
+  // Record each finished drive exactly once (guarded by drive-log identity so
+  // re-renders / StrictMode don't double-count). Daily drives are banked to the
+  // one-shot record; free-play drives feed the win-streak board.
   const recordedLog = useRef<DriveLog | null>(null);
   useEffect(() => {
     if (state.phase !== "result") return;
     if (recordedLog.current === state.driveLog) return;
     recordedLog.current = state.driveLog;
-    // Don't propagate a disallowed stored name to the streak row; the server
-    // keeps the prior/Anonymous name when we send "".
-    const storedName = getStoredName();
-    void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "");
-  }, [state]);
+    if (mode === "daily") {
+      saveDaily({
+        challengeId,
+        driveLog: state.driveLog,
+        rosterIds: LINEUP_SLOT_ORDER.map((slot) => state.roster[slot].gsisId),
+        submitted: false,
+      });
+    } else {
+      // Don't propagate a disallowed stored name to the streak row; the server
+      // keeps the prior/Anonymous name when we send "".
+      const storedName = getStoredName();
+      void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "");
+    }
+  }, [state, mode, challengeId, saveDaily]);
 
   if (state.phase !== "result") return null;
   const { driveLog, roster } = state;
@@ -73,7 +87,9 @@ export function ResultScreen() {
   return (
     <div className="screen result-screen">
       <div className={`result-hero ${driveLog.won ? "win" : "loss"}`}>
-        <span className="eyebrow">{driveLog.won ? "Drive result" : "Drive over"}</span>
+        <span className="eyebrow">
+          {isDaily ? `Today's Drill · ${formatChallengeDate(challengeId)}` : driveLog.won ? "Drive result" : "Drive over"}
+        </span>
         <h1 className="result-headline">{END_REASON_TEXT[driveLog.endReason]}</h1>
         <p className="result-sub">{END_REASON_SUB[driveLog.endReason]}</p>
         {driveLog.won ? (
@@ -118,7 +134,13 @@ export function ResultScreen() {
         {roster.rb.displayName} out of the backfield, and {roster.k.displayName} on special teams.
       </p>
 
-      <SubmitScorePanel driveLog={driveLog} roster={roster} onView={openLeaderboard} />
+      <SubmitScorePanel
+        driveLog={driveLog}
+        roster={roster}
+        onView={openLeaderboard}
+        challengeId={isDaily ? challengeId : null}
+        onSubmitted={isDaily ? markSubmitted : undefined}
+      />
 
       <SharePanel driveLog={driveLog} roster={roster} />
 
@@ -130,14 +152,25 @@ export function ResultScreen() {
       </div>
 
       {replayError && <p className="error">{replayError}</p>}
-      <div className="result-actions">
-        <button type="button" className="cta-button" disabled={replaying} onClick={handleReplaySameLineup}>
-          {replaying ? "Loading…" : "Run It Back"}
-        </button>
-        <button type="button" className="ghost-button" onClick={() => dispatch({ type: "RESTART" })}>
-          New Draft
-        </button>
-      </div>
+      {isDaily ? (
+        <div className="result-actions">
+          <button type="button" className="cta-button" onClick={openLeaderboard}>
+            Today's Leaderboard
+          </button>
+          <button type="button" className="ghost-button" onClick={() => setMode("free")}>
+            Play Free Mode
+          </button>
+        </div>
+      ) : (
+        <div className="result-actions">
+          <button type="button" className="cta-button" disabled={replaying} onClick={handleReplaySameLineup}>
+            {replaying ? "Loading…" : "Run It Back"}
+          </button>
+          <button type="button" className="ghost-button" onClick={() => dispatch({ type: "RESTART" })}>
+            New Draft
+          </button>
+        </div>
+      )}
     </div>
   );
 }

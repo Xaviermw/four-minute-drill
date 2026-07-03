@@ -25,10 +25,12 @@ create table public.scores (
   outcome text not null,
   team_ovr int not null,
   time_remaining int not null default 0,  -- clock (s) left when they scored
+  challenge_date text,     -- Daily Challenge date (UTC), or null for free play
   roster jsonb not null,   -- array of { gsisId, name, position, rating }
   seed bigint not null,
   choices jsonb not null   -- ordered [{ call: {...}, tempoSeconds? }]
 );
+create index scores_daily_idx on public.scores (challenge_date, score desc);
 
 create index scores_score_idx on public.scores (score desc);
 ```

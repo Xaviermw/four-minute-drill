@@ -1,20 +1,67 @@
 import { useEffect, useState } from "react";
 import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
+import { formatChallengeDate } from "../daily/dailyChallenge";
 import { rosterFromIdList } from "../share/sharedLineup";
-import { useGameDispatch } from "../state/GameStateProvider";
 import { outcomeLabel } from "../share/shareText";
+import { useGameDispatch } from "../state/GameStateProvider";
+import { useMode } from "../state/ModeProvider";
 import { formatClock } from "../utils/formatting";
-import { fetchTopScores, fetchTopStreaks, type LeaderboardRow, type StreakRow } from "./leaderboardApi";
+import {
+  fetchDailyScores,
+  fetchTopScores,
+  fetchTopStreaks,
+  type LeaderboardRow,
+  type StreakRow,
+} from "./leaderboardApi";
 import { getCurrentUserId, isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
-type Tab = "score" | "streak";
+type Tab = "daily" | "score" | "streak";
+
+function ScoreList({
+  rows,
+  userId,
+  loadingId,
+  onPlay,
+}: {
+  rows: LeaderboardRow[];
+  userId: string | null;
+  loadingId: string | null;
+  onPlay: (row: LeaderboardRow) => void;
+}) {
+  return (
+    <ol className="leaderboard-list">
+      {rows.map((row, i) => (
+        <li className={`leaderboard-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.id}>
+          <span className="lb-rank">{i + 1}</span>
+          <span className="lb-name">
+            {row.name}
+            {userId && row.user_id === userId && <span className="lb-you">you</span>}
+          </span>
+          <span className="lb-ovr" title="Team overall">
+            {row.team_ovr} OVR
+          </span>
+          <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
+          <span className="lb-time" title="Time left when they scored">
+            ⏱ {formatClock(row.time_remaining)}
+          </span>
+          <span className="lb-score">{row.score}</span>
+          <button type="button" className="lb-play" onClick={() => onPlay(row)} disabled={loadingId !== null}>
+            {loadingId === row.id ? "…" : "Play this lineup"}
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const { manifest } = useManifest();
   const dispatch = useGameDispatch();
-  const [tab, setTab] = useState<Tab>("score");
+  const { mode, challengeId } = useMode();
+  const [tab, setTab] = useState<Tab>(mode === "daily" ? "daily" : "score");
+  const [daily, setDaily] = useState<LeaderboardRow[] | null>(null);
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
   const [streaks, setStreaks] = useState<StreakRow[] | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -23,24 +70,24 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (!isLeaderboardEnabled) {
+      setDaily([]);
       setRows([]);
       setStreaks([]);
       return;
     }
     let cancelled = false;
+    const fail = (err: unknown) =>
+      !cancelled && setError(err instanceof Error ? err.message : "Could not load leaderboard.");
     // getCurrentUserId doesn't create a session -- only players who've already
     // played have one, so we can highlight their rows as "you".
     getCurrentUserId().then((id) => !cancelled && setUserId(id));
-    fetchTopScores(100)
-      .then((data) => !cancelled && setRows(data))
-      .catch((err) => !cancelled && setError(err instanceof Error ? err.message : "Could not load leaderboard."));
-    fetchTopStreaks(100)
-      .then((data) => !cancelled && setStreaks(data))
-      .catch((err) => !cancelled && setError(err instanceof Error ? err.message : "Could not load streaks."));
+    fetchDailyScores(challengeId, 100).then((d) => !cancelled && setDaily(d)).catch(fail);
+    fetchTopScores(100).then((d) => !cancelled && setRows(d)).catch(fail);
+    fetchTopStreaks(100).then((d) => !cancelled && setStreaks(d)).catch(fail);
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [challengeId]);
 
   async function playLineup(row: LeaderboardRow) {
     if (!manifest) return;
@@ -63,7 +110,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const activeData = tab === "score" ? rows : streaks;
+  const activeData = tab === "daily" ? daily : tab === "score" ? rows : streaks;
 
   return (
     <div className="leaderboard-overlay" role="dialog" aria-modal="true" aria-label="Leaderboard" onClick={onClose}>
@@ -76,24 +123,24 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
         </header>
 
         <div className="leaderboard-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "score"}
-            className={`leaderboard-tab ${tab === "score" ? "active" : ""}`}
-            onClick={() => setTab("score")}
-          >
-            Top Scores
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "streak"}
-            className={`leaderboard-tab ${tab === "streak" ? "active" : ""}`}
-            onClick={() => setTab("streak")}
-          >
-            Win Streaks
-          </button>
+          {(
+            [
+              ["daily", "Today's Drill"],
+              ["score", "All-Time"],
+              ["streak", "Win Streaks"],
+            ] as [Tab, string][]
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              className={`leaderboard-tab ${tab === id ? "active" : ""}`}
+              onClick={() => setTab(id)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <div className="leaderboard-body">
@@ -105,38 +152,25 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           {error && <p className="error">{error}</p>}
           {isLeaderboardEnabled && activeData === null && !error && <p className="leaderboard-empty">Loading…</p>}
 
-          {/* ---- Top scores ---- */}
-          {tab === "score" && rows !== null && rows.length === 0 && !error && (
-            <p className="leaderboard-empty">No scores yet — be the first to put one up.</p>
+          {/* ---- Today's Drill ---- */}
+          {tab === "daily" && daily !== null && (
+            <>
+              <p className="leaderboard-subnote">{formatChallengeDate(challengeId)} · everyone drafts the same options</p>
+              {daily.length === 0 ? (
+                <p className="leaderboard-empty">No scores yet today — be the first to post one.</p>
+              ) : (
+                <ScoreList rows={daily} userId={userId} loadingId={loadingId} onPlay={playLineup} />
+              )}
+            </>
           )}
-          {tab === "score" && rows && rows.length > 0 && (
-            <ol className="leaderboard-list">
-              {rows.map((row, i) => (
-                <li className={`leaderboard-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.id}>
-                  <span className="lb-rank">{i + 1}</span>
-                  <span className="lb-name">
-                    {row.name}
-                    {userId && row.user_id === userId && <span className="lb-you">you</span>}
-                  </span>
-                  <span className="lb-ovr" title="Team overall">
-                    {row.team_ovr} OVR
-                  </span>
-                  <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
-                  <span className="lb-time" title="Time left when they scored">
-                    ⏱ {formatClock(row.time_remaining)}
-                  </span>
-                  <span className="lb-score">{row.score}</span>
-                  <button
-                    type="button"
-                    className="lb-play"
-                    onClick={() => playLineup(row)}
-                    disabled={loadingId !== null}
-                  >
-                    {loadingId === row.id ? "…" : "Play this lineup"}
-                  </button>
-                </li>
-              ))}
-            </ol>
+
+          {/* ---- All-time (free play) ---- */}
+          {tab === "score" && rows !== null && (
+            rows.length === 0 ? (
+              <p className="leaderboard-empty">No scores yet — be the first to put one up.</p>
+            ) : (
+              <ScoreList rows={rows} userId={userId} loadingId={loadingId} onPlay={playLineup} />
+            )
           )}
 
           {/* ---- Win streaks ---- */}
@@ -150,10 +184,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
               <p className="leaderboard-subnote">Points banked across a run of consecutive wins. A loss resets it.</p>
               <ol className="leaderboard-list">
                 {streaks.map((row, i) => (
-                  <li
-                    className={`streak-row ${userId && row.user_id === userId ? "is-you" : ""}`}
-                    key={row.user_id}
-                  >
+                  <li className={`streak-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.user_id}>
                     <span className="lb-rank">{i + 1}</span>
                     <span className="lb-name">
                       {row.name}

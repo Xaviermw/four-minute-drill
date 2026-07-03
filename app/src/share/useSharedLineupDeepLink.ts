@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
 import { useGameDispatch } from "../state/GameStateProvider";
+import { useMode } from "../state/ModeProvider";
 import { clearTeamParam, readTeamToken, rosterFromToken } from "./sharedLineup";
 
 /**
@@ -13,6 +14,7 @@ import { clearTeamParam, readTeamToken, rosterFromToken } from "./sharedLineup";
 export function useSharedLineupDeepLink(): boolean {
   const { manifest } = useManifest();
   const dispatch = useGameDispatch();
+  const { setMode } = useMode();
   // Capture the token once, before we strip it from the URL.
   const tokenRef = useRef<string | null>(readTeamToken());
   const startedRef = useRef(false);
@@ -28,6 +30,9 @@ export function useSharedLineupDeepLink(): boolean {
 
     startDrive(roster, manifest)
       .then(({ scenario, session }) => {
+        // A shared lineup is a free-play drive, not today's daily -- switch
+        // mode without resetting the drive we're about to start.
+        setMode("free", false);
         dispatch({ type: "DRIVE_STARTED", roster, scenario, session });
         setSharedActive(true);
       })
@@ -35,7 +40,7 @@ export function useSharedLineupDeepLink(): boolean {
         // Loading the datasets failed; drop back to draft.
         startedRef.current = false;
       });
-  }, [manifest, dispatch]);
+  }, [manifest, dispatch, setMode]);
 
   return sharedActive;
 }

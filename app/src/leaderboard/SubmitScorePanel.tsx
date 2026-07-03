@@ -14,10 +14,15 @@ export function SubmitScorePanel({
   driveLog,
   roster,
   onView,
+  challengeId = null,
+  onSubmitted,
 }: {
   driveLog: DriveLog;
   roster: DraftedRoster;
   onView: () => void;
+  /** When set, the score goes on that day's Daily Challenge board. */
+  challengeId?: string | null;
+  onSubmitted?: () => void;
 }) {
   const [name, setName] = useState(getStoredName);
   const [state, setState] = useState<"idle" | "submitting" | "done">("idle");
@@ -41,9 +46,10 @@ export function SubmitScorePanel({
     setError(null);
     setStoredName(trimmed); // remember for the streak board + next time
     try {
-      const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster));
+      const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster, challengeId));
       setRank(newRank);
       setState("done");
+      onSubmitted?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submit failed.");
       setState("idle");
@@ -54,7 +60,7 @@ export function SubmitScorePanel({
     return (
       <div className="submit-panel done">
         <p className="submit-rank">
-          #{rank} <span>all-time</span>
+          #{rank} <span>{challengeId ? "today" : "all-time"}</span>
         </p>
         <p className="submit-done-sub">Your score is on the board.</p>
         <button type="button" className="ghost-button" onClick={onView}>

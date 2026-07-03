@@ -30,6 +30,8 @@ export interface LeaderboardRow {
   choices: DriveChoice[];
   /** The (anonymous) user who submitted it -- used to highlight "you". */
   user_id: string | null;
+  /** Daily Challenge id (UTC date) this score is for, or null for free play. */
+  challenge_date: string | null;
 }
 
 /** The payload we insert (server fills id/created_at). */
@@ -42,6 +44,7 @@ export interface LeaderboardSubmission {
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
+  challenge_date: string | null;
 }
 
 function rosterToPlayers(roster: DraftedRoster): LeaderboardPlayer[] {
@@ -51,8 +54,14 @@ function rosterToPlayers(roster: DraftedRoster): LeaderboardPlayer[] {
   });
 }
 
-/** Builds the insert payload from a finished drive + the name the player typed. */
-export function buildSubmission(name: string, driveLog: DriveLog, roster: DraftedRoster): LeaderboardSubmission {
+/** Builds the insert payload from a finished drive + the name the player typed.
+ * Pass `challengeId` for a Daily Challenge score; omit for free play. */
+export function buildSubmission(
+  name: string,
+  driveLog: DriveLog,
+  roster: DraftedRoster,
+  challengeId: string | null = null
+): LeaderboardSubmission {
   return {
     name: name.trim().slice(0, 20),
     score: driveLog.score,
@@ -62,6 +71,7 @@ export function buildSubmission(name: string, driveLog: DriveLog, roster: Drafte
     roster: rosterToPlayers(roster),
     seed: driveLog.seed,
     choices: driveLog.choices,
+    challenge_date: challengeId,
   };
 }
 
@@ -77,12 +87,12 @@ export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank:
   const { error } = await supabase.from(TABLE).insert(entry);
   if (error) throw new Error(error.message);
 
-  // Rank = number of strictly-better scores + 1. (Ties share the lower rank;
-  // good enough for a casual leaderboard.)
-  const { count, error: countError } = await supabase
-    .from(TABLE)
-    .select("id", { count: "exact", head: true })
-    .gt("score", entry.score);
+  // Rank = number of strictly-better scores + 1, within the same board (this
+  // day's daily scores, or the all-time free-play board). Ties share the lower
+  // rank -- good enough for a casual leaderboard.
+  let q = supabase.from(TABLE).select("id", { count: "exact", head: true }).gt("score", entry.score);
+  q = entry.challenge_date ? q.eq("challenge_date", entry.challenge_date) : q.is("challenge_date", null);
+  const { count, error: countError } = await q;
   if (countError) throw new Error(countError.message);
 
   return { rank: (count ?? 0) + 1 };
@@ -96,6 +106,23 @@ export async function fetchTopScores(limit = 100): Promise<LeaderboardRow[]> {
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
+    .is("challenge_date", null) // all-time board excludes daily-challenge scores
+    .order("score", { ascending: false })
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LeaderboardRow[];
+}
+
+/** Fetches today's Daily Challenge scores, highest first. */
+export async function fetchDailyScores(challengeId: string, limit = 100): Promise<LeaderboardRow[]> {
+  const supabase = await getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("challenge_date", challengeId)
     .order("score", { ascending: false })
     .order("created_at", { ascending: true })
     .limit(limit);

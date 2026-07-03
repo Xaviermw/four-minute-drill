@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
+import { dailyDraftRng, dailyDriveSeed } from "../../daily/dailyChallenge";
+import { drawSlotOptions } from "../../draft/draftPool";
 import { useGameDispatch } from "../../state/GameStateProvider";
+import { useMode } from "../../state/ModeProvider";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
+import { DailyDone } from "../../daily/DailyDone";
 import { RosterSlotPicker } from "./RosterSlotPicker";
 import { TeamPanel } from "./TeamPanel";
 import "./draft.css";
@@ -17,55 +21,31 @@ const SLOTS: { key: RosterSlotKey; label: string; position: Position }[] = [
   { key: "k", label: "Kicker", position: "K" },
 ];
 
-function pickRandom3(pool: ManifestPlayerEntry[]): ManifestPlayerEntry[] {
-  const copy = [...pool];
-  const drawn: ManifestPlayerEntry[] = [];
-  for (let i = 0; i < 3 && copy.length > 0; i++) {
-    const index = Math.floor(Math.random() * copy.length);
-    drawn.push(copy[index]);
-    copy.splice(index, 1);
-  }
-  return drawn;
-}
-
-/**
- * Draws a fixed, non-rerollable random 3-of-pool for every slot. WR1 and WR2
- * share a position pool, so WR2's draw excludes whichever 3 WR1 already
- * drew -- guarantees the two can never collide no matter which gets picked.
- */
-function drawSlotOptions(players: ManifestPlayerEntry[]): Record<RosterSlotKey, ManifestPlayerEntry[]> {
-  const byPosition = (position: Position) => players.filter((p) => p.position === position);
-
-  const wrPool = byPosition("WR");
-  const wr1Options = pickRandom3(wrPool);
-  const wr1Ids = new Set(wr1Options.map((p) => p.gsisId));
-  const wr2Options = pickRandom3(wrPool.filter((p) => !wr1Ids.has(p.gsisId)));
-
-  return {
-    qb: pickRandom3(byPosition("QB")),
-    rb: pickRandom3(byPosition("RB")),
-    wr1: wr1Options,
-    wr2: wr2Options,
-    te: pickRandom3(byPosition("TE")),
-    k: pickRandom3(byPosition("K")),
-  };
-}
-
 const TRANSITION_MS = 220;
 
 export function DraftScreen() {
   const { manifest, error } = useManifest();
   const dispatch = useGameDispatch();
+  const { mode, challengeId, dailyRecord } = useMode();
   const [roster, setRoster] = useState<Partial<Record<RosterSlotKey, ManifestPlayerEntry>>>({});
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const slotOptions = useMemo(() => (manifest ? drawSlotOptions(manifest.players) : null), [manifest]);
+  const isDaily = mode === "daily";
+  // In daily mode the pool is seeded by the date so everyone gets the same
+  // three options per slot; free play redraws randomly on each new draft.
+  const slotOptions = useMemo(
+    () => (manifest ? drawSlotOptions(manifest.players, isDaily ? dailyDraftRng(challengeId) : Math.random) : null),
+    [manifest, isDaily, challengeId]
+  );
 
   if (error) return <div className="screen">Failed to load player data: {error.message}</div>;
   if (!manifest || !slotOptions) return <div className="screen">Loading players...</div>;
   const loadedManifest = manifest;
+
+  // One shot per day: if today's drill is already done, show the recap instead.
+  if (isDaily && dailyRecord) return <DailyDone record={dailyRecord} />;
 
   function pick(slot: RosterSlotKey, player: ManifestPlayerEntry) {
     setRoster((prev) => ({ ...prev, [slot]: player }));
@@ -81,7 +61,8 @@ export function DraftScreen() {
     setLoading(true);
     setLoadError(null);
     try {
-      const { scenario, session } = await startDrive(finalRoster, loadedManifest);
+      const seed = isDaily ? dailyDriveSeed(challengeId) : undefined;
+      const { scenario, session } = await startDrive(finalRoster, loadedManifest, seed);
       dispatch({ type: "DRIVE_STARTED", roster: finalRoster, scenario, session });
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : String(err));
@@ -94,13 +75,14 @@ export function DraftScreen() {
   return (
     <div className="screen draft-screen">
       <header className="draft-header">
-        <span className="eyebrow">Build your team</span>
+        <span className="eyebrow">{isDaily ? "Today's Drill · one shot" : "Build your team"}</span>
         <h1>
           Who can you <span className="headline-accent">win</span> with?
         </h1>
         <p className="hint">
-          Each position gives you 3 random options — no searching the whole league. The weaker your roster, the
-          bigger the score if you somehow pull it off.
+          {isDaily
+            ? "Everyone gets the same 3 options at each position today. Draft wisely — you get one attempt."
+            : "Each position gives you 3 random options — no searching the whole league. The weaker your roster, the bigger the score if you somehow pull it off."}
         </p>
       </header>
       <TeamPanel slots={SLOTS} roster={roster} />
