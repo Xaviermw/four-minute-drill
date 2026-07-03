@@ -2,6 +2,7 @@ import { rosterPayoutMultiplier } from "../../engine";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { RosterSlotKey } from "../../types/roster";
 import { formatPayout } from "../../utils/formatting";
+import { useTween } from "../../utils/useTween";
 import { PlayerCard } from "./PlayerCard";
 import "./draft.css";
 
@@ -25,13 +26,14 @@ export function TeamPanel({
   const picked = slots.map((s) => roster[s.key]).filter((p): p is ManifestPlayerEntry => Boolean(p));
   const hasPicks = picked.length > 0;
   const payout = hasPicks ? rosterPayoutMultiplier(picked.map((p) => p.rating)) : MIN_PAYOUT;
+  const shownPayout = useTween(payout);
   const fillPct = hasPicks ? ((payout - MIN_PAYOUT) / (MAX_PAYOUT - MIN_PAYOUT)) * 100 : 0;
 
   return (
     <div className="team-panel">
       <div className="power-meter">
         <div className={`ovr-badge ${hasPicks ? "" : "ovr-empty"}`}>
-          <span className="ovr-num">{hasPicks ? formatPayout(payout) : "--"}</span>
+          <span className="ovr-num">{hasPicks ? formatPayout(shownPayout) : "--"}</span>
           <span className="ovr-label">payout</span>
         </div>
         <div className="power-meter-body">

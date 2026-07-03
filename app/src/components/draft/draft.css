@@ -226,9 +226,10 @@
   transition: opacity 200ms ease, transform 200ms ease;
 }
 
-.draft-slot-transition.fading {
-  opacity: 0;
-  transform: translateY(6px);
+/* On pick, dim the passed-over cards while the chosen one pops (below), rather
+   than fading the whole picker (which would hide the pop). */
+.draft-slot-transition.fading .player-card:not(.picked) {
+  opacity: 0.28;
 }
 
 /* ---- Picker (the 3 large options) ---- */
@@ -276,7 +277,41 @@
   color: var(--text);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, opacity 180ms ease;
+}
+
+/* Deal the trio in with a stagger (only the picker's cards, keyed by slot so it
+   replays each pick). */
+.player-grid .player-card {
+  animation: card-deal 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 65ms);
+}
+
+@keyframes card-deal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* The chosen card gets a confirming pop + green ring. */
+.player-card.picked {
+  border-color: var(--grass);
+  box-shadow: 0 0 0 1px var(--grass), 0 10px 30px rgba(52, 208, 88, 0.3);
+  z-index: 2;
+  animation: card-pick 280ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes card-pick {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1.02);
+  }
 }
 
 /* Payout heat: bigger payout (weaker player) = hotter/gold so it pops; safe

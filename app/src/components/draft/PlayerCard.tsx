@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { payoutMultiplier } from "../../engine";
 import type { ManifestPlayerEntry } from "../../types/player";
 import { formatPayout, payoutBand } from "../../utils/formatting";
@@ -9,18 +10,24 @@ export function PlayerCard({
   onSelect,
   large,
   readOnly,
+  index,
+  picked,
 }: {
   player: ManifestPlayerEntry;
   selected: boolean;
   onSelect?: () => void;
   large?: boolean;
   readOnly?: boolean;
+  /** Position within the dealt trio, used to stagger the deal-in animation. */
+  index?: number;
+  /** The card the player just chose -- gets a confirming scale-pop. */
+  picked?: boolean;
 }) {
   const payout = payoutMultiplier(player.rating);
   const band = payoutBand(payout);
-  const className = `player-card payout-${band} ${selected ? "selected" : ""} ${large ? "large" : ""} ${
-    readOnly ? "read-only" : ""
-  }`;
+  const className = `player-card payout-${band} ${selected ? "selected" : ""} ${picked ? "picked" : ""} ${
+    large ? "large" : ""
+  } ${readOnly ? "read-only" : ""}`;
   const content = (
     <>
       <div className="player-card-top">
@@ -43,7 +50,12 @@ export function PlayerCard({
   }
 
   return (
-    <button type="button" className={className} onClick={onSelect}>
+    <button
+      type="button"
+      className={className}
+      style={index !== undefined ? ({ "--i": index } as CSSProperties) : undefined}
+      onClick={onSelect}
+    >
       {content}
     </button>
   );
