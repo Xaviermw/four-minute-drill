@@ -114,7 +114,7 @@ export function ResultScreen() {
               <span>{driveLog.scoreBreakdown.basePoints} pts</span>
             </li>
             <li>
-              <span>Roster strength bonus</span>
+              <span>Roster payout · weaker = bigger</span>
               <span>&times;{driveLog.scoreBreakdown.rosterMultiplier.toFixed(2)}</span>
             </li>
             <li>

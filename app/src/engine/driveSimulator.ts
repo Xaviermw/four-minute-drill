@@ -12,6 +12,7 @@ import {
 import { attemptFieldGoal, kickDistanceFor } from "./kicker";
 import { drawPlayOptions, type PlayCall } from "./playOptions";
 import { makeRng, type RNG } from "./rng";
+import { rosterPayoutMultiplier } from "./scoring";
 import {
   rollBlendedInterception,
   rollQbSackOutcome,
@@ -23,14 +24,6 @@ import {
 
 const TOUCHDOWN_BASE_POINTS = 100;
 const FIELD_GOAL_BASE_POINTS = 40;
-
-// Roster-strength scoring: the weaker your drafted team, the bigger the score.
-// Continuous in the players' real overall ratings -- a 99 OVR team multiplies
-// by 1.0, a 40 OVR team by 2.0, everything in between scaled linearly.
-const RATING_FLOOR = 40;
-const RATING_CEIL = 99;
-const MIN_ROSTER_MULT = 1.0;
-const MAX_ROSTER_MULT = 2.0;
 
 const BIG_GAIN_YARDS = 20;
 
@@ -237,14 +230,12 @@ function clutchMultiplier(clockAtScoreSeconds: number): number {
   return Math.min(2, Math.max(1, 1 + (1 - remainingFraction)));
 }
 
-/** Average overall rating across the drafted roster, mapped to a roster-strength
- * multiplier: lower-rated teams score more. */
+/** Roster payout multiplier: lower-rated teams score more. Same value the draft
+ * surfaces per player (payout is linear in rating, so the team payout is the
+ * average of the players' payouts). */
 function rosterMultiplierFor(roster: DraftedRosterData): number {
   const ratings = [roster.qb, roster.rb, roster.wr1, roster.wr2, roster.te, roster.k].map((p) => p.rating);
-  const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-  const clamped = Math.max(RATING_FLOOR, Math.min(RATING_CEIL, avg));
-  const t = (RATING_CEIL - clamped) / (RATING_CEIL - RATING_FLOOR); // 0 at 99 OVR, 1 at 40 OVR
-  return MIN_ROSTER_MULT + t * (MAX_ROSTER_MULT - MIN_ROSTER_MULT);
+  return rosterPayoutMultiplier(ratings);
 }
 
 /**

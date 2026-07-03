@@ -1,8 +1,9 @@
 import { forwardRef } from "react";
+import { payoutMultiplier, rosterPayoutMultiplier } from "../engine";
 import type { DraftedRoster, RosterSlotKey } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { teamOverall } from "../utils/rosterStats";
-import { ratingBand } from "../utils/formatting";
+import { LINEUP_SLOT_ORDER } from "./lineupCode";
+import { formatPayout, payoutBand } from "../utils/formatting";
 import "./resultCard.css";
 
 const OUTCOME: Record<string, string> = {
@@ -30,12 +31,12 @@ const ROWS: { slot: RosterSlotKey; label: string }[] = [
  */
 export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roster: DraftedRoster }>(
   function ResultCard({ driveLog, roster }, ref) {
-    const ovr = teamOverall(roster);
+    const payout = rosterPayoutMultiplier(LINEUP_SLOT_ORDER.map((slot) => roster[slot].rating));
     return (
       <div className={`result-card ${driveLog.won ? "won" : "lost"}`} ref={ref}>
         <div className="rc-header">
           <span className="rc-brand">🏈 FOUR MINUTE DRILL</span>
-          <span className="rc-ovr">{ovr} OVR</span>
+          <span className="rc-ovr">{formatPayout(payout)} payout</span>
         </div>
 
         <div className="rc-hero">
@@ -53,7 +54,9 @@ export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roste
               <div className="rc-player" key={slot}>
                 <span className="rc-player-pos">{label}</span>
                 <span className="rc-player-name">{p.displayName}</span>
-                <span className={`rc-player-ovr band-${ratingBand(p.rating)}`}>{p.rating}</span>
+                <span className={`rc-player-ovr payout-${payoutBand(payoutMultiplier(p.rating))}`}>
+                  {formatPayout(payoutMultiplier(p.rating))}
+                </span>
               </div>
             );
           })}

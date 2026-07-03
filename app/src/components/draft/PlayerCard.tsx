@@ -1,5 +1,6 @@
+import { payoutMultiplier } from "../../engine";
 import type { ManifestPlayerEntry } from "../../types/player";
-import { ratingBand } from "../../utils/formatting";
+import { formatPayout, payoutBand } from "../../utils/formatting";
 import "./draft.css";
 
 export function PlayerCard({
@@ -15,17 +16,18 @@ export function PlayerCard({
   large?: boolean;
   readOnly?: boolean;
 }) {
-  const band = ratingBand(player.rating);
-  const className = `player-card band-${band} ${selected ? "selected" : ""} ${large ? "large" : ""} ${
+  const payout = payoutMultiplier(player.rating);
+  const band = payoutBand(payout);
+  const className = `player-card payout-${band} ${selected ? "selected" : ""} ${large ? "large" : ""} ${
     readOnly ? "read-only" : ""
   }`;
   const content = (
     <>
       <div className="player-card-top">
         <span className="player-card-position">{player.position}</span>
-        <span className="player-card-rating">
-          <span className="player-card-rating-num">{player.rating}</span>
-          <span className="player-card-rating-label">OVR</span>
+        <span className="player-card-rating" title="Payout multiplier — bigger = more points if you score">
+          <span className="player-card-rating-num">{formatPayout(payout)}</span>
+          <span className="player-card-rating-label">payout</span>
         </span>
       </div>
       <div className="player-card-name">{player.displayName}</div>

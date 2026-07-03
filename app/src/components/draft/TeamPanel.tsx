@@ -1,15 +1,17 @@
+import { rosterPayoutMultiplier } from "../../engine";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { RosterSlotKey } from "../../types/roster";
+import { formatPayout } from "../../utils/formatting";
 import { PlayerCard } from "./PlayerCard";
 import "./draft.css";
 
-const RATING_FLOOR = 40;
-const RATING_CEIL = 99;
+const MIN_PAYOUT = 1.0;
+const MAX_PAYOUT = 2.0;
 
-function powerLabel(ovr: number): string {
-  if (ovr < 62) return "Underdog squad";
-  if (ovr < 74) return "Scrappy roster";
-  if (ovr < 84) return "Balanced roster";
+function squadLabel(payout: number): string {
+  if (payout >= 1.7) return "Underdog squad";
+  if (payout >= 1.45) return "Scrappy roster";
+  if (payout >= 1.2) return "Balanced roster";
   return "Stacked roster";
 }
 
@@ -22,34 +24,34 @@ export function TeamPanel({
 }) {
   const picked = slots.map((s) => roster[s.key]).filter((p): p is ManifestPlayerEntry => Boolean(p));
   const hasPicks = picked.length > 0;
-  const ovr = hasPicks ? Math.round(picked.reduce((sum, p) => sum + p.rating, 0) / picked.length) : 0;
-  const fillPct = hasPicks ? ((ovr - RATING_FLOOR) / (RATING_CEIL - RATING_FLOOR)) * 100 : 0;
+  const payout = hasPicks ? rosterPayoutMultiplier(picked.map((p) => p.rating)) : MIN_PAYOUT;
+  const fillPct = hasPicks ? ((payout - MIN_PAYOUT) / (MAX_PAYOUT - MIN_PAYOUT)) * 100 : 0;
 
   return (
     <div className="team-panel">
       <div className="power-meter">
         <div className={`ovr-badge ${hasPicks ? "" : "ovr-empty"}`}>
-          <span className="ovr-num">{hasPicks ? ovr : "--"}</span>
-          <span className="ovr-label">OVR</span>
+          <span className="ovr-num">{hasPicks ? formatPayout(payout) : "--"}</span>
+          <span className="ovr-label">payout</span>
         </div>
         <div className="power-meter-body">
           <div className="power-meter-header">
-            <span className="eyebrow">Team Overall</span>
+            <span className="eyebrow">Team Payout</span>
             <span className="power-meter-verdict">
-              {hasPicks ? powerLabel(ovr) : "Draft a player to find out"}
+              {hasPicks ? squadLabel(payout) : "Draft a player to find out"}
             </span>
           </div>
           <div className="power-meter-track">
             <div className="power-meter-fill" style={{ width: `${Math.max(fillPct, 0)}%` }} />
           </div>
           <div className="power-meter-scale">
-            <span>40</span>
-            <span>99</span>
+            <span>×1.0</span>
+            <span>×2.0</span>
           </div>
           <p className="power-meter-note">
-            <span className="note-up">Higher OVR wins easier</span>
+            <span className="note-up">Bigger payout = more points</span>
             <span className="note-sep">·</span>
-            <span className="note-down">lower OVR scores way more</span>
+            <span className="note-down">but a weaker squad is harder to score with</span>
           </p>
         </div>
       </div>

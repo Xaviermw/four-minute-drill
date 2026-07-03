@@ -66,7 +66,7 @@
 .ovr-num {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 2.3rem;
+  font-size: 1.85rem;
   line-height: 0.9;
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -278,16 +278,15 @@
   transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
 
-.player-card.band-elite {
+/* Payout heat: bigger payout (weaker player) = hotter/gold so it pops; safe
+   stars read muted. */
+.player-card.payout-hot {
   --band-color: #ffc233;
 }
-.player-card.band-good {
+.player-card.payout-mid {
   --band-color: #34e07a;
 }
-.player-card.band-solid {
-  --band-color: #5b9dff;
-}
-.player-card.band-weak {
+.player-card.payout-low {
   --band-color: #93a3ba;
 }
 

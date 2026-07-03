@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
+import { payoutMultiplier } from "../engine";
 import { formatChallengeDate } from "../daily/dailyChallenge";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { outcomeLabel } from "../share/shareText";
 import { useGameDispatch } from "../state/GameStateProvider";
 import { useMode } from "../state/ModeProvider";
-import { formatClock } from "../utils/formatting";
+import { formatClock, formatPayout } from "../utils/formatting";
 import {
   fetchDailyScores,
   fetchTopScores,
@@ -39,8 +40,8 @@ function ScoreList({
             {row.name}
             {userId && row.user_id === userId && <span className="lb-you">you</span>}
           </span>
-          <span className="lb-ovr" title="Team overall">
-            {row.team_ovr} OVR
+          <span className="lb-ovr" title="Roster payout multiplier">
+            {formatPayout(payoutMultiplier(row.team_ovr))}
           </span>
           <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
           <span className="lb-time" title="Time left when they scored">

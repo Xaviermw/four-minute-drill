@@ -9,12 +9,20 @@ export function formatClock(totalSeconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export type RatingBand = "elite" | "good" | "solid" | "weak";
+/** Formats a payout multiplier for display, e.g. 1.8 -> "×1.8". */
+export function formatPayout(multiplier: number): string {
+  return `×${multiplier.toFixed(1)}`;
+}
 
-/** Maps an overall rating (40-99) to a color band used across player cards. */
-export function ratingBand(rating: number): RatingBand {
-  if (rating >= 85) return "elite";
-  if (rating >= 75) return "good";
-  if (rating >= 65) return "solid";
-  return "weak";
+export type PayoutBand = "hot" | "mid" | "low";
+
+/** Buckets a payout multiplier (1.0–2.0) for coloring: bigger payout = hotter,
+ * so the enticing underdog picks pop and the safe stars read muted. Rounds to
+ * the displayed 1-decimal value first so color and shown number never disagree
+ * at a boundary (e.g. ×1.6 is always the same band). */
+export function payoutBand(multiplier: number): PayoutBand {
+  const shown = Math.round(multiplier * 10) / 10;
+  if (shown >= 1.6) return "hot";
+  if (shown >= 1.3) return "mid";
+  return "low";
 }

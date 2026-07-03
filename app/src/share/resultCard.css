@@ -119,20 +119,17 @@
   font-family: "Barlow Condensed", "Inter", sans-serif;
   font-weight: 700;
   font-size: 20px;
-  min-width: 30px;
+  min-width: 46px;
   text-align: right;
 }
-.rc-player-ovr.band-elite {
+.rc-player-ovr.payout-hot {
   color: #ffc233;
 }
-.rc-player-ovr.band-good {
-  color: #5ad1c4;
+.rc-player-ovr.payout-mid {
+  color: #34e07a;
 }
-.rc-player-ovr.band-solid {
-  color: #5b9dff;
-}
-.rc-player-ovr.band-weak {
-  color: #f0808f;
+.rc-player-ovr.payout-low {
+  color: #93a3ba;
 }
 
 .rc-footer {

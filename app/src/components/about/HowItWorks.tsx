@@ -24,20 +24,18 @@ export function HowItWorks() {
 
             <div className="hiw-body">
               <section className="hiw-section">
-                <h3>🏈 Overall ratings (OVR)</h3>
+                <h3>🏈 Payout — the number on each card</h3>
                 <p>
-                  Every player’s OVR (40–99) is computed from their <strong>real NFL stats, 2015–2025</strong>{" "}
-                  (nflverse / nflfastR) — no hand-picked tiers. QBs blend passing efficiency, dual-threat rushing,
-                  and career volume; running backs come from rushing production; receivers and tight ends from
-                  their catch and yardage rates; kickers from make rate, with a bonus for long-range accuracy.
-                  Better real production → higher OVR.
+                  Each card shows a <strong>payout multiplier</strong> (×1.0–×2.0): the weaker the player, the bigger
+                  the payout, so a card’s number is exactly what it does to your score. It’s derived from that
+                  player’s <strong>real NFL production, 2015–2025</strong> (nflverse / nflfastR) — stronger players
+                  (better passing, rushing, catching, kicking) get a <em>smaller</em> payout. Your team’s payout is
+                  the average of its six players’.
                 </p>
                 <p className="hiw-note">
-                  Because it’s pure production, some <strong>recent rookies and high-volume young players</strong> on
-                  struggling offenses can rate lower than their reputation — the numbers only see efficiency, not
-                  hype, and a rookie has just a season or two of data. Remember a <strong>lower OVR isn’t all bad
-                  here</strong>: it hands you a bigger scoring multiplier, so an underrated player can be a smart
-                  pick.
+                  The catch: a big payout means a <strong>weaker squad that’s harder to actually score with</strong>.
+                  The game is that gamble — draft strong enough to win, weak enough to cash in. (Stat lines are shown
+                  so you can judge a player even without a familiar name.)
                 </p>
               </section>
 
@@ -63,8 +61,8 @@ export function HowItWorks() {
                     <strong>Base:</strong> Touchdown = 100 pts · Field goal = 40 pts.
                   </li>
                   <li>
-                    <strong>Roster strength:</strong> a weaker team multiplies the score up — ×1.0 at 99 OVR up to
-                    ×2.0 at 40 OVR. <em>Upsets pay.</em>
+                    <strong>Roster payout:</strong> your team’s payout multiplier — ×1.0 for a stacked squad up to
+                    ×2.0 for pure underdogs. <em>Upsets pay.</em>
                   </li>
                   <li>
                     <strong>Time bonus:</strong> the less time on the clock when you score, the bigger the

@@ -110,7 +110,7 @@ describe("share text + url", () => {
     const text = buildShareText(wonLog(152, "WIN_FIELD_GOAL"), roster, "https://x.test/?team=abc");
     expect(text).toContain("Four Minute Drill — 152 pts");
     expect(text).toContain("Field goal");
-    expect(text).toContain("OVR squad");
+    expect(text).toContain("payout squad");
     expect(text).toContain("QB L.Jackson");
     expect(text).toContain("beat it ▶ https://x.test/?team=abc");
   });

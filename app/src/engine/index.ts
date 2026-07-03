@@ -9,4 +9,5 @@ export {
   MAX_REALISTIC_FIELD_GOAL_DISTANCE,
 } from "./constants";
 export { makeRng, weightedRandomChoice } from "./rng";
+export { payoutMultiplier, rosterPayoutMultiplier } from "./scoring";
 export { bucketKey, distanceBucketId, fieldZoneId } from "./situational";

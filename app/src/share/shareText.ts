@@ -1,7 +1,8 @@
+import { rosterPayoutMultiplier } from "../engine";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { teamOverall } from "../utils/rosterStats";
-import { encodeLineup } from "./lineupCode";
+import { formatPayout } from "../utils/formatting";
+import { encodeLineup, LINEUP_SLOT_ORDER } from "./lineupCode";
 
 /** Short outcome label for the share blurb (distinct from the on-screen copy). */
 const OUTCOME_LABEL: Record<string, string> = {
@@ -45,11 +46,11 @@ function shortName(displayName: string): string {
  * and team OVR, the six-player lineup, and (when encodable) a "beat it" link.
  */
 export function buildShareText(driveLog: DriveLog, roster: DraftedRoster, url = buildShareUrl(roster)): string {
-  const ovr = teamOverall(roster);
+  const payout = formatPayout(rosterPayoutMultiplier(LINEUP_SLOT_ORDER.map((slot) => roster[slot].rating)));
   const scoreLine = driveLog.won ? `${driveLog.score} pts` : "no score";
   const lines = [
     `🏈 Four Minute Drill — ${scoreLine}`,
-    `${outcomeLabel(driveLog.endReason)} · ${ovr} OVR squad`,
+    `${outcomeLabel(driveLog.endReason)} · ${payout} payout squad`,
     `QB ${shortName(roster.qb.displayName)}  RB ${shortName(roster.rb.displayName)}  WR ${shortName(
       roster.wr1.displayName
     )}`,
