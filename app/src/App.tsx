@@ -31,7 +31,7 @@ function ModeToggle() {
         Daily
       </button>
       <button type="button" className={mode === "free" ? "active" : ""} onClick={() => setMode("free")}>
-        Free Play
+        Free
       </button>
     </div>
   );
@@ -55,7 +55,7 @@ function AppBody() {
           <ModeToggle />
           {isLeaderboardEnabled && (
             <button type="button" className="header-leaderboard-button" onClick={openLeaderboard}>
-              🏆 Leaderboard
+              🏆 <span className="header-lb-text">Leaderboard</span>
             </button>
           )}
           <span className="brand-tagline">Draft. Drive. Win.</span>

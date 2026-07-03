@@ -4,8 +4,12 @@ import { useLeaderboardUI } from "../leaderboard/LeaderboardUI";
 import { SubmitScorePanel } from "../leaderboard/SubmitScorePanel";
 import { SharePanel } from "../share/SharePanel";
 import { rosterFromIdList } from "../share/sharedLineup";
+import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import { useMode } from "../state/ModeProvider";
 import { DailyStreakBadge } from "../components/result/StreakBanners";
+import { DriveRecap } from "../components/result/DriveRecap";
+import { PlayerCard } from "../components/draft/PlayerCard";
+import { formatBallOn, formatClock } from "../utils/formatting";
 import { formatChallengeDate, secondsUntilNextChallenge } from "./dailyChallenge";
 import { dailyStreakDisplay } from "./dailyStreak";
 import type { DailyRecord } from "./dailyState";
@@ -35,6 +39,8 @@ export function DailyDone({ record }: { record: DailyRecord }) {
   const { driveLog } = record;
   const roster = manifest ? rosterFromIdList(record.rosterIds, manifest) : null;
   const streak = dailyStreakDisplay(challengeId, driveLog.won);
+  const lastPlay = driveLog.plays[driveLog.plays.length - 1];
+  const finalFieldPosition = lastPlay ? Math.max(0, lastPlay.fieldPosition - lastPlay.outcome.yards) : 50;
 
   return (
     <div className="screen result-screen">
@@ -52,8 +58,19 @@ export function DailyDone({ record }: { record: DailyRecord }) {
 
       <DailyStreakBadge days={streak.days} best={streak.best} state={streak.state} />
 
+      <p className="daily-final-spot">
+        {driveLog.won
+          ? `Scored with ${formatClock(driveLog.clockSecondsRemaining)} on the clock`
+          : `Your drive stalled at ${formatBallOn(finalFieldPosition)}`}
+      </p>
+
       {roster ? (
         <>
+          <div className="daily-lineup">
+            {LINEUP_SLOT_ORDER.map((slot) => (
+              <PlayerCard key={slot} player={roster[slot]} selected readOnly />
+            ))}
+          </div>
           {!record.submitted && (
             <SubmitScorePanel
               driveLog={driveLog}
@@ -81,6 +98,8 @@ export function DailyDone({ record }: { record: DailyRecord }) {
           Play Free Mode
         </button>
       </div>
+
+      <DriveRecap driveLog={driveLog} />
     </div>
   );
 }

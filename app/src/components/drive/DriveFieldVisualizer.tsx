@@ -59,11 +59,11 @@ export function DriveFieldVisualizer({
           <div className="field-progress" style={{ width: `${progressPct}%` }} />
           <div className="field-hash-row top" />
           <div className="field-hash-row bottom" />
-          {YARD_TICKS.map((yard) => {
+          {YARD_TICKS.map((yard, idx) => {
             const displayYard = yard <= 50 ? yard : 100 - yard;
             const pointsRight = yard <= 50;
             return (
-              <div key={yard} className="field-tick" style={{ left: `${yard}%` }}>
+              <div key={yard} className={`field-tick ${idx % 2 === 0 ? "tick-alt" : ""}`} style={{ left: `${yard}%` }}>
                 <span className={`field-tick-label ${pointsRight ? "chevron-right" : "chevron-left"}`}>{displayYard}</span>
               </div>
             );

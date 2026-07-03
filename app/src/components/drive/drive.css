@@ -642,3 +642,18 @@
   margin-top: 0.1rem;
   color: var(--text);
 }
+
+/* Thin out colliding yard numerals on narrow screens (keep the hashes). */
+@media (max-width: 480px) {
+  .field-tick.tick-alt .field-tick-label {
+    display: none;
+  }
+}
+
+/* Mobile mode toggle sizing. */
+@media (max-width: 560px) {
+  .mode-toggle button {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.68rem;
+  }
+}

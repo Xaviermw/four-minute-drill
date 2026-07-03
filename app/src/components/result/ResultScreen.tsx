@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
-import { DriveFieldVisualizer } from "../drive/DriveFieldVisualizer";
-import { PlayByPlayFeed } from "../drive/PlayByPlayFeed";
+import { DriveRecap } from "./DriveRecap";
 import { SharePanel } from "../../share/SharePanel";
 import { SubmitScorePanel } from "../../leaderboard/SubmitScorePanel";
 import { getStoredName, recordDrive, type StreakUpdate } from "../../leaderboard/leaderboardApi";
@@ -89,7 +88,6 @@ export function ResultScreen() {
   if (state.phase !== "result") return null;
   const { driveLog, roster } = state;
   const lastPlay = driveLog.plays[driveLog.plays.length - 1];
-  const finalFieldPosition = lastPlay ? Math.max(0, lastPlay.fieldPosition - lastPlay.outcome.yards) : 50;
 
   async function handleReplaySameLineup() {
     if (!manifest) return;
@@ -169,13 +167,6 @@ export function ResultScreen() {
 
       <SharePanel driveLog={driveLog} roster={roster} />
 
-      <DriveFieldVisualizer fieldPosition={finalFieldPosition} />
-
-      <div className="drive-log">
-        <p className="eyebrow drive-log-heading">Drive log</p>
-        <PlayByPlayFeed plays={driveLog.plays} />
-      </div>
-
       {replayError && <p className="error">{replayError}</p>}
       {isDaily ? (
         <div className="result-actions">
@@ -196,6 +187,8 @@ export function ResultScreen() {
           </button>
         </div>
       )}
+
+      <DriveRecap driveLog={driveLog} />
     </div>
   );
 }
