@@ -58,7 +58,17 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   howItWorks.css), banners `.streak-banner`, payout heat = amber(hot ≥1.6) /
   green(mid ≥1.3) / muted(low) via `payoutBand` — band on the *rounded* value.
 - Motion rules: house easing `cubic-bezier(0.22,1,0.36,1)`; entrances 250ms,
-  movement 800ms; every animation needs the `prefers-reduced-motion` guard.
+  movement 800ms; global `prefers-reduced-motion` guard lives in `index.css`
+  (neutralizes all durations) — JS animations (`utils/confetti.ts`,
+  `utils/useCountUp.ts`) must also `matchMedia` reduced-motion and no-op.
+- Reusable UI utils: `utils/useModalBehavior.ts` (Escape/focus-trap/restore —
+  apply to any modal; extract inline modals into a child so the hook mounts
+  with it), `components/result/DriveRecap.tsx` (collapsible field+log),
+  `utils/confetti.ts` (WAAPI burst), `utils/useCountUp.ts`. Fire-once-on-result
+  effects (confetti) use the drive-log-identity ref guard.
+- Copy: ball spot via `formatBallOn`; the drive scoreboard is DOWN · BALL ON ·
+  SCORE · CLOCK (`DriveFieldVisualizer` takes `scoreDiff`). localStorage flags:
+  `fmd_seen_intro` (coach strip), `fmd_daily_*`/`fmd_daily_streak` (daily).
 - Football conventions in copy: ball spot as "OWN 20"/"AWAY 29" (yardline_100
   >50 → OWN 100-x, else AWAY x), never raw yards-to-endzone in labels.
 - Design source docs: `app/FrontEndDesign.md`, `docs/ux-review.md`,
