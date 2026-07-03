@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
 import { DriveFieldVisualizer } from "../drive/DriveFieldVisualizer";
@@ -14,6 +14,8 @@ import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
 import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
+import { burstConfetti } from "../../utils/confetti";
+import { useCountUp } from "../../utils/useCountUp";
 import type { DriveLog } from "../../types/simResult";
 import "../drive/drive.css";
 import "./result.css";
@@ -47,6 +49,17 @@ export function ResultScreen() {
   const [replayError, setReplayError] = useState<string | null>(null);
   const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
   const [daily, setDaily] = useState<{ days: number; best: number; state: DailyStreakState } | null>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const won = state.phase === "result" && state.driveLog.won;
+  const displayScore = useCountUp(won ? state.driveLog.score : 0);
+  // Celebrate a win once (StrictMode-safe via the drive-log-identity ref).
+  const confettiLog = useRef<DriveLog | null>(null);
+  useEffect(() => {
+    if (state.phase !== "result" || !state.driveLog.won) return;
+    if (confettiLog.current === state.driveLog) return;
+    confettiLog.current = state.driveLog;
+    if (heroRef.current) burstConfetti(heroRef.current);
+  }, [state]);
   // Record each finished drive exactly once (guarded by drive-log identity so
   // re-renders / StrictMode don't double-count). Daily drives are banked to the
   // one-shot record + the daily-day streak; free-play drives feed the win-streak
@@ -93,7 +106,7 @@ export function ResultScreen() {
 
   return (
     <div className="screen result-screen">
-      <div className={`result-hero ${driveLog.won ? "win" : "loss"}`}>
+      <div ref={heroRef} className={`result-hero ${driveLog.won ? "win" : "loss"}`}>
         <span className="eyebrow">
           {isDaily ? `Today's Drill · ${formatChallengeDate(challengeId)}` : driveLog.won ? "Drive result" : "Drive over"}
         </span>
@@ -101,7 +114,7 @@ export function ResultScreen() {
         <p className="result-sub">{END_REASON_SUB[driveLog.endReason]}</p>
         {driveLog.won ? (
           <div className="result-score">
-            <span className="result-score-num">+{driveLog.score}</span>
+            <span className="result-score-num">+{displayScore}</span>
             <span className="result-score-unit">points</span>
           </div>
         ) : (
@@ -112,6 +125,8 @@ export function ResultScreen() {
         )}
       </div>
 
+      {!driveLog.won && lastPlay && <p className="fatal-play">{lastPlay.description}</p>}
+
       {daily && <DailyStreakBadge days={daily.days} best={daily.best} state={daily.state} />}
       {freeStreak && <FreeStreakBanner streak={freeStreak} />}
 
@@ -119,19 +134,19 @@ export function ResultScreen() {
         <div className="score-receipt">
           <p className="eyebrow score-receipt-title">How you scored it</p>
           <ul className="score-breakdown-items">
-            <li>
+            <li style={{ "--i": 0 } as CSSProperties}>
               <span>{driveLog.scoreBreakdown.baseLabel}</span>
               <span>{driveLog.scoreBreakdown.basePoints} pts</span>
             </li>
-            <li>
+            <li style={{ "--i": 1 } as CSSProperties}>
               <span>Roster payout · weaker = bigger</span>
               <span>&times;{driveLog.scoreBreakdown.rosterMultiplier.toFixed(2)}</span>
             </li>
-            <li>
+            <li style={{ "--i": 2 } as CSSProperties}>
               <span>Time bonus · less time left = more</span>
               <span>&times;{driveLog.scoreBreakdown.clockMultiplier.toFixed(2)}</span>
             </li>
-            <li className="score-breakdown-total">
+            <li className="score-breakdown-total" style={{ "--i": 3 } as CSSProperties}>
               <span>Final score</span>
               <span>{driveLog.scoreBreakdown.total} pts</span>
             </li>

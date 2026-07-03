@@ -14,6 +14,7 @@ import { PlayOptionButtons } from "./PlayOptionButtons";
 import "./drive.css";
 
 const ANTICIPATION_MS = 700;
+const HIGH_LEVERAGE_MS = 1300;
 
 export function DriveScreen() {
   const state = useGameState();
@@ -35,9 +36,11 @@ export function DriveScreen() {
     if (resolving) return;
     setResolving(true);
     const manualTempo = situation.clockRunning ? tempoSeconds : undefined;
+    // Stretch the anticipation on high-leverage snaps (4th down, a field-goal
+    // attempt, or inside the final 30s) so the drama scales with the moment.
+    const highLeverage = situation.down === 4 || call.kind === "fieldGoal" || situation.clockSeconds <= 30;
     // Resolve the play immediately (the session itself advances right away),
-    // but hold the reveal for a beat so the user gets a moment of anticipation
-    // before seeing the result.
+    // but hold the reveal for a beat of anticipation before showing the result.
     const { play, status } = session.choosePlay(call, manualTempo);
     setTimeout(() => {
       setPlays((prev) => [...prev, play]);
@@ -45,7 +48,7 @@ export function DriveScreen() {
         dispatch({ type: "DRIVE_ENDED", driveLog: session.getLog() });
       }
       setResolving(false);
-    }, ANTICIPATION_MS);
+    }, highLeverage ? HIGH_LEVERAGE_MS : ANTICIPATION_MS);
   }
 
   const lastPlay = plays[plays.length - 1];
@@ -66,8 +69,15 @@ export function DriveScreen() {
 
       {lastPlay && (
         <p
+          key={plays.length}
           className={`last-play-banner ${
-            lastPlay.outcome.isTouchdown ? "touchdown" : lastPlay.outcome.isTurnover ? "turnover" : ""
+            lastPlay.outcome.isTouchdown
+              ? "touchdown"
+              : lastPlay.outcome.isTurnover
+                ? "turnover"
+                : lastPlay.outcome.yards >= 20
+                  ? "big-gain"
+                  : ""
           }`}
         >
           {lastPlay.description}
@@ -101,7 +111,14 @@ export function DriveScreen() {
         </div>
 
         {resolving ? (
-          <p className="anticipation-indicator">Calling the play&hellip;</p>
+          <p className="anticipation-indicator">
+            Calling the play
+            <span className="anticipation-dots">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          </p>
         ) : (
           <p className="play-panel-heading eyebrow">Call the play</p>
         )}
