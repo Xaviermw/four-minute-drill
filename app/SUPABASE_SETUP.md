@@ -25,12 +25,14 @@ create table public.scores (
   outcome text not null,
   team_ovr int not null,
   time_remaining int not null default 0,  -- clock (s) left when they scored
+  final_field_position int not null default 100,  -- yards to end zone at drive's end (0 = scored)
   challenge_date text,     -- Daily Challenge date (UTC), or null for free play
   roster jsonb not null,   -- array of { gsisId, name, position, rating }
   seed bigint not null,
   choices jsonb not null   -- ordered [{ call: {...}, tempoSeconds? }]
 );
 create index scores_daily_idx on public.scores (challenge_date, score desc);
+create index scores_daily_drive_idx on public.scores (challenge_date, final_field_position asc);
 
 create index scores_score_idx on public.scores (score desc);
 ```
@@ -76,12 +78,18 @@ create policy "authed can submit bounded scores"
   with check (
     auth.uid() = user_id
     and score >= 0 and score <= 1000
+    and final_field_position >= 0 and final_field_position <= 100
     and char_length(name) between 1 and 20
     and public.name_ok(name)
     and jsonb_typeof(roster) = 'array'
     and jsonb_array_length(roster) = 6
   );
 ```
+
+The Daily accepts **every completed drive** (a loss submits score 0), so
+`final_field_position` powers a "Longest drives" board and a percentile — a
+scoreless-but-deep drive still has something to show. Free play still only takes
+winning scores.
 
 There is intentionally **no** update/delete policy, so entries are append-only.
 

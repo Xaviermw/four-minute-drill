@@ -9,6 +9,8 @@ function makeKicker(overrides: Partial<KickerDataset> = {}): KickerDataset {
     displayName: "Test Kicker",
     position: "K",
     tier: "starter",
+    team: "BAL",
+    jersey: 9,
     rating: 75,
     totalAttempts: 200,
     distanceBuckets: {

@@ -4,15 +4,14 @@ import type { DriveScenario } from "../types/scenario";
 import type { DriveChoice, DriveEndReason, DriveLog, PlayResult, ScoreBreakdown } from "../types/simResult";
 import {
   CLOCK_RUNOFF_RUNNING,
-  CLUTCH_REFERENCE_SECONDS,
   MAX_PLAYS_PER_DRIVE,
   PLAY_DURATION_RANGE,
   SPIKE_RUNOFF_SECONDS,
 } from "./constants";
-import { attemptFieldGoal, kickDistanceFor } from "./kicker";
+import { attemptFieldGoal, fieldGoalMakePct, kickDistanceFor } from "./kicker";
 import { drawPlayOptions, type PlayCall } from "./playOptions";
 import { makeRng, type RNG } from "./rng";
-import { rosterPayoutMultiplier } from "./scoring";
+import { clutchMultiplier, rosterPayoutMultiplier } from "./scoring";
 import {
   rollBlendedInterception,
   rollQbSackOutcome,
@@ -219,17 +218,6 @@ function makeOutcome(partial: Partial<OutcomeRecord>): OutcomeRecord {
   };
 }
 
-/**
- * Based on absolute clock remaining at the moment of scoring, not a fraction
- * of that drive's own starting clock -- scoring with 0:00 left is always
- * maximally clutch, scoring with 2:00+ left never gets a bonus, regardless
- * of whether the scenario started at 1:00 or 10:00.
- */
-function clutchMultiplier(clockAtScoreSeconds: number): number {
-  const remainingFraction = Math.max(0, Math.min(1, clockAtScoreSeconds / CLUTCH_REFERENCE_SECONDS));
-  return Math.min(2, Math.max(1, 1 + (1 - remainingFraction)));
-}
-
 /** Roster payout multiplier: lower-rated teams score more. Same value the draft
  * surfaces per player (payout is linear in rating, so the team payout is the
  * average of the players' payouts). */
@@ -418,7 +406,13 @@ export function createDriveSession(
     return { down, distance, fieldPosition, clockSeconds: Math.max(0, Math.round(clock)), clockRunning };
   }
 
-  return { getOptions, choosePlay, getLog, getSituation };
+  /** Make probability (0-1) if the field goal were attempted from where the ball
+   * sits right now -- the exact odds chooseFieldGoal rolls against, for a UI hint. */
+  function getFieldGoalMakePct(): number {
+    return fieldGoalMakePct(roster.k, kickDistanceFor(fieldPosition), leagueAverageKickerRates);
+  }
+
+  return { getOptions, choosePlay, getLog, getSituation, getFieldGoalMakePct };
 }
 
 export interface DriveSituation {

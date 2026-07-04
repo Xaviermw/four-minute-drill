@@ -4,6 +4,8 @@ import type { DraftedRoster, RosterSlotKey } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { LINEUP_SLOT_ORDER } from "./lineupCode";
 import { formatPayout, payoutBand } from "../utils/formatting";
+import { teamColors } from "../utils/teamColors";
+import type { CSSProperties } from "react";
 import "./resultCard.css";
 
 const OUTCOME: Record<string, string> = {
@@ -50,9 +52,15 @@ export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roste
         <div className="rc-roster">
           {ROWS.map(({ slot, label }) => {
             const p = roster[slot];
+            const tc = teamColors(p.team);
             return (
-              <div className="rc-player" key={slot}>
+              <div
+                className="rc-player"
+                key={slot}
+                style={{ "--team": tc.primary, "--team2": tc.secondary } as CSSProperties}
+              >
                 <span className="rc-player-pos">{label}</span>
+                {p.jersey != null && <span className="rc-player-jersey">{p.jersey}</span>}
                 <span className="rc-player-name">{p.displayName}</span>
                 <span className={`rc-player-ovr payout-${payoutBand(payoutMultiplier(p.rating))}`}>
                   {formatPayout(payoutMultiplier(p.rating))}

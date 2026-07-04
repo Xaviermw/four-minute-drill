@@ -7,7 +7,8 @@ export {
   SPIKE_RUNOFF_SECONDS,
   SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS,
   MAX_REALISTIC_FIELD_GOAL_DISTANCE,
+  CLUTCH_REFERENCE_SECONDS,
 } from "./constants";
 export { makeRng, weightedRandomChoice } from "./rng";
-export { payoutMultiplier, rosterPayoutMultiplier } from "./scoring";
+export { payoutMultiplier, rosterPayoutMultiplier, clutchMultiplier } from "./scoring";
 export { bucketKey, distanceBucketId, fieldZoneId } from "./situational";

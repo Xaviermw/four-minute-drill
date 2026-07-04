@@ -12,6 +12,7 @@ import type { PlayResult } from "../../types/simResult";
 import { DriveFieldVisualizer } from "./DriveFieldVisualizer";
 import { PlayByPlayFeed } from "./PlayByPlayFeed";
 import { PlayOptionButtons } from "./PlayOptionButtons";
+import { TimeBonusMeter } from "./TimeBonusMeter";
 import "./drive.css";
 
 const ANTICIPATION_MS = 700;
@@ -36,6 +37,7 @@ export function DriveScreen() {
   const display = held ?? live;
   const fieldGoalDistance = kickDistanceFor(live.fieldPosition);
   const canAttemptFieldGoal = fieldGoalDistance <= MAX_REALISTIC_FIELD_GOAL_DISTANCE;
+  const fieldGoalMakePct = Math.round(session.getFieldGoalMakePct() * 100);
   const canSpike = live.clockRunning && live.clockSeconds < SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS;
 
   function handleChoose(call: PlayCall) {
@@ -69,11 +71,14 @@ export function DriveScreen() {
         distance={display.distance}
         clockSeconds={display.clockSeconds}
         scoreDiff={scenario.scoreDiff}
+        driveStartPosition={scenario.fieldPosition}
       />
 
       <p className="stakes-strip">
         <span className="stakes-deficit">Down by {-scenario.scoreDiff}</span> · one drive to win it
       </p>
+
+      <TimeBonusMeter clockSeconds={display.clockSeconds} />
 
       {lastPlay && (
         <p
@@ -144,6 +149,9 @@ export function DriveScreen() {
                 <span className="play-option-tag tag-fg">FG</span>
                 <span className="play-option-text">
                   Kick a {fieldGoalDistance}-yard field goal · {roster.k.displayName}
+                </span>
+                <span className={`fg-odds ${fieldGoalMakePct >= 75 ? "good" : fieldGoalMakePct >= 50 ? "even" : "long"}`}>
+                  {fieldGoalMakePct}%
                 </span>
               </button>
             )}

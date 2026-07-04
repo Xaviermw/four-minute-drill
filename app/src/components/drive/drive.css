@@ -80,46 +80,49 @@
   }
 }
 
-/* ---- Field ---- */
+/* ---- Field (broadcast drive chart) ---- */
 .field-track {
   display: flex;
-  height: clamp(260px, 34vh, 360px);
-  background: var(--turf-dark);
+  height: clamp(180px, 24vh, 240px);
   border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow-card), inset 0 0 80px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-card);
 }
 
 .field-playing-area {
   position: relative;
   flex: 1;
   min-width: 0;
-  background: linear-gradient(180deg, var(--turf-light), var(--turf-dark));
+  background: radial-gradient(140% 120% at 50% -30%, rgba(255, 255, 255, 0.07), transparent 55%),
+    repeating-linear-gradient(90deg, #2b8a4b 0 10%, #257a41 10% 20%);
 }
 
-/* Alternating mowing stripes, one per 10-yard section. */
-.field-stripes {
+/* Depth vignette. */
+.field-playing-area::after {
+  content: "";
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.06) 10%,
-    transparent 10%,
-    transparent 20%
-  );
+  box-shadow: inset 0 -34px 50px rgba(0, 0, 0, 0.42), inset 0 18px 40px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 3;
 }
 
-/* Territory gained so far, a brighter translucent overlay so lines show through. */
-.field-progress {
+.field-stripes {
+  display: none;
+}
+
+.field-wordmark {
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, rgba(74, 222, 128, 0.4), rgba(34, 197, 94, 0.28));
-  border-right: 2px solid rgba(255, 255, 255, 0.15);
-  transition: width 1.1s cubic-bezier(0.22, 0.9, 0.3, 1);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.6rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
 }
 
 /* Hash marks. */
@@ -127,68 +130,123 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 10px;
   background-image: repeating-linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.4) 0,
-    rgba(255, 255, 255, 0.4) 2px,
+    rgba(255, 255, 255, 0.5) 0,
+    rgba(255, 255, 255, 0.5) 2px,
     transparent 2px,
-    transparent 5%
+    transparent 2.5%
   );
   background-repeat: no-repeat;
   z-index: 1;
 }
-
 .field-hash-row.top {
-  top: 30%;
+  top: 26%;
 }
-
 .field-hash-row.bottom {
-  bottom: 30%;
+  bottom: 26%;
 }
 
-/* Yard lines. */
+/* Yard lines (heavier every 10). */
 .field-tick {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: rgba(255, 255, 255, 0.45);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  width: 1.5px;
+  background: rgba(255, 255, 255, 0.34);
   z-index: 1;
+}
+.field-tick.tick-alt {
+  width: 2.5px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .field-tick-label {
   position: absolute;
-  bottom: 0.5rem;
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-style: italic;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.5);
   transform: translateX(-50%);
-  letter-spacing: 0.02em;
+  letter-spacing: 1px;
+  white-space: nowrap;
 }
-
+.field-tick-label.top {
+  top: 0.35rem;
+}
+.field-tick-label.bot {
+  bottom: 0.3rem;
+}
 .field-tick-label.chevron-right::after {
   content: " \25B8";
-  opacity: 0.6;
+  font-size: 0.65em;
+  opacity: 0.75;
 }
-
 .field-tick-label.chevron-left::before {
   content: "\25C2 ";
-  opacity: 0.6;
+  font-size: 0.65em;
+  opacity: 0.75;
 }
 
-/* Line of scrimmage + football. */
+/* Drive trail (from the drive's start to the current scrimmage). */
+.field-trail {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: repeating-linear-gradient(90deg, rgba(255, 194, 51, 0.95) 0 10px, transparent 10px 17px);
+  border-radius: 2px;
+  z-index: 1;
+  transition: width 1.1s cubic-bezier(0.22, 0.9, 0.3, 1), left 1.1s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.field-start {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(255, 194, 51, 0.9);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2;
+}
+
+/* First-down line (yellow, TV convention). */
+.field-fd {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #ffe100;
+  box-shadow: 0 0 14px rgba(255, 225, 0, 0.75);
+  z-index: 2;
+}
+.field-fd-tag {
+  position: absolute;
+  top: 0.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: #1a1a00;
+  background: #ffe100;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Line of scrimmage (blue) + football. */
 .field-marker {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--amber);
-  box-shadow: 0 0 16px rgba(255, 194, 51, 0.95);
+  background: #3ea0ff;
+  box-shadow: 0 0 14px rgba(62, 160, 255, 0.9);
   transition: left 1.1s cubic-bezier(0.22, 0.9, 0.3, 1);
   z-index: 2;
 }
@@ -197,21 +255,21 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30px;
-  height: 19px;
-  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 21px;
+  transform: translate(-50%, -50%) rotate(-14deg);
   border-radius: 50% / 60%;
-  background: radial-gradient(circle at 35% 30%, #c97f43, #7a3d17);
-  border: 1.5px solid #4a2410;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  background: radial-gradient(circle at 35% 30%, #c97f43, #6f3512);
+  border: 1.5px solid #3d1e0c;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 .field-ball::after {
   content: "";
   position: absolute;
   top: 50%;
-  left: 22%;
-  right: 22%;
+  left: 24%;
+  right: 24%;
   height: 2px;
   transform: translateY(-50%);
   background: repeating-linear-gradient(to right, rgba(255, 255, 255, 0.85) 0 3px, transparent 3px 6px);
@@ -219,28 +277,26 @@
 
 /* End zones. */
 .field-endzone {
-  flex: 0 0 8%;
+  flex: 0 0 7.5%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.9);
   writing-mode: vertical-rl;
   white-space: nowrap;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
-
 .field-endzone.home {
-  background: repeating-linear-gradient(45deg, #1d3a6b 0 8px, #16305c 8px 16px);
-  border-right: 2px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(180deg, #17335f, #122a50);
+  border-right: 3px solid rgba(255, 255, 255, 0.85);
 }
-
 .field-endzone.away {
-  background: repeating-linear-gradient(45deg, #6b1d24 0 8px, #5a161d 8px 16px);
-  border-left: 2px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(180deg, #5c1620, #4a1119);
+  border-left: 3px solid rgba(255, 255, 255, 0.85);
 }
 
 .field-label {
@@ -249,6 +305,59 @@
   color: var(--muted);
   font-size: 0.9rem;
   letter-spacing: 0.02em;
+}
+
+/* ---- Clutch (time) bonus meter ---- */
+.time-bonus {
+  margin: 0.5rem 0 0.25rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+.time-bonus.live {
+  border-color: rgba(255, 194, 51, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 194, 51, 0.12);
+}
+.tb-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.tb-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.tb-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.time-bonus.live .tb-value {
+  color: var(--amber);
+}
+.tb-track {
+  margin-top: 0.4rem;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.tb-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5aa9ff, var(--amber));
+  transition: width 1s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.tb-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.76rem;
+  color: var(--muted);
 }
 
 /* ---- Last-play banner ---- */
@@ -463,6 +572,46 @@
 .play-option-button:hover:not(:disabled) .play-option-arrow {
   color: var(--grass-bright);
   transform: translateX(3px);
+}
+
+/* Payout chip on a play option -- the multiplier the featured player's score
+   earns, so the payout tradeoff is visible at the moment of choice. */
+.play-option-payout {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--muted);
+}
+.play-option-payout.payout-hot {
+  color: var(--amber);
+}
+.play-option-payout.payout-mid {
+  color: var(--grass-bright);
+}
+
+/* Make-% hint on the field-goal button. */
+.fg-odds {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.fg-odds.good {
+  color: var(--grass-bright);
+}
+.fg-odds.even {
+  color: var(--amber);
+}
+.fg-odds.long {
+  color: var(--loss);
 }
 
 /* ---- Persistent actions (FG / spike) ---- */

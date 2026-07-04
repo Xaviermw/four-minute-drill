@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { payoutMultiplier } from "../../engine";
 import type { ManifestPlayerEntry } from "../../types/player";
 import { formatPayout, payoutBand } from "../../utils/formatting";
+import { teamColors } from "../../utils/teamColors";
 import "./draft.css";
 
 export function PlayerCard({
@@ -25,22 +26,28 @@ export function PlayerCard({
 }) {
   const payout = payoutMultiplier(player.rating);
   const band = payoutBand(payout);
+  const tc = teamColors(player.team);
+  const teamLabel = tc.name || player.team || "";
   const className = `player-card payout-${band} ${selected ? "selected" : ""} ${picked ? "picked" : ""} ${
     large ? "large" : ""
   } ${readOnly ? "read-only" : ""}`;
+
   const content = (
     <>
-      <div className="player-card-top">
-        <span className="player-card-position">{player.position}</span>
-        <span className="player-card-rating" title="Payout multiplier — bigger = more points if you score">
-          <span className="player-card-rating-num">{formatPayout(payout)}</span>
-          <span className="player-card-rating-label">payout</span>
+      <div className="pc-band" style={{ "--team": tc.primary, "--team2": tc.secondary } as CSSProperties}>
+        {player.jersey != null && <span className="pc-jersey">{player.jersey}</span>}
+        <span className="pc-who">
+          <span className="pc-name">{player.displayName}</span>
+          <span className="pc-team">{teamLabel ? `${teamLabel} · ${player.position}` : player.position}</span>
+        </span>
+        <span className="pc-payout" title="Payout multiplier — bigger = more points if you score">
+          <b>{formatPayout(payout)}</b>
+          <i>payout</i>
         </span>
       </div>
-      <div className="player-card-name">{player.displayName}</div>
-      <div className="player-card-flavor">
-        <div className="subline">{player.flavorStats.subline}</div>
-        <div className="headline">{player.flavorStats.headline}</div>
+      <div className="pc-stats">
+        <span className="pc-hl">{player.flavorStats.subline}</span>
+        <span className="pc-sub">{player.flavorStats.headline}</span>
       </div>
     </>
   );

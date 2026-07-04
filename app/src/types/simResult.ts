@@ -52,3 +52,13 @@ export interface DriveLog {
    * leaderboard and what feeds the time bonus. 0 if the clock expired. */
   clockSecondsRemaining: number;
 }
+
+/** Yards-to-end-zone where the drive finally came to rest (0 = reached the end
+ * zone). Derived from the last play so every surface -- recap, daily summary,
+ * the "longest drives" board -- agrees on how far the drive got. Defaults to
+ * midfield for the degenerate empty-drive case. */
+export function finalFieldPosition(log: DriveLog): number {
+  const last = log.plays[log.plays.length - 1];
+  if (!last) return 50;
+  return Math.max(0, last.fieldPosition - last.outcome.yards);
+}

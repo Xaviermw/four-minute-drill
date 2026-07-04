@@ -33,6 +33,17 @@ function shrunkMakePct(
   return shrinkRate(kickerBucket?.makePct, playerN, leagueBucket?.makePct);
 }
 
+/** The kicker's make probability (0-1) for a given kick distance -- the exact
+ * value attemptFieldGoal rolls against, so a UI hint built from it can't lie. */
+export function fieldGoalMakePct(
+  kicker: KickerDataset,
+  kickDistance: number,
+  leagueAverageKickerRates: Partial<Record<KickDistanceTier, KickerDistanceBucket>>
+): number {
+  const tier = kickDistanceBucketId(kickDistance);
+  return shrunkMakePct(kicker.distanceBuckets[tier], leagueAverageKickerRates[tier]);
+}
+
 /** Returns true if the field goal is made. */
 export function attemptFieldGoal(
   kicker: KickerDataset,
@@ -40,7 +51,6 @@ export function attemptFieldGoal(
   leagueAverageKickerRates: Partial<Record<KickDistanceTier, KickerDistanceBucket>>,
   rng: RNG
 ): boolean {
-  const tier = kickDistanceBucketId(kickDistance);
-  const makePct = shrunkMakePct(kicker.distanceBuckets[tier], leagueAverageKickerRates[tier]);
+  const makePct = fieldGoalMakePct(kicker, kickDistance, leagueAverageKickerRates);
   return rng.next() < makePct;
 }

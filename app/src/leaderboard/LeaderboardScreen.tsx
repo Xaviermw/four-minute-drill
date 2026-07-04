@@ -7,9 +7,10 @@ import { rosterFromIdList } from "../share/sharedLineup";
 import { outcomeLabel } from "../share/shareText";
 import { useGameDispatch } from "../state/GameStateProvider";
 import { useMode } from "../state/ModeProvider";
-import { formatClock, formatPayout } from "../utils/formatting";
+import { formatBallOn, formatClock, formatPayout } from "../utils/formatting";
 import { useModalBehavior } from "../utils/useModalBehavior";
 import {
+  fetchDailyLongestDrives,
   fetchDailyScores,
   fetchTopScores,
   fetchTopStreaks,
@@ -60,6 +61,42 @@ function ScoreList({
   );
 }
 
+/** Daily "longest drives" list: ranks by how far downfield the drive got,
+ * showing the finishing spot instead of the score (so scoreless-but-deep drives
+ * shine). A drive that reached the end zone reads "Scored". */
+function DriveList({
+  rows,
+  userId,
+  loadingId,
+  onPlay,
+}: {
+  rows: LeaderboardRow[];
+  userId: string | null;
+  loadingId: string | null;
+  onPlay: (row: LeaderboardRow) => void;
+}) {
+  return (
+    <ol className="leaderboard-list">
+      {rows.map((row, i) => (
+        <li className={`leaderboard-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.id}>
+          <span className="lb-rank">{i + 1}</span>
+          <span className="lb-name">
+            {row.name}
+            {userId && row.user_id === userId && <span className="lb-you">you</span>}
+          </span>
+          <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
+          <span className="lb-reached" title="Where the drive ended">
+            {row.final_field_position <= 0 ? "Scored" : `to ${formatBallOn(row.final_field_position)}`}
+          </span>
+          <button type="button" className="lb-play" onClick={() => onPlay(row)} disabled={loadingId !== null}>
+            {loadingId === row.id ? "…" : "Try in Free Play"}
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function SkeletonRows({ count = 5 }: { count?: number }) {
   return (
     <ol className="leaderboard-list">
@@ -76,6 +113,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const { mode, challengeId } = useMode();
   const [tab, setTab] = useState<Tab>(mode === "daily" ? "daily" : "score");
   const [daily, setDaily] = useState<LeaderboardRow[] | null>(null);
+  const [dailyDrives, setDailyDrives] = useState<LeaderboardRow[] | null>(null);
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
   const [streaks, setStreaks] = useState<StreakRow[] | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -87,6 +125,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (!isLeaderboardEnabled) {
       setDaily([]);
+      setDailyDrives([]);
       setRows([]);
       setStreaks([]);
       return;
@@ -98,6 +137,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     // played have one, so we can highlight their rows as "you".
     getCurrentUserId().then((id) => !cancelled && setUserId(id));
     fetchDailyScores(challengeId, 100).then((d) => !cancelled && setDaily(d)).catch(fail);
+    fetchDailyLongestDrives(challengeId, 25).then((d) => !cancelled && setDailyDrives(d)).catch(fail);
     fetchTopScores(100).then((d) => !cancelled && setRows(d)).catch(fail);
     fetchTopStreaks(100).then((d) => !cancelled && setStreaks(d)).catch(fail);
     return () => {
@@ -182,6 +222,15 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                   onPlay={playLineup}
                   playLabel="Try in Free Play"
                 />
+              )}
+
+              {/* Longest drives -- rewards marching deep even without scoring. */}
+              {dailyDrives && dailyDrives.length > 0 && (
+                <div className="leaderboard-section">
+                  <p className="leaderboard-section-title">Longest drives</p>
+                  <p className="leaderboard-subnote">How far each drive got — scoreless runs count too.</p>
+                  <DriveList rows={dailyDrives} userId={userId} loadingId={loadingId} onPlay={playLineup} />
+                </div>
               )}
             </>
           )}

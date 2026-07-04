@@ -1,5 +1,5 @@
 import type { DraftedRoster } from "../types/roster";
-import type { DriveChoice, DriveLog } from "../types/simResult";
+import { finalFieldPosition, type DriveChoice, type DriveLog } from "../types/simResult";
 import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import { ensureAnonSession, getSupabase } from "./supabaseClient";
@@ -25,6 +25,9 @@ export interface LeaderboardRow {
   team_ovr: number;
   /** Game clock (seconds) left when they scored -- less is more clutch. */
   time_remaining: number;
+  /** Yards to the end zone where the drive ended (0 = scored). Drives the
+   * "Longest drives" board -- lower is further. */
+  final_field_position: number;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -41,6 +44,7 @@ export interface LeaderboardSubmission {
   outcome: string;
   team_ovr: number;
   time_remaining: number;
+  final_field_position: number;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -68,6 +72,7 @@ export function buildSubmission(
     outcome: driveLog.endReason,
     team_ovr: teamOverall(roster),
     time_remaining: driveLog.clockSecondsRemaining,
+    final_field_position: finalFieldPosition(driveLog),
     roster: rosterToPlayers(roster),
     seed: driveLog.seed,
     choices: driveLog.choices,
@@ -128,6 +133,54 @@ export async function fetchDailyScores(challengeId: string, limit = 100): Promis
     .limit(limit);
   if (error) throw new Error(error.message);
   return (data ?? []) as LeaderboardRow[];
+}
+
+/** Fetches today's Daily Challenge entries ranked by how far the drive got
+ * (smallest final_field_position first). Includes scoreless drives, so a loss
+ * that marched deep still lands on this board. */
+export async function fetchDailyLongestDrives(challengeId: string, limit = 100): Promise<LeaderboardRow[]> {
+  const supabase = await getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("challenge_date", challengeId)
+    .order("final_field_position", { ascending: true })
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LeaderboardRow[];
+}
+
+/** Where a drive stands among today's field: the fraction of entries it reached
+ * or beat (0-1), by yards driven. 1.0 = furthest. Returns null when disabled or
+ * there's no field yet. Counts the caller's own already-submitted entry, so call
+ * it after submitting for an inclusive "top X%". */
+export async function fetchDailyDrivePercentile(
+  challengeId: string,
+  finalPosition: number
+): Promise<number | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+
+  const total = supabase
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .eq("challenge_date", challengeId);
+  // Entries this drive reached or beat = those that ended no closer to the end
+  // zone (final_field_position >= ours). Lower position = further downfield.
+  const beaten = supabase
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .eq("challenge_date", challengeId)
+    .gte("final_field_position", finalPosition);
+
+  const [{ count: totalCount, error: e1 }, { count: beatenCount, error: e2 }] = await Promise.all([total, beaten]);
+  if (e1) throw new Error(e1.message);
+  if (e2) throw new Error(e2.message);
+  if (!totalCount) return null;
+  return (beatenCount ?? 0) / totalCount;
 }
 
 // ---- Win-streak leaderboard ----

@@ -19,6 +19,8 @@ function players(): ManifestPlayerEntry[] {
         displayName: `${pos} Player ${i}`,
         position: pos,
         tier: "starter",
+        team: "KC",
+        jersey: i,
         rating: 50 + i,
         flavorStats: { headline: "", subline: "" },
       });

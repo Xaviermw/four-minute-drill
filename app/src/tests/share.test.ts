@@ -3,12 +3,12 @@ import type { ManifestPlayerEntry, Position } from "../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { decodeLineup, encodeLineup, LINEUP_SLOT_ORDER } from "../share/lineupCode";
-import { buildShareText, buildShareUrl } from "../share/shareText";
+import { buildDriveGrid, buildShareText, buildShareUrl } from "../share/shareText";
 import { rosterFromToken } from "../share/sharedLineup";
 import type { Manifest } from "../types/player";
 
 function entry(gsisId: string, position: Position, displayName: string, rating: number): ManifestPlayerEntry {
-  return { gsisId, displayName, position, tier: "starter", rating, flavorStats: { headline: "", subline: "" } };
+  return { gsisId, displayName, position, tier: "starter", team: "KC", jersey: 1, rating, flavorStats: { headline: "", subline: "" } };
 }
 
 function makeRoster(): DraftedRoster {
@@ -119,5 +119,41 @@ describe("share text + url", () => {
     const text = buildShareText(wonLog(0, "LOSS_TURNOVER"), makeRoster(), null);
     expect(text).toContain("no score");
     expect(text).not.toContain("beat it");
+  });
+});
+
+describe("drive emoji grid", () => {
+  const play = (yards: number, extra: Partial<DriveLog["plays"][number]> = {}): DriveLog["plays"][number] =>
+    ({
+      playNumber: 1,
+      down: 1,
+      distance: 10,
+      fieldPosition: 75,
+      role: "wr" as DriveLog["plays"][number]["role"],
+      ballCarrier: "wr1",
+      ballCarrierName: "x",
+      outcome: { yards, isTouchdown: false, isTurnover: false, isSack: false } as DriveLog["plays"][number]["outcome"],
+      description: "",
+      ...extra,
+    }) as DriveLog["plays"][number];
+
+  const logWith = (plays: DriveLog["plays"], endReason: string): DriveLog =>
+    ({ ...wonLog(0, endReason), plays }) as DriveLog;
+
+  it("colors snaps by yards and marks the touchdown", () => {
+    const log = logWith(
+      [play(2), play(18), play(6), play(0, { outcome: { yards: 12, isTouchdown: true, isTurnover: false, isSack: false } as DriveLog["plays"][number]["outcome"] })],
+      "WIN_TOUCHDOWN"
+    );
+    expect(buildDriveGrid(log)).toBe("⬜🟩🟨🏈");
+  });
+
+  it("folds a made field goal into a terminal target and skips the kick snap", () => {
+    const log = logWith([play(9), play(-3), play(0, { role: "kicker" as DriveLog["plays"][number]["role"] })], "WIN_FIELD_GOAL");
+    expect(buildDriveGrid(log)).toBe("🟨🟥🎯");
+  });
+
+  it("marks a turnover on downs", () => {
+    expect(buildDriveGrid(logWith([play(3), play(1)], "LOSS_TURNOVER_ON_DOWNS"))).toBe("⬜⬜🛑");
   });
 });

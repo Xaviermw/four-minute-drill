@@ -12,6 +12,9 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   const cardRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const nativeShare = canShareImage();
+  // Exactly what "Copy result" puts on the clipboard -- shown read-only so the
+  // player sees the emoji drive grid before they share it.
+  const shareText = buildShareText(driveLog, roster);
 
   function flash(s: Status) {
     setStatus(s);
@@ -21,7 +24,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   }
 
   async function handleCopy() {
-    const ok = await copyText(buildShareText(driveLog, roster));
+    const ok = await copyText(shareText);
     flash(ok ? { kind: "ok", msg: "Copied!" } : { kind: "err", msg: "Copy failed" });
   }
 
@@ -49,7 +52,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
     if (!blob) return;
     const file = new File([blob], "four-minute-drill.png", { type: "image/png" });
     try {
-      await navigator.share({ text: buildShareText(driveLog, roster), files: [file] });
+      await navigator.share({ text: shareText, files: [file] });
       flash({ kind: "idle" });
     } catch (err) {
       // AbortError = user dismissed the sheet; not an error worth flagging.
@@ -61,6 +64,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   return (
     <div className="share-panel">
       <p className="eyebrow share-panel-title">Share your result</p>
+      <pre className="share-preview" aria-label="Share preview">{shareText}</pre>
       <div className="share-actions">
         <button type="button" className="share-button" onClick={handleCopy} disabled={status.kind === "busy"}>
           📋 Copy result

@@ -13,7 +13,10 @@ export function DriveRecap({ driveLog }: { driveLog: DriveLog }) {
         Final field position &amp; full drive · {driveLog.plays.length} plays
       </summary>
       <div className="drive-recap-body">
-        <DriveFieldVisualizer fieldPosition={finalFieldPosition} />
+        <DriveFieldVisualizer
+          fieldPosition={finalFieldPosition}
+          driveStartPosition={driveLog.plays[0]?.fieldPosition}
+        />
         <div className="drive-log">
           <PlayByPlayFeed plays={driveLog.plays} />
         </div>

@@ -21,16 +21,12 @@ const SLOTS: { key: RosterSlotKey; label: string; position: Position }[] = [
   { key: "k", label: "Kicker", position: "K" },
 ];
 
-const TRANSITION_MS = 300;
-
 export function DraftScreen() {
   const { manifest, error } = useManifest();
   const dispatch = useGameDispatch();
   const { mode, challengeId, dailyRecord } = useMode();
   const [roster, setRoster] = useState<Partial<Record<RosterSlotKey, ManifestPlayerEntry>>>({});
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
-  const [transitioning, setTransitioning] = useState(false);
-  const [pickedId, setPickedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showIntro, setShowIntro] = useState(() => {
@@ -65,15 +61,10 @@ export function DraftScreen() {
   if (isDaily && dailyRecord) return <DailyDone record={dailyRecord} />;
 
   function pick(slot: RosterSlotKey, player: ManifestPlayerEntry) {
-    if (transitioning) return; // ignore double-clicks mid-transition
-    setPickedId(player.gsisId);
+    // Advance immediately -- the draft should feel snappy. The deliberate
+    // beat lives in the drive (the ball gliding in with the play result).
     setRoster((prev) => ({ ...prev, [slot]: player }));
-    setTransitioning(true);
-    setTimeout(() => {
-      setCurrentSlotIndex((i) => i + 1);
-      setTransitioning(false);
-      setPickedId(null);
-    }, TRANSITION_MS);
+    setCurrentSlotIndex((i) => i + 1);
   }
 
   async function handleContinue() {
@@ -125,7 +116,7 @@ export function DraftScreen() {
       )}
       <TeamPanel slots={SLOTS} roster={roster} />
       {!draftComplete && (
-        <div className={`draft-slot-transition ${transitioning ? "fading" : ""}`}>
+        <div className="draft-slot-transition">
           <div className="draft-progress">
             <span className="draft-progress-label">On the clock</span>
             <span className="draft-progress-count">
@@ -138,7 +129,6 @@ export function DraftScreen() {
             options={slotOptions[SLOTS[currentSlotIndex].key]}
             selected={null}
             large
-            pickedId={pickedId}
             onPick={(player) => pick(SLOTS[currentSlotIndex].key, player)}
           />
         </div>

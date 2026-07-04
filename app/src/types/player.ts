@@ -48,6 +48,10 @@ export interface PlayerDataset {
   displayName: string;
   position: Position;
   tier: Tier;
+  /** Most-recent nflverse team abbreviation (may predate a relocation). */
+  team: string | null;
+  /** Most-recent jersey number. */
+  jersey: number | null;
   /** Overall rating 40-99, derived from real aggregate stats. */
   rating: number;
   seasonsCovered: [number, number];
@@ -67,6 +71,8 @@ export interface KickerDataset {
   displayName: string;
   position: "K";
   tier: Tier;
+  team: string | null;
+  jersey: number | null;
   /** Overall rating 40-99, derived from real make rates. */
   rating: number;
   totalAttempts: number;
@@ -78,6 +84,10 @@ export interface ManifestPlayerEntry {
   displayName: string;
   position: Position;
   tier: Tier;
+  /** Most-recent nflverse team abbreviation (may predate a relocation). */
+  team: string | null;
+  /** Most-recent jersey number. */
+  jersey: number | null;
   /** Overall rating 40-99, derived from real aggregate stats. */
   rating: number;
   flavorStats: { headline: string; subline: string };
