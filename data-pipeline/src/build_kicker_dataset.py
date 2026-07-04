@@ -13,6 +13,7 @@ import os
 import pandas as pd
 
 from fetch_pbp import fetch_pbp
+from identity import get_identity
 from rating import kicker_rating
 from resolve_kickers import resolve_kickers
 from schema import kick_distance_bucket_id, KICK_DISTANCE_BUCKETS
@@ -43,11 +44,14 @@ def build_kicker_dataset(pbp, entry):
     gsis_id = entry["gsis_id"]
     kicker_df = _kicker_subset(pbp, gsis_id)
     distance_buckets = build_distance_buckets(kicker_df)
+    ident = get_identity().get(gsis_id, {})
     return {
         "gsisId": gsis_id,
         "displayName": entry["display_name"],
         "position": "K",
         "tier": entry["tier"],
+        "team": ident.get("team"),
+        "jersey": ident.get("jersey"),
         "rating": kicker_rating(distance_buckets),
         "totalAttempts": len(kicker_df),
         "distanceBuckets": distance_buckets,

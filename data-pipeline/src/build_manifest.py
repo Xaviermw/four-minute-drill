@@ -123,6 +123,8 @@ def main():
             "displayName": entry["display_name"],
             "position": entry["position"],
             "tier": entry["tier"],
+            "team": dataset.get("team"),
+            "jersey": dataset.get("jersey"),
             "rating": dataset["rating"],
             "flavorStats": _flavor_stats(dataset, entry["position"]),
         })
@@ -136,6 +138,8 @@ def main():
             "displayName": entry["display_name"],
             "position": "K",
             "tier": entry["tier"],
+            "team": dataset.get("team"),
+            "jersey": dataset.get("jersey"),
             "rating": dataset["rating"],
             "flavorStats": _flavor_stats_kicker(dataset),
         })

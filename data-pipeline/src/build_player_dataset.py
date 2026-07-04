@@ -9,6 +9,7 @@ from collections import defaultdict
 import pandas as pd
 
 from fetch_pbp import fetch_pbp
+from identity import get_identity
 from rating import player_rating
 from resolve_players import resolve_players
 from schema import bucket_key, depth_tier_id
@@ -183,11 +184,14 @@ def build_player_dataset(pbp, entry):
         dropbacks = len(role_dfs["passer"]) + scramble_count
         aggregates_out["passer"]["scrambleRate"] = _safe_div(scramble_count, dropbacks)
 
+    ident = get_identity().get(gsis_id, {})
     return {
         "gsisId": gsis_id,
         "displayName": entry["display_name"],
         "position": entry["position"],
         "tier": entry["tier"],
+        "team": ident.get("team"),
+        "jersey": ident.get("jersey"),
         "rating": player_rating(entry["position"], aggregates_out, total_plays),
         "seasonsCovered": [int(pbp["season"].min()), int(pbp["season"].max())],
         "totalPlaysSampled": total_plays,
