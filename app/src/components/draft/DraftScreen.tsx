@@ -109,7 +109,7 @@ export function DraftScreen() {
               <strong>You call every play</strong> — run, pass, or kick.
             </li>
             <li>
-              <strong>Daily = one shot</strong>, with a new drill at midnight UTC.
+              <strong>Daily = one shot</strong>, with a new drill at midnight ET.
             </li>
           </ul>
         </div>

@@ -30,9 +30,13 @@ function players(): ManifestPlayerEntry[] {
 }
 
 describe("daily challenge core", () => {
-  it("challenge id is the UTC date", () => {
+  it("challenge id is the Eastern date (rolls over at midnight ET)", () => {
+    // 23:30Z on Jul 2 is 19:30 EDT the same day.
     expect(todaysChallengeId(new Date("2026-07-02T23:30:00Z"))).toBe("2026-07-02");
-    expect(todaysChallengeId(new Date("2026-01-05T00:00:01Z"))).toBe("2026-01-05");
+    // Just past UTC midnight in January is still the previous evening in EST.
+    expect(todaysChallengeId(new Date("2026-01-05T00:00:01Z"))).toBe("2026-01-04");
+    // 05:00Z is exactly midnight EST -> the new day flips.
+    expect(todaysChallengeId(new Date("2026-01-05T05:00:00Z"))).toBe("2026-01-05");
   });
 
   it("seeds are stable per id and differ across ids", () => {

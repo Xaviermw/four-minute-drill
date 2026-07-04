@@ -33,7 +33,7 @@ export interface LeaderboardRow {
   choices: DriveChoice[];
   /** The (anonymous) user who submitted it -- used to highlight "you". */
   user_id: string | null;
-  /** Daily Challenge id (UTC date) this score is for, or null for free play. */
+  /** Daily Challenge id (ET date) this score is for, or null for free play. */
   challenge_date: string | null;
 }
 

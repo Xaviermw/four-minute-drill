@@ -7,7 +7,7 @@
 interface DailyStreakStore {
   currentDays: number;
   bestDays: number;
-  lastWinDate: string | null; // challenge id (UTC date) of the last won daily
+  lastWinDate: string | null; // challenge id (ET date) of the last won daily
 }
 
 const KEY = "fmd_daily_streak";
@@ -30,7 +30,8 @@ function write(s: DailyStreakStore): void {
   }
 }
 
-/** The UTC date one day before the given challenge id. */
+/** The calendar date one day before the given challenge id (pure date math on
+ * the id string -- timezone-independent). */
 function prevDate(challengeId: string): string {
   const d = new Date(`${challengeId}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() - 1);
