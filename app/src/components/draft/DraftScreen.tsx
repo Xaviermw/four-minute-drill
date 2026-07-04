@@ -102,7 +102,7 @@ export function DraftScreen() {
         <p className="hint">
           {isDaily
             ? "Everyone gets the same 3 options at each position today. Draft wisely — you get one attempt."
-            : "Each position gives you 3 random options — no searching the whole league. The weaker your roster, the bigger the score if you somehow pull it off."}
+            : "Each position gives you 3 random options. The weaker your roster, the bigger the score if you somehow pull it off."}
         </p>
       </header>
       {showIntro && (

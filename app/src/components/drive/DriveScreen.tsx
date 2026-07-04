@@ -4,6 +4,7 @@ import {
   MANUAL_TEMPO_RANGE,
   MAX_REALISTIC_FIELD_GOAL_DISTANCE,
   SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS,
+  type DriveSituation,
   type PlayCall,
 } from "../../engine";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
@@ -22,28 +23,35 @@ export function DriveScreen() {
   const [plays, setPlays] = useState<PlayResult[]>([]);
   const [resolving, setResolving] = useState(false);
   const [tempoSeconds, setTempoSeconds] = useState(MANUAL_TEMPO_RANGE.min);
+  // While a play resolves we hold the *pre-play* field/scoreboard here, so the
+  // ball glides in with the result on reveal rather than jumping the instant the
+  // play is chosen. Released (null) on reveal -> the field catches up to live.
+  const [held, setHeld] = useState<DriveSituation | null>(null);
 
   if (state.phase !== "driving") return null;
   const { roster, session, scenario } = state;
 
   const options = session.getOptions();
-  const situation = session.getSituation();
-  const fieldGoalDistance = kickDistanceFor(situation.fieldPosition);
+  const live = session.getSituation();
+  const display = held ?? live;
+  const fieldGoalDistance = kickDistanceFor(live.fieldPosition);
   const canAttemptFieldGoal = fieldGoalDistance <= MAX_REALISTIC_FIELD_GOAL_DISTANCE;
-  const canSpike = situation.clockRunning && situation.clockSeconds < SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS;
+  const canSpike = live.clockRunning && live.clockSeconds < SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS;
 
   function handleChoose(call: PlayCall) {
     if (resolving) return;
     setResolving(true);
-    const manualTempo = situation.clockRunning ? tempoSeconds : undefined;
+    setHeld(live); // freeze the field/scoreboard at the pre-play snapshot
+    const manualTempo = live.clockRunning ? tempoSeconds : undefined;
     // Stretch the anticipation on high-leverage snaps (4th down, a field-goal
     // attempt, or inside the final 30s) so the drama scales with the moment.
-    const highLeverage = situation.down === 4 || call.kind === "fieldGoal" || situation.clockSeconds <= 30;
+    const highLeverage = live.down === 4 || call.kind === "fieldGoal" || live.clockSeconds <= 30;
     // Resolve the play immediately (the session itself advances right away),
-    // but hold the reveal for a beat of anticipation before showing the result.
+    // but hold the reveal -- and the field/scoreboard update -- for a beat.
     const { play, status } = session.choosePlay(call, manualTempo);
     setTimeout(() => {
       setPlays((prev) => [...prev, play]);
+      setHeld(null); // release: the ball glides + scoreboard updates with the reveal
       if (status !== "continue") {
         dispatch({ type: "DRIVE_ENDED", driveLog: session.getLog() });
       }
@@ -56,10 +64,10 @@ export function DriveScreen() {
   return (
     <div className="screen drive-screen">
       <DriveFieldVisualizer
-        fieldPosition={situation.fieldPosition}
-        down={situation.down}
-        distance={situation.distance}
-        clockSeconds={situation.clockSeconds}
+        fieldPosition={display.fieldPosition}
+        down={display.down}
+        distance={display.distance}
+        clockSeconds={display.clockSeconds}
         scoreDiff={scenario.scoreDiff}
       />
 
@@ -85,10 +93,10 @@ export function DriveScreen() {
       )}
 
       <div className="play-panel">
-        <div className={`tempo-control ${situation.clockRunning ? "" : "stopped"}`}>
+        <div className={`tempo-control ${live.clockRunning ? "" : "stopped"}`}>
           <div className="tempo-control-top">
             <span className="tempo-label">Snap tempo</span>
-            {situation.clockRunning ? (
+            {live.clockRunning ? (
               <span className="tempo-readout">{tempoSeconds}s</span>
             ) : (
               <span className="tempo-stopped-chip">Clock stopped</span>
@@ -100,11 +108,11 @@ export function DriveScreen() {
             min={MANUAL_TEMPO_RANGE.min}
             max={MANUAL_TEMPO_RANGE.max}
             value={tempoSeconds}
-            disabled={resolving || !situation.clockRunning}
+            disabled={resolving || !live.clockRunning}
             onChange={(e) => setTempoSeconds(Number(e.target.value))}
           />
           <p className="tempo-hint">
-            {situation.clockRunning
+            {live.clockRunning
               ? "Snap quick to save clock, or milk it if you've got time to spare."
               : "Clock's stopped — this snap costs nothing extra."}
           </p>
