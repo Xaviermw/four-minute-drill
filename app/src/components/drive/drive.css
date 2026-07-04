@@ -577,25 +577,6 @@
   transform: translateX(3px);
 }
 
-/* Make-% hint on the field-goal button. */
-.fg-odds {
-  flex: 0 0 auto;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.9rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.28);
-}
-.fg-odds.good {
-  color: var(--grass-bright);
-}
-.fg-odds.even {
-  color: var(--amber);
-}
-.fg-odds.long {
-  color: var(--loss);
-}
 
 /* ---- Persistent actions (FG / spike) ---- */
 .persistent-actions {

@@ -90,12 +90,16 @@ export function DailyDone({ record }: { record: DailyRecord }) {
         Next drill in <strong>{formatCountdown(remaining)}</strong>
       </p>
 
-      <div className="result-actions">
-        <button type="button" className="cta-button" onClick={openLeaderboard}>
-          Today's Leaderboard
+      <div className="daily-freeplay">
+        <p className="daily-freeplay-hook">Daily's done — keep the streak going with unlimited drives.</p>
+        <button type="button" className="cta-button daily-freeplay-cta" onClick={() => setMode("free")}>
+          Play Free Mode →
         </button>
-        <button type="button" className="ghost-button" onClick={() => setMode("free")}>
-          Play Free Mode
+      </div>
+
+      <div className="result-actions">
+        <button type="button" className="ghost-button" onClick={openLeaderboard}>
+          Today's Leaderboard
         </button>
       </div>
 

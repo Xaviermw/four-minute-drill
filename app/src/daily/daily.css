@@ -1,3 +1,26 @@
+/* Post-daily nudge into Free Play (the way to keep playing after the one shot). */
+.daily-freeplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0 0.5rem;
+  padding: 1.1rem 1rem;
+  border: 1px solid rgba(52, 208, 88, 0.35);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(52, 208, 88, 0.1), rgba(52, 208, 88, 0.02));
+}
+.daily-freeplay-hook {
+  margin: 0;
+  text-align: center;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.daily-freeplay-cta {
+  font-size: 1.05rem;
+  padding: 0.85rem 1.8rem;
+}
+
 .daily-countdown {
   text-align: center;
   color: var(--muted);

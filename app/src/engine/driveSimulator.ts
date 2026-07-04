@@ -8,7 +8,7 @@ import {
   PLAY_DURATION_RANGE,
   SPIKE_RUNOFF_SECONDS,
 } from "./constants";
-import { attemptFieldGoal, fieldGoalMakePct, kickDistanceFor } from "./kicker";
+import { attemptFieldGoal, kickDistanceFor } from "./kicker";
 import { drawPlayOptions, type PlayCall } from "./playOptions";
 import { makeRng, type RNG } from "./rng";
 import { clutchMultiplier, rosterPayoutMultiplier } from "./scoring";
@@ -406,13 +406,7 @@ export function createDriveSession(
     return { down, distance, fieldPosition, clockSeconds: Math.max(0, Math.round(clock)), clockRunning };
   }
 
-  /** Make probability (0-1) if the field goal were attempted from where the ball
-   * sits right now -- the exact odds chooseFieldGoal rolls against, for a UI hint. */
-  function getFieldGoalMakePct(): number {
-    return fieldGoalMakePct(roster.k, kickDistanceFor(fieldPosition), leagueAverageKickerRates);
-  }
-
-  return { getOptions, choosePlay, getLog, getSituation, getFieldGoalMakePct };
+  return { getOptions, choosePlay, getLog, getSituation };
 }
 
 export interface DriveSituation {

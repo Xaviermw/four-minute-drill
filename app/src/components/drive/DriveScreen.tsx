@@ -37,7 +37,6 @@ export function DriveScreen() {
   const display = held ?? live;
   const fieldGoalDistance = kickDistanceFor(live.fieldPosition);
   const canAttemptFieldGoal = fieldGoalDistance <= MAX_REALISTIC_FIELD_GOAL_DISTANCE;
-  const fieldGoalMakePct = Math.round(session.getFieldGoalMakePct() * 100);
   const canSpike = live.clockRunning && live.clockSeconds < SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS;
 
   function handleChoose(call: PlayCall) {
@@ -149,9 +148,6 @@ export function DriveScreen() {
                 <span className="play-option-tag tag-fg">FG</span>
                 <span className="play-option-text">
                   Kick a {fieldGoalDistance}-yard field goal · {roster.k.displayName}
-                </span>
-                <span className={`fg-odds ${fieldGoalMakePct >= 75 ? "good" : fieldGoalMakePct >= 50 ? "even" : "long"}`}>
-                  {fieldGoalMakePct}%
                 </span>
               </button>
             )}

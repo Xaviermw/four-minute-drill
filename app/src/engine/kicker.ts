@@ -33,9 +33,8 @@ function shrunkMakePct(
   return shrinkRate(kickerBucket?.makePct, playerN, leagueBucket?.makePct);
 }
 
-/** The kicker's make probability (0-1) for a given kick distance -- the exact
- * value attemptFieldGoal rolls against, so a UI hint built from it can't lie. */
-export function fieldGoalMakePct(
+/** The kicker's make probability (0-1) for a given kick distance. */
+function fieldGoalMakePct(
   kicker: KickerDataset,
   kickDistance: number,
   leagueAverageKickerRates: Partial<Record<KickDistanceTier, KickerDistanceBucket>>
