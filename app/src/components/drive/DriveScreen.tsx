@@ -65,6 +65,8 @@ export function DriveScreen() {
 
   return (
     <div className="screen drive-screen">
+      <TimeBonusMeter clockSeconds={display.clockSeconds} />
+
       <DriveFieldVisualizer
         fieldPosition={display.fieldPosition}
         down={display.down}
@@ -77,8 +79,6 @@ export function DriveScreen() {
       <p className="stakes-strip">
         <span className="stakes-deficit">Down by {-scenario.scoreDiff}</span> · one drive to win it
       </p>
-
-      <TimeBonusMeter clockSeconds={display.clockSeconds} />
 
       {lastPlay && (
         <p

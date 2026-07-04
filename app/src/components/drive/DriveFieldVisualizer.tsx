@@ -61,7 +61,7 @@ export function DriveFieldVisualizer({
         </div>
       )}
       <div className="field-track">
-        <div className="field-endzone home">HOME</div>
+        <div className="field-endzone home">Four Minute Drill</div>
         <div className="field-playing-area">
           <div className="field-stripes" />
           {YARD_TICKS.map((yard, idx) => {
@@ -99,7 +99,7 @@ export function DriveFieldVisualizer({
             <div className="field-ball" />
           </div>
         </div>
-        <div className="field-endzone away">AWAY</div>
+        <div className="field-endzone away">Four Minute Drill</div>
       </div>
       <div className="field-label">{fieldPosition} yards to the end zone</div>
     </div>

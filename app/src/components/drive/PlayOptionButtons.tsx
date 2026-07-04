@@ -1,16 +1,6 @@
-import { describePlayCall, payoutMultiplier, playCallKey, type PlayCall } from "../../engine";
-import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
-import { formatPayout, payoutBand } from "../../utils/formatting";
+import { describePlayCall, playCallKey, type PlayCall } from "../../engine";
+import type { DraftedRoster } from "../../types/roster";
 import "./drive.css";
-
-/** The roster slot a call features, so we can show that player's payout -- the
- * multiplier their score would earn. FG/spike don't feature a scorer this way. */
-function targetSlot(call: PlayCall): RosterSlotKey | null {
-  if (call.kind === "run") return "rb";
-  if (call.kind === "designedRun") return "qb";
-  if (call.kind === "pass") return call.target;
-  return null;
-}
 
 function callTag(call: PlayCall): { text: string; cls: string } {
   switch (call.kind) {
@@ -45,8 +35,6 @@ export function PlayOptionButtons({
     <div className="play-option-buttons">
       {options.map((call) => {
         const tag = callTag(call);
-        const slot = targetSlot(call);
-        const payout = slot ? payoutMultiplier(roster[slot].rating) : null;
         return (
           <button
             key={playCallKey(call)}
@@ -57,14 +45,6 @@ export function PlayOptionButtons({
           >
             <span className={`play-option-tag ${tag.cls}`}>{tag.text}</span>
             <span className="play-option-text">{describePlayCall(call, roster)}</span>
-            {payout !== null && (
-              <span
-                className={`play-option-payout payout-${payoutBand(payout)}`}
-                title="This player's payout multiplier"
-              >
-                {formatPayout(payout)}
-              </span>
-            )}
             <span className="play-option-arrow" aria-hidden="true">
               →
             </span>

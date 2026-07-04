@@ -257,7 +257,7 @@
   left: 50%;
   width: 34px;
   height: 21px;
-  transform: translate(-50%, -50%) rotate(-14deg);
+  transform: translate(-50%, -50%);
   border-radius: 50% / 60%;
   background: radial-gradient(circle at 35% 30%, #c97f43, #6f3512);
   border: 1.5px solid #3d1e0c;
@@ -277,25 +277,28 @@
 
 /* End zones. */
 .field-endzone {
-  flex: 0 0 7.5%;
+  flex: 0 0 8.5%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: clamp(0.6rem, 1.7vh, 0.78rem);
   font-weight: 700;
-  letter-spacing: 0.22em;
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.95);
   writing-mode: vertical-rl;
   white-space: nowrap;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
+/* Left endzone (their own goal) = red; right endzone (the one they're driving
+   to score on, at yardline_100 = 0) = blue. */
 .field-endzone.home {
-  background: linear-gradient(180deg, #17335f, #122a50);
+  background: linear-gradient(180deg, #5c1620, #4a1119);
   border-right: 3px solid rgba(255, 255, 255, 0.85);
 }
 .field-endzone.away {
-  background: linear-gradient(180deg, #5c1620, #4a1119);
+  background: linear-gradient(180deg, #17335f, #122a50);
   border-left: 3px solid rgba(255, 255, 255, 0.85);
 }
 
@@ -309,7 +312,7 @@
 
 /* ---- Clutch (time) bonus meter ---- */
 .time-bonus {
-  margin: 0.5rem 0 0.25rem;
+  margin: 0 0 0.75rem;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
@@ -572,26 +575,6 @@
 .play-option-button:hover:not(:disabled) .play-option-arrow {
   color: var(--grass-bright);
   transform: translateX(3px);
-}
-
-/* Payout chip on a play option -- the multiplier the featured player's score
-   earns, so the payout tradeoff is visible at the moment of choice. */
-.play-option-payout {
-  flex: 0 0 auto;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  padding: 0.15rem 0.4rem;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.28);
-  color: var(--muted);
-}
-.play-option-payout.payout-hot {
-  color: var(--amber);
-}
-.play-option-payout.payout-mid {
-  color: var(--grass-bright);
 }
 
 /* Make-% hint on the field-goal button. */
