@@ -164,6 +164,29 @@
   margin-top: 1.75rem;
 }
 
+/* Won in Free Play: a prominent "run it back" card that leans on the streak. */
+.continue-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.75rem;
+  padding: 1.2rem 1rem;
+  border: 1px solid rgba(52, 208, 88, 0.35);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(52, 208, 88, 0.1), rgba(52, 208, 88, 0.02));
+}
+.continue-cta-hook {
+  margin: 0;
+  text-align: center;
+  color: var(--text);
+  font-size: 0.98rem;
+}
+.continue-cta-button {
+  font-size: 1.1rem;
+  padding: 0.9rem 2rem;
+}
+
 .ghost-button {
   appearance: none;
   cursor: pointer;

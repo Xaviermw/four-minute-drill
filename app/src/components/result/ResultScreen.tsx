@@ -177,6 +177,21 @@ export function ResultScreen() {
             Play Free Mode
           </button>
         </div>
+      ) : driveLog.won ? (
+        // Won in Free Play -> push hard to run it back and grow the streak.
+        <div className="continue-cta">
+          <p className="continue-cta-hook">
+            {freeStreak && freeStreak.streak_wins >= 2
+              ? `${freeStreak.streak_wins} in a row · ${freeStreak.streak_points} pts banked — keep the streak alive.`
+              : "On the board! Run it back and start a win streak."}
+          </p>
+          <button type="button" className="cta-button continue-cta-button" disabled={replaying} onClick={handleReplaySameLineup}>
+            {replaying ? "Loading…" : "Run It Back →"}
+          </button>
+          <button type="button" className="ghost-button" onClick={() => dispatch({ type: "RESTART" })}>
+            New Draft
+          </button>
+        </div>
       ) : (
         <div className="result-actions">
           <button type="button" className="cta-button" disabled={replaying} onClick={handleReplaySameLineup}>
