@@ -38,13 +38,21 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
 3. **Payout linearity**: `payoutMultiplier` (engine/scoring.ts) is linear in
    rating so team payout = average of player payouts. UI shows payout
    (×1.0–×2.0, higher = more points); never resurrect "OVR" labels.
+   `clutchMultiplier` (also scoring.ts) is the single source of truth for the
+   time bonus — the live `TimeBonusMeter` reads it so the preview can't drift
+   from the final score. Keep both there; the sim imports them.
 4. **DriveLog shape** (`seed`, `choices`, `clockSecondsRemaining`, …) is
-   stored in Supabase rows — additive changes only.
+   stored in Supabase rows — additive changes only. `finalFieldPosition(log)`
+   (simResult.ts) is the shared derivation of where a drive ended (0 = scored),
+   used by recap, daily summary, the leaderboard submission, and the "Longest
+   drives" board. Manifest/player entries also carry `team` + `jersey`.
 5. **One-fire effects on result**: guard with the drive-log-identity ref
    pattern (see `recordedLog` in ResultScreen) — StrictMode double-mounts.
 6. Scores/streaks writes: daily drives → daily board + device-local day
    streak; free-play drives → `record_drive` RPC (returns updated streak).
-   Daily does NOT feed the free-play streak board.
+   Daily does NOT feed the free-play streak board. The **Daily accepts losses**
+   (score 0, ranked by `final_field_position`); free play still only takes wins.
+   Gate submit UI accordingly in `SubmitScorePanel` (`isDaily || scored`).
 
 ## Design system
 
@@ -57,6 +65,17 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   `.ghost-button` secondary, modal = overlay + panel (leaderboard.css /
   howItWorks.css), banners `.streak-banner`, payout heat = amber(hot ≥1.6) /
   green(mid ≥1.3) / muted(low) via `payoutBand` — band on the *rounded* value.
+- **Team identity**: `utils/teamColors.ts` maps a team abbr → `{primary,
+  secondary,name}` for all 32, with relocation ALIASES (SD→LAC, OAK→LV,
+  STL/LA→LAR, JAC→JAX, WSH→WAS) and a NEUTRAL fallback — always resolve colors
+  through `teamColors(team)`, never index the map raw (data keeps historical
+  abbrevs). PlayerCard/ResultCard show a team-color band/border + jersey chip +
+  payout chip; play options show a target payout chip; the FG button shows a
+  make-% from `session.getFieldGoalMakePct()` (real engine odds, not a guess).
+- **Field** = broadcast drive chart (`DriveFieldVisualizer` + drive.css): blue
+  scrimmage line, yellow first-down line, amber drive trail + start ring (pass
+  `driveStartPosition`), faint "4MD", numerals top+bottom, deep endzones. Uses
+  yardline_100 (`progressPct = 100 - fieldPosition`).
 - Motion rules: house easing `cubic-bezier(0.22,1,0.36,1)`; entrances 250ms,
   movement 800ms; global `prefers-reduced-motion` guard lives in `index.css`
   (neutralizes all durations) — JS animations (`utils/confetti.ts`,
@@ -69,6 +88,11 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
 - Copy: ball spot via `formatBallOn`; the drive scoreboard is DOWN · BALL ON ·
   SCORE · CLOCK (`DriveFieldVisualizer` takes `scoreDiff`). localStorage flags:
   `fmd_seen_intro` (coach strip), `fmd_daily_*`/`fmd_daily_streak` (daily).
+  Share text (`share/shareText.ts`) includes a Wordle-style emoji **drive grid**
+  (`buildDriveGrid`: 🟩15+/🟨4-14/⬜1-3/🟥stuffed/🏈TD/❌TO + terminal 🎯/🚫/🛑/🏁);
+  SharePanel shows it in a read-only preview. Default scenario is **down 3**.
+  Draft picks advance instantly (no transition delay) — the deliberate beat is
+  the ball gliding in on the drive result, not the draft.
 - Football conventions in copy: ball spot as "OWN 20"/"AWAY 29" (yardline_100
   >50 → OWN 100-x, else AWAY x), never raw yards-to-endzone in labels.
 - Design source docs: `app/FrontEndDesign.md`, `docs/ux-review.md`,
@@ -88,6 +112,9 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   `data-pipeline/venv` (Windows: `venv/Scripts/python.exe`). Run in order:
   `build_player_dataset.py` → `build_kicker_dataset.py` → `build_manifest.py`
   → `validate_dataset.py`. Each re-fetches pbp (minutes; run in background).
+  `identity.py` (`get_identity`, cached) adds `team`/`jersey` from nflverse
+  `import_seasonal_rosters` (most-recent season wins) — builders read it, and
+  manifest re-reads team/jersey from the written player JSONs.
   **Clear `output/players/*.json` first** (writes never delete → orphans),
   then `rm -rf app/public/data && cp -r data-pipeline/output app/public/data`.
   Curated pool: `data-pipeline/config/roster_pool.yaml` (name resolution
@@ -97,8 +124,12 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   (`aws-1-us-west-2.pooler.supabase.com:6543`, user
   `postgres.kwvckwhabshotbqoiyao`, password = `SUPABASE_DB_PASSWORD` in
   gitignored `app/.env.local` — direct DB host is IPv6-only/unreachable).
-  Pattern: temp node script with `pg` in the scratchpad, delete after.
-  Changing a function's return type requires DROP first. Always add the
+  Simplest: `psql.exe` (bundled at `/c/Program Files/PostgreSQL/18/bin/`) with a
+  `host=… port=6543 … sslmode=require` conn string and `-f migration.sql`
+  (source `.env.local`, `PGPASSWORD=$SUPABASE_DB_PASSWORD`); or a temp node `pg`
+  script in scratchpad, delete after. Changing a function's return type — or a
+  policy — requires DROP first, and a recreated **insert policy must re-include
+  `name_ok(name)`** (added in 005) or it silently regresses. Always add the
   migration file AND update `app/SUPABASE_SETUP.md`.
 - **Deploy**: push to `main` → Vercel auto-builds (root `app`). Verify:
   `curl -s https://four-minute-drill.vercel.app/ | grep -oE 'assets/index-[^"]+\.js'`
