@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { trackEvent } from "../../analytics/track";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
 import { DriveRecap } from "./DriveRecap";
@@ -69,6 +70,12 @@ export function ResultScreen() {
     if (state.phase !== "result") return;
     if (recordedLog.current === state.driveLog) return;
     recordedLog.current = state.driveLog;
+    trackEvent("drive_completed", {
+      mode,
+      won: state.driveLog.won,
+      endReason: state.driveLog.endReason,
+      score: state.driveLog.score,
+    });
     if (mode === "daily") {
       saveDaily({
         challengeId,

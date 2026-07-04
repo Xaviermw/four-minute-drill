@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { trackEvent } from "../../analytics/track";
 import {
   kickDistanceFor,
   MANUAL_TEMPO_RANGE,
@@ -8,6 +9,7 @@ import {
   type PlayCall,
 } from "../../engine";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
+import { useMode } from "../../state/ModeProvider";
 import type { PlayResult } from "../../types/simResult";
 import { DriveFieldVisualizer } from "./DriveFieldVisualizer";
 import { PlayByPlayFeed } from "./PlayByPlayFeed";
@@ -28,6 +30,14 @@ export function DriveScreen() {
   // ball glides in with the result on reveal rather than jumping the instant the
   // play is chosen. Released (null) on reveal -> the field catches up to live.
   const [held, setHeld] = useState<DriveSituation | null>(null);
+  const { mode } = useMode();
+
+  // One drive start per mount (App only mounts DriveScreen while phase is
+  // "driving", so this fires once per drive -- draft, replay, or shared link).
+  useEffect(() => {
+    trackEvent("drive_started", { mode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (state.phase !== "driving") return null;
   const { roster, session, scenario } = state;

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { trackEvent } from "../analytics/track";
 import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
 import { useGameDispatch } from "../state/GameStateProvider";
@@ -27,6 +28,7 @@ export function useSharedLineupDeepLink(): boolean {
     tokenRef.current = null;
     if (!roster) return; // bad token -> stay on the normal draft screen
     startedRef.current = true;
+    trackEvent("lineup_link_opened"); // someone arrived via a shared team -- the viral entry
 
     startDrive(roster, manifest)
       .then(({ scenario, session }) => {

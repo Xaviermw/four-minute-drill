@@ -137,6 +137,11 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   policy — requires DROP first, and a recreated **insert policy must re-include
   `name_ok(name)`** (added in 005) or it silently regresses. Always add the
   migration file AND update `app/SUPABASE_SETUP.md`.
+- **Analytics**: Vercel Web Analytics via `inject()` (main.tsx) + custom funnel
+  events through `analytics/track.ts` (`trackEvent(name, props)`, best-effort,
+  no-ops locally). Events: `draft_started`, `drive_started`, `drive_completed`,
+  `score_submitted`, `result_shared`, `lineup_link_opened`. Keep names stable;
+  add to the `AnalyticsEvent` union, don't inline `track()` calls.
 - **Deploy**: push to `main` → Vercel auto-builds (root `app`). Verify:
   `curl -s https://four-minute-drill.vercel.app/ | grep -oE 'assets/index-[^"]+\.js'`
   then grep the bundle for a new string; poll ~20s intervals.

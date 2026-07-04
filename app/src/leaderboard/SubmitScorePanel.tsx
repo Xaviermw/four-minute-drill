@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { trackEvent } from "../analytics/track";
 import type { DraftedRoster } from "../types/roster";
 import { finalFieldPosition, type DriveLog } from "../types/simResult";
 import {
@@ -59,6 +60,7 @@ export function SubmitScorePanel({
     try {
       const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster, challengeId));
       setRank(newRank);
+      trackEvent("score_submitted", { mode: isDaily ? "daily" : "free", scored, rank: newRank });
       // A scoreless daily drive ranks by how far it drove, not its (zero) score.
       if (isDaily && !scored) {
         const pct = await fetchDailyDrivePercentile(challengeId, finalFieldPosition(driveLog)).catch(() => null);

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { trackEvent } from "../../analytics/track";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
 import { dailyDraftRng, dailyDriveSeed } from "../../daily/dailyChallenge";
@@ -37,6 +38,15 @@ export function DraftScreen() {
     }
   });
   const isDaily = mode === "daily";
+
+  // Top of funnel: count each time the player is actually shown a draft to build
+  // (not the DailyDone recap). Once per mount, guarded so re-renders don't repeat.
+  const draftTracked = useRef(false);
+  useEffect(() => {
+    if (draftTracked.current || !manifest || (isDaily && dailyRecord)) return;
+    draftTracked.current = true;
+    trackEvent("draft_started", { mode });
+  }, [manifest, isDaily, dailyRecord, mode]);
 
   function dismissIntro() {
     try {

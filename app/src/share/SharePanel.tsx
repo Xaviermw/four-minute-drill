@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { trackEvent } from "../analytics/track";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { ResultCard } from "./ResultCard";
@@ -25,6 +26,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
 
   async function handleCopy() {
     const ok = await copyText(shareText);
+    if (ok) trackEvent("result_shared", { method: "copy", won: driveLog.won });
     flash(ok ? { kind: "ok", msg: "Copied!" } : { kind: "err", msg: "Copy failed" });
   }
 
@@ -43,6 +45,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
     const blob = await renderBlob();
     if (!blob) return;
     downloadBlob(blob, "four-minute-drill.png");
+    trackEvent("result_shared", { method: "image", won: driveLog.won });
     flash({ kind: "ok", msg: "Saved!" });
   }
 
@@ -53,6 +56,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
     const file = new File([blob], "four-minute-drill.png", { type: "image/png" });
     try {
       await navigator.share({ text: shareText, files: [file] });
+      trackEvent("result_shared", { method: "native", won: driveLog.won });
       flash({ kind: "idle" });
     } catch (err) {
       // AbortError = user dismissed the sheet; not an error worth flagging.
