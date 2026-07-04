@@ -49,8 +49,8 @@ export function DailyDone({ record }: { record: DailyRecord }) {
         <h1 className="result-headline">{driveLog.won ? "That's a wrap for today" : "Better luck tomorrow"}</h1>
         <p className="result-sub">You get one shot at the daily.</p>
         <div className="result-score">
-          <span className={`result-score-num ${driveLog.won ? "" : "zero"}`}>
-            {driveLog.won ? `+${driveLog.score}` : "0"}
+          <span className={`result-score-num ${driveLog.score > 0 ? "" : "zero"}`}>
+            {driveLog.score > 0 ? `+${driveLog.score}` : "0"}
           </span>
           <span className="result-score-unit">points</span>
         </div>
@@ -61,7 +61,9 @@ export function DailyDone({ record }: { record: DailyRecord }) {
       <p className="daily-final-spot">
         {driveLog.won
           ? `Scored with ${formatClock(driveLog.clockSecondsRemaining)} on the clock`
-          : `Your drive stalled at ${formatBallOn(finalFieldPosition)}`}
+          : `Your drive stalled at ${formatBallOn(finalFieldPosition)}${
+              driveLog.score > 0 ? ` · +${driveLog.score} pts for the march` : ""
+            }`}
       </p>
 
       {roster ? (

@@ -44,7 +44,7 @@ export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roste
         <div className="rc-hero">
           <div className="rc-outcome">{OUTCOME[driveLog.endReason] ?? driveLog.endReason}</div>
           <div className="rc-score">
-            <span className="rc-score-num">{driveLog.won ? driveLog.score : 0}</span>
+            <span className="rc-score-num">{driveLog.score}</span>
             <span className="rc-score-unit">PTS</span>
           </div>
         </div>

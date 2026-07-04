@@ -36,6 +36,10 @@ export interface ScoreBreakdown {
   baseLabel: string; // "Touchdown" | "Field Goal" | "No Score"
   rosterMultiplier: number;
   clockMultiplier: number;
+  /** Net yards the drive advanced (only credited on a scoreless drive). */
+  driveYards: number;
+  /** Marginal points from those yards, before the roster multiplier. */
+  drivePoints: number;
   total: number;
 }
 

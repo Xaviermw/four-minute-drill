@@ -28,7 +28,7 @@ const wonLog = (score: number, endReason: string): DriveLog =>
     endReason: endReason as DriveLog["endReason"],
     won: endReason.startsWith("WIN"),
     score,
-    scoreBreakdown: { basePoints: 7, baseLabel: "Touchdown", rosterMultiplier: 1, clockMultiplier: 1, total: score },
+    scoreBreakdown: { basePoints: 7, baseLabel: "Touchdown", rosterMultiplier: 1, clockMultiplier: 1, driveYards: 0, drivePoints: 0, total: score },
     seed: 1,
     choices: [],
     clockSecondsRemaining: 42,

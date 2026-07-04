@@ -77,7 +77,7 @@ function shortName(displayName: string): string {
  */
 export function buildShareText(driveLog: DriveLog, roster: DraftedRoster, url = buildShareUrl(roster)): string {
   const payout = formatPayout(rosterPayoutMultiplier(LINEUP_SLOT_ORDER.map((slot) => roster[slot].rating)));
-  const scoreLine = driveLog.won ? `${driveLog.score} pts` : "no score";
+  const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
   const lines = [
     `🏈 Four Minute Drill — ${scoreLine}`,

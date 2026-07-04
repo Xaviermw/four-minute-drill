@@ -46,6 +46,12 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
    (simResult.ts) is the shared derivation of where a drive ended (0 = scored),
    used by recap, daily summary, the leaderboard submission, and the "Longest
    drives" board. Manifest/player entries also carry `team` + `jersey`.
+   **Scoring**: a win is `base(TD 100/FG 40) × rosterPayout × clutch`; a
+   *scoreless* drive still banks `round(yardsAdvanced × DRIVE_POINTS_PER_YARD
+   0.5) × rosterPayout` (no clutch) — so `score` can be >0 on a `won:false`
+   drive, and `ScoreBreakdown` carries `driveYards`/`drivePoints`. Free play
+   still submits wins-only; the Daily submits every drive (losses now have a
+   real score, not 0).
 5. **One-fire effects on result**: guard with the drive-log-identity ref
    pattern (see `recordedLog` in ResultScreen) — StrictMode double-mounts.
 6. Scores/streaks writes: daily drives → daily board + device-local day

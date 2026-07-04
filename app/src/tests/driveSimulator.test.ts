@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { createDriveSession } from "../engine/driveSimulator";
 import { MAX_PLAYS_PER_DRIVE } from "../engine/constants";
 import { MIN_SAMPLE_THRESHOLD } from "../engine/situational";
+import { rosterPayoutMultiplier } from "../engine";
 import type { DraftedRosterData } from "../types/roster";
-import type { DriveLog } from "../types/simResult";
+import { finalFieldPosition, type DriveLog } from "../types/simResult";
 import { makeKickerFixture, makeOutcome, makePlayerFixture } from "./fixtures";
 
 function makeRoster(): DraftedRosterData {
@@ -159,6 +160,28 @@ describe("DriveSession", () => {
     const log = session.getLog();
     expect(log.won).toBe(false);
     expect(log.score).toBe(0);
+  });
+
+  it("a scoreless drive banks marginal points for yards advanced (times payout)", () => {
+    const roster = makeRoster();
+    const ratings = [roster.qb, roster.rb, roster.wr1, roster.wr2, roster.te, roster.k].map((p) => p.rating);
+    const payout = rosterPayoutMultiplier(ratings);
+    let sawAdvancingLoss = false;
+    for (let seed = 0; seed < 200; seed++) {
+      const log = runToCompletion(roster, seed);
+      if (log.won) {
+        expect(log.scoreBreakdown.driveYards).toBe(0);
+        continue;
+      }
+      const yards = Math.max(0, scenario.fieldPosition - finalFieldPosition(log));
+      expect(log.scoreBreakdown.driveYards).toBe(yards);
+      // score = round(round(yards * 0.5) * payout), no clutch bonus on a loss.
+      expect(log.score).toBe(Math.round(Math.round(yards * 0.5) * payout));
+      expect(log.scoreBreakdown.clockMultiplier).toBe(1);
+      if (log.score > 0) sawAdvancingLoss = true;
+    }
+    // The feature is actually exercised: some losses that drove downfield scored.
+    expect(sawAdvancingLoss).toBe(true);
   });
 
   it("spiking consumes a down, costs a fixed 10s, and stops the clock", () => {

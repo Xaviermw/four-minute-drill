@@ -23,6 +23,11 @@ import {
 
 const TOUCHDOWN_BASE_POINTS = 100;
 const FIELD_GOAL_BASE_POINTS = 40;
+// Consolation points for a scoreless drive: this many per yard advanced toward
+// the end zone (still multiplied by the roster payout). At 0.5, marching ~60
+// yards before stalling banks ~30 before payout -- meaningful, but a field goal
+// (40 base) or touchdown (100) still clearly beats driving and coming up short.
+const DRIVE_POINTS_PER_YARD = 0.5;
 
 const BIG_GAIN_YARDS = 20;
 
@@ -227,24 +232,34 @@ function rosterMultiplierFor(roster: DraftedRosterData): number {
 }
 
 /**
- * Score is 0 on any loss. On a win, a touchdown is worth more than a field
- * goal, a weaker drafted roster (lower overall rating) multiplies the score up
- * (the upset/skill bonus), and scoring with less clock left multiplies it up
- * further (the clutch bonus). Returned itemized so the UI can show the
+ * On a win, a touchdown is worth more than a field goal, a weaker drafted roster
+ * multiplies the score up (the upset/skill bonus), and scoring with less clock
+ * left multiplies it up further (the clutch bonus). A scoreless drive still
+ * banks marginal points for the yards it advanced (times the roster payout, but
+ * no clutch bonus -- you didn't score). Returned itemized so the UI can show the
  * breakdown, not just the final total.
  */
-function computeScore(endReason: DriveEndReason, roster: DraftedRosterData, clockAtScoreSeconds: number): ScoreBreakdown {
+function computeScore(
+  endReason: DriveEndReason,
+  roster: DraftedRosterData,
+  clockAtScoreSeconds: number,
+  yardsAdvanced: number
+): ScoreBreakdown {
   const basePoints = endReason === "WIN_TOUCHDOWN" ? TOUCHDOWN_BASE_POINTS : endReason === "WIN_FIELD_GOAL" ? FIELD_GOAL_BASE_POINTS : 0;
   const baseLabel = endReason === "WIN_TOUCHDOWN" ? "Touchdown" : endReason === "WIN_FIELD_GOAL" ? "Field Goal" : "No Score";
+  const rosterMultiplier = rosterMultiplierFor(roster);
 
   if (basePoints === 0) {
-    return { basePoints, baseLabel, rosterMultiplier: 1, clockMultiplier: 1, total: 0 };
+    // Scoreless: marginal credit for the drive, no clutch bonus.
+    const driveYards = Math.max(0, Math.round(yardsAdvanced));
+    const drivePoints = Math.round(driveYards * DRIVE_POINTS_PER_YARD);
+    const total = Math.round(drivePoints * rosterMultiplier);
+    return { basePoints, baseLabel, rosterMultiplier, clockMultiplier: 1, driveYards, drivePoints, total };
   }
 
-  const rosterMultiplier = rosterMultiplierFor(roster);
   const clockMultiplier = clutchMultiplier(clockAtScoreSeconds);
   const total = Math.round(basePoints * rosterMultiplier * clockMultiplier);
-  return { basePoints, baseLabel, rosterMultiplier, clockMultiplier, total };
+  return { basePoints, baseLabel, rosterMultiplier, clockMultiplier, driveYards: 0, drivePoints: 0, total };
 }
 
 /**
@@ -398,7 +413,12 @@ export function createDriveSession(
     if (!endReason) throw new Error("Drive has not ended yet");
     const won = endReason === "WIN_TOUCHDOWN" || endReason === "WIN_FIELD_GOAL";
     const clockSecondsRemaining = Math.max(0, Math.round(clock));
-    const scoreBreakdown = computeScore(endReason, roster, Math.max(0, clock));
+    // Net yards toward the end zone, derived from the last play so it matches the
+    // recap/field "final field position" exactly (0 = reached the end zone).
+    const lastPlay = plays[plays.length - 1];
+    const finalFP = lastPlay ? Math.max(0, lastPlay.fieldPosition - lastPlay.outcome.yards) : scenario.fieldPosition;
+    const yardsAdvanced = Math.max(0, scenario.fieldPosition - finalFP);
+    const scoreBreakdown = computeScore(endReason, roster, Math.max(0, clock), yardsAdvanced);
     return { plays, endReason, won, score: scoreBreakdown.total, scoreBreakdown, seed, choices, clockSecondsRemaining };
   }
 

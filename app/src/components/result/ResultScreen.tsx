@@ -49,8 +49,9 @@ export function ResultScreen() {
   const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
   const [daily, setDaily] = useState<{ days: number; best: number; state: DailyStreakState } | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const won = state.phase === "result" && state.driveLog.won;
-  const displayScore = useCountUp(won ? state.driveLog.score : 0);
+  // Count up the actual score -- a scoreless drive still banks marginal yardage
+  // points, so a "loss" can land above zero.
+  const displayScore = useCountUp(state.phase === "result" ? state.driveLog.score : 0);
   // Celebrate a win once (StrictMode-safe via the drive-log-identity ref).
   const confettiLog = useRef<DriveLog | null>(null);
   useEffect(() => {
@@ -110,17 +111,12 @@ export function ResultScreen() {
         </span>
         <h1 className="result-headline">{END_REASON_TEXT[driveLog.endReason]}</h1>
         <p className="result-sub">{END_REASON_SUB[driveLog.endReason]}</p>
-        {driveLog.won ? (
-          <div className="result-score">
-            <span className="result-score-num">+{displayScore}</span>
-            <span className="result-score-unit">points</span>
-          </div>
-        ) : (
-          <div className="result-score">
-            <span className="result-score-num zero">0</span>
-            <span className="result-score-unit">points</span>
-          </div>
-        )}
+        <div className="result-score">
+          <span className={`result-score-num ${driveLog.score > 0 ? "" : "zero"}`}>
+            {driveLog.score > 0 ? `+${displayScore}` : "0"}
+          </span>
+          <span className="result-score-unit">points</span>
+        </div>
       </div>
 
       {!driveLog.won && lastPlay && <p className="fatal-play">{lastPlay.description}</p>}
@@ -128,7 +124,7 @@ export function ResultScreen() {
       {daily && <DailyStreakBadge days={daily.days} best={daily.best} state={daily.state} />}
       {freeStreak && <FreeStreakBanner streak={freeStreak} />}
 
-      {driveLog.won && (
+      {driveLog.won ? (
         <div className="score-receipt">
           <p className="eyebrow score-receipt-title">How you scored it</p>
           <ul className="score-breakdown-items">
@@ -150,7 +146,26 @@ export function ResultScreen() {
             </li>
           </ul>
         </div>
-      )}
+      ) : driveLog.score > 0 ? (
+        // Scoreless drive that still banked yardage points.
+        <div className="score-receipt">
+          <p className="eyebrow score-receipt-title">Credit for the drive</p>
+          <ul className="score-breakdown-items">
+            <li style={{ "--i": 0 } as CSSProperties}>
+              <span>Drive · {driveLog.scoreBreakdown.driveYards} yds advanced</span>
+              <span>{driveLog.scoreBreakdown.drivePoints} pts</span>
+            </li>
+            <li style={{ "--i": 1 } as CSSProperties}>
+              <span>Roster payout · weaker = bigger</span>
+              <span>&times;{driveLog.scoreBreakdown.rosterMultiplier.toFixed(2)}</span>
+            </li>
+            <li className="score-breakdown-total" style={{ "--i": 2 } as CSSProperties}>
+              <span>Final score</span>
+              <span>{driveLog.scoreBreakdown.total} pts</span>
+            </li>
+          </ul>
+        </div>
+      ) : null}
 
       <p className="roster-credit">
         {roster.qb.displayName} to {roster.wr1.displayName}, {roster.wr2.displayName}, {roster.te.displayName},{" "}
