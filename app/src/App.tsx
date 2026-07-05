@@ -5,6 +5,7 @@ import { ResultScreen } from "./components/result/ResultScreen";
 import { DataProvider } from "./data/dataContext";
 import { LeaderboardUIProvider, useLeaderboardUI } from "./leaderboard/LeaderboardUI";
 import { isLeaderboardEnabled } from "./leaderboard/supabaseClient";
+import { GhostProvider, useGhost } from "./share/GhostProvider";
 import { useSharedLineupDeepLink } from "./share/useSharedLineupDeepLink";
 import { GameStateProvider, useGameState } from "./state/GameStateProvider";
 import { ModeProvider, useMode } from "./state/ModeProvider";
@@ -39,6 +40,7 @@ function ModeToggle() {
 
 function AppBody() {
   const sharedLineup = useSharedLineupDeepLink();
+  const { ghost } = useGhost();
   const { open: openLeaderboard } = useLeaderboardUI();
   return (
     <div className="app-shell">
@@ -63,7 +65,9 @@ function AppBody() {
       </header>
       {sharedLineup && (
         <div className="shared-banner" role="status">
-          🔗 You’re running a shared lineup — beat their score!
+          {ghost
+            ? `👻 Racing ${ghost.name ?? "a ghost"}'s drive — ${ghost.score} pts to beat.`
+            : "🔗 You’re running a shared lineup — beat their score!"}
         </div>
       )}
       <main className="app-main">
@@ -87,9 +91,11 @@ function App() {
     <DataProvider>
       <GameStateProvider>
         <ModeProvider>
-          <LeaderboardUIProvider>
-            <AppBody />
-          </LeaderboardUIProvider>
+          <GhostProvider>
+            <LeaderboardUIProvider>
+              <AppBody />
+            </LeaderboardUIProvider>
+          </GhostProvider>
         </ModeProvider>
       </GameStateProvider>
     </DataProvider>

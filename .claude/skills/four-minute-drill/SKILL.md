@@ -99,6 +99,16 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   SCORE · CLOCK (`DriveFieldVisualizer` takes `scoreDiff`). localStorage flags:
   `fmd_seen_intro` (coach strip), `fmd_daily_*`/`fmd_daily_streak` (daily),
   `fmd_rookie_done` (graduation).
+- **Ghost racing** (`share/ghost.ts` + `GhostProvider`): every share link
+  carries the drive's DNA (`g=1.<seed36>.<score36>.<2-chars-per-choice>` +
+  optional `by=` name, filtered by nameFilter). The receiver's client REPLAYS
+  it (getOptions() before every choosePlay — the RNG rule) and races it
+  clock-synced (`ghostStepAtClock`); if the replay doesn't reproduce the
+  claimed score (data changed since the share), the ghost is silently dropped
+  to the plain beat-their-score flow — never show a wrong ghost. CALL_ORDER
+  in ghost.ts is wire format: append-only, never reorder. Ghost survives Run
+  It Back, cleared on entering the draft. Data slims/refreshes invalidate
+  in-flight ghost links (accepted).
 - **Rookie drive** (`state/rookie.ts`): a visitor with NO `fmd_*` keys is a
   rookie — ModeProvider defaults them to free play framed as "Rookie Drive ·
   no stakes"; completing ANY drive graduates them (`markRookieDone` in

@@ -10,6 +10,7 @@ export function DriveFieldVisualizer({
   clockSeconds,
   scoreDiff,
   driveStartPosition,
+  ghostPosition,
 }: {
   fieldPosition: number;
   down?: number;
@@ -18,6 +19,8 @@ export function DriveFieldVisualizer({
   scoreDiff?: number;
   /** Yards-to-end-zone where this drive began, for the drive trail. */
   driveStartPosition?: number;
+  /** Where the ghost's drive stood at this game clock (ghost racing). */
+  ghostPosition?: number;
 }) {
   // fieldPosition = yards to go to the opponent's goal line (yardline_100 convention).
   const progressPct = Math.max(0, Math.min(100, 100 - fieldPosition));
@@ -93,6 +96,14 @@ export function DriveFieldVisualizer({
             <div className="field-fd" style={{ left: `${fdPct}%` }}>
               <span className="field-fd-tag">1ST</span>
             </div>
+          )}
+
+          {ghostPosition !== undefined && (
+            <div
+              className="field-ghost"
+              style={{ left: `${Math.max(0, Math.min(100, 100 - ghostPosition))}%` }}
+              title="The ghost's ball at this game clock"
+            />
           )}
 
           <div className="field-marker" style={{ left: `${progressPct}%` }}>

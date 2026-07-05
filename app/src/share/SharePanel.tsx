@@ -6,6 +6,7 @@ import { capForChallenge } from "../draft/capConfig";
 import { useMode } from "../state/ModeProvider";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
+import { getStoredName } from "../leaderboard/leaderboardApi";
 import { ResultCard } from "./ResultCard";
 import { buildShareText } from "./shareText";
 import { LINEUP_SLOT_ORDER } from "./lineupCode";
@@ -25,8 +26,9 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   // The cap this drive was built under (theme days can vary it); free play is standard.
   const { cap } = capForChallenge(mode === "daily" ? challengeId : null);
   // Exactly what "Copy result" puts on the clipboard -- shown read-only so the
-  // player sees the emoji drive grid before they share it.
-  const shareText = buildShareText(driveLog, roster, spend, undefined, cap);
+  // player sees the emoji drive grid before they share it. The link carries the
+  // ghost (this drive's seed+choices) so the receiver races it.
+  const shareText = buildShareText(driveLog, roster, spend, undefined, cap, getStoredName() || undefined);
 
   function flash(s: Status) {
     setStatus(s);

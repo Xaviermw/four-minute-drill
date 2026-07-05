@@ -11,6 +11,7 @@ import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import { isRookie, markRookieDone } from "../../state/rookie";
+import { useGhost } from "../../share/GhostProvider";
 import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
@@ -45,6 +46,7 @@ export function ResultScreen() {
   const { manifest } = useManifest();
   const { open: openLeaderboard } = useLeaderboardUI();
   const { mode, challengeId, saveDaily, markSubmitted, setMode } = useMode();
+  const { ghost } = useGhost();
   const isDaily = mode === "daily";
   const [replaying, setReplaying] = useState(false);
   const [replayError, setReplayError] = useState<string | null>(null);
@@ -135,6 +137,25 @@ export function ResultScreen() {
       </div>
 
       {!driveLog.won && lastPlay && <p className="fatal-play">{lastPlay.description}</p>}
+
+      {ghost && (
+        <div
+          className={`ghost-compare ${
+            driveLog.score > ghost.score ? "beat" : driveLog.score < ghost.score ? "lost" : "tied"
+          }`}
+        >
+          <span className="ghost-compare-line">
+            👻 {ghost.name ?? "Ghost"}: <b>{ghost.score}</b> · You: <b>{driveLog.score}</b>
+          </span>
+          <span className="ghost-compare-verdict">
+            {driveLog.score > ghost.score
+              ? "You beat their drive."
+              : driveLog.score < ghost.score
+                ? "Their drive holds up. Run it back?"
+                : "Dead even. That can't stand."}
+          </span>
+        </div>
+      )}
 
       {daily && <DailyStreakBadge days={daily.days} best={daily.best} state={daily.state} />}
       {freeStreak && <FreeStreakBanner streak={freeStreak} />}

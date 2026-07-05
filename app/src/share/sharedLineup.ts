@@ -53,11 +53,13 @@ export function readTeamToken(
   return new URLSearchParams(search).get("team");
 }
 
-/** Strips the `?team=` param from the address bar after a deep link is consumed,
- * so a later normal draft doesn't keep re-triggering it on refresh. */
+/** Strips the deep-link params (`team`, plus the ghost's `g`/`by`) from the
+ * address bar once consumed, so a later normal draft doesn't re-trigger it. */
 export function clearTeamParam(): void {
   if (typeof window === "undefined" || !window.history?.replaceState) return;
   const url = new URL(window.location.href);
   url.searchParams.delete("team");
+  url.searchParams.delete("g");
+  url.searchParams.delete("by");
   window.history.replaceState({}, "", url.pathname + url.search + url.hash);
 }

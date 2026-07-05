@@ -1,6 +1,7 @@
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { CAP } from "../draft/pricing";
+import { encodeGhostParam } from "./ghost";
 import { encodeLineup } from "./lineupCode";
 
 /** Short outcome label for the share blurb (distinct from the on-screen copy). */
@@ -19,17 +20,28 @@ export function outcomeLabel(endReason: string): string {
 
 /**
  * Builds the `?team=` share URL for a roster against the current page origin.
- * Returns null when the lineup can't be encoded (no shareable link, but text
- * can still be copied). `origin` is injectable for tests.
+ * When a drive log (and optionally the sharer's name) is provided, the link
+ * also carries the ghost -- the exact (seed, choices) of that drive -- so the
+ * receiver races it. Returns null when the lineup can't be encoded (no
+ * shareable link, but text can still be copied). `origin` is injectable for tests.
  */
 export function buildShareUrl(
   roster: DraftedRoster,
-  origin: string = typeof window !== "undefined" ? window.location.origin + window.location.pathname : ""
+  origin: string = typeof window !== "undefined" ? window.location.origin + window.location.pathname : "",
+  driveLog?: DriveLog,
+  sharerName?: string
 ): string | null {
   const token = encodeLineup(roster);
   if (token === null) return null;
   const base = origin.replace(/[?#].*$/, "").replace(/\/$/, "");
-  return `${base}/?team=${token}`;
+  let url = `${base}/?team=${token}`;
+  const ghost = driveLog ? encodeGhostParam(driveLog) : null;
+  if (ghost) {
+    url += `&g=${ghost}`;
+    const name = sharerName?.trim().slice(0, 20);
+    if (name) url += `&by=${encodeURIComponent(name)}`;
+  }
+  return url;
 }
 
 /**
@@ -72,16 +84,19 @@ function shortName(displayName: string): string {
 
 /**
  * Wordle/82-0-style shareable summary: a headline with the score, the outcome
- * and cap spend, the six-player lineup, and (when encodable) a "beat it" link.
- * `spend` is the team's total salary; when omitted the cap line is dropped.
+ * and cap spend, the six-player lineup, and (when encodable) a race-my-drive
+ * link carrying the ghost. `spend` is the team's total salary; when omitted
+ * the cap line is dropped. Pass `url: null` to omit the link.
  */
 export function buildShareText(
   driveLog: DriveLog,
   roster: DraftedRoster,
   spend?: number,
-  url = buildShareUrl(roster),
-  cap = CAP
+  url: string | null | undefined = undefined,
+  cap = CAP,
+  sharerName?: string
 ): string {
+  if (url === undefined) url = buildShareUrl(roster, undefined, driveLog, sharerName);
   const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
   const lines = [`🏈 Four Minute Drill — ${scoreLine}`];
@@ -100,6 +115,6 @@ export function buildShareText(
       roster.k.displayName
     )}`
   );
-  if (url) lines.push(`beat it ▶ ${url}`);
+  if (url) lines.push(`${url.includes("&g=") ? "race my drive" : "beat it"} ▶ ${url}`);
   return lines.join("\n");
 }

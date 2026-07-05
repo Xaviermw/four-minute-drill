@@ -10,6 +10,7 @@ import { makeRng } from "../../engine";
 import { useGameDispatch } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import { isRookie } from "../../state/rookie";
+import { useGhost } from "../../share/GhostProvider";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
 import { DailyDone } from "../../daily/DailyDone";
@@ -44,6 +45,11 @@ export function DraftScreen() {
   const isDaily = mode === "daily";
   // Snapshotted per mount: a rookie is drafting their no-stakes practice drive.
   const [rookie] = useState(isRookie);
+  // A fresh draft is a new lineup -- any ghost from a shared link no longer applies.
+  const { ghost, setGhost } = useGhost();
+  useEffect(() => {
+    if (ghost) setGhost(null);
+  }, [ghost, setGhost]);
 
   // Top of funnel: count each time the player is actually shown a draft to build
   // (not the DailyDone recap). Once per mount, guarded so re-renders don't repeat.

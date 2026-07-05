@@ -239,6 +239,22 @@
   white-space: nowrap;
 }
 
+/* Ghost racing: the sharer's ball at this game clock. Hollow, translucent,
+   deliberately quieter than every live element. */
+.field-ghost {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 2.5px dashed rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 2;
+  transition: left 1.1s cubic-bezier(0.22, 0.9, 0.3, 1);
+  pointer-events: none;
+}
+
 /* Line of scrimmage (blue) + football. */
 .field-marker {
   position: absolute;
@@ -361,6 +377,14 @@
   margin: 0.4rem 0 0;
   font-size: 0.76rem;
   color: var(--muted);
+}
+
+/* Ghost status line during a race. */
+.ghost-line {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.6rem 0 0.9rem;
 }
 
 /* ---- Last-play banner ---- */

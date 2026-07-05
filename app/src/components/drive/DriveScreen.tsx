@@ -11,6 +11,9 @@ import {
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import { isRookie } from "../../state/rookie";
+import { ghostDoneAtClock, ghostStepAtClock } from "../../share/ghost";
+import { useGhost } from "../../share/GhostProvider";
+import { formatBallOn, formatClock } from "../../utils/formatting";
 import type { PlayResult } from "../../types/simResult";
 import { DriveFieldVisualizer } from "./DriveFieldVisualizer";
 import { PlayByPlayFeed } from "./PlayByPlayFeed";
@@ -42,6 +45,8 @@ export function DriveScreen() {
     trackEvent("drive_started", { mode, rookie });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const { ghost } = useGhost();
 
   if (state.phase !== "driving") return null;
   const { roster, session, scenario } = state;
@@ -76,6 +81,12 @@ export function DriveScreen() {
 
   const lastPlay = plays[plays.length - 1];
 
+  // Ghost racing: where the sharer's drive stood at this game clock. Both
+  // drives start from the same 4:00, so this is an honest same-clock race.
+  const ghostStep = ghost ? ghostStepAtClock(ghost, display.clockSeconds) : null;
+  const ghostDone = ghost ? ghostDoneAtClock(ghost, display.clockSeconds) : false;
+  const ghostName = ghost?.name ?? "Ghost";
+
   return (
     <div className="screen drive-screen">
       <TimeBonusMeter clockSeconds={display.clockSeconds} showHint={rookie} />
@@ -87,7 +98,19 @@ export function DriveScreen() {
         clockSeconds={display.clockSeconds}
         scoreDiff={scenario.scoreDiff}
         driveStartPosition={scenario.fieldPosition}
+        ghostPosition={ghostStep?.fieldPosition}
       />
+
+      {ghost && ghostStep && (
+        <p className="ghost-line">
+          👻 {ghostName}
+          {ghostDone
+            ? ghost.won
+              ? ` scored ${ghost.score} with ${formatClock(ghost.clockSecondsRemaining)} left — finish the job.`
+              : ` is done — their drive died at ${formatBallOn(ghostStep.fieldPosition)}. Outdrive it.`
+            : `: ball on ${formatBallOn(ghostStep.fieldPosition)} at this point.`}
+        </p>
+      )}
 
       {lastPlay && (
         <p
