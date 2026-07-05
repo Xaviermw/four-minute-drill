@@ -101,7 +101,9 @@ export function DriveFieldVisualizer({
         </div>
         <div className="field-endzone away">Four Minute Drill</div>
       </div>
-      <div className="field-label">{fieldPosition} yards to the end zone</div>
+      {/* Live drive already shows BALL ON in the scoreboard; the label only adds
+          context on scoreboard-less renders (the result recap). */}
+      {!showScoreboard && <div className="field-label">{fieldPosition} yards to the end zone</div>}
     </div>
   );
 }

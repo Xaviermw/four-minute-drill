@@ -127,11 +127,7 @@ export function DraftScreen() {
         <h1>
           Who can you <span className="headline-accent">win</span> with?
         </h1>
-        <p className="hint">
-          {isDaily
-            ? "Everyone gets the same 3 options at each position today, and the same $25 cap. Spend it wisely — one attempt."
-            : "3 options at each position, $25 to build all six. Studs cost, scrubs are free — how you spend it is the game."}
-        </p>
+        <p className="hint">{isDaily ? "Everyone gets the same board today." : "Fresh board every draft."}</p>
       </header>
       {showIntro && (
         <div className="coach-strip">

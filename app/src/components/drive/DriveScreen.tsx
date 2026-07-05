@@ -85,10 +85,6 @@ export function DriveScreen() {
         driveStartPosition={scenario.fieldPosition}
       />
 
-      <p className="stakes-strip">
-        <span className="stakes-deficit">Down by {-scenario.scoreDiff}</span> · one drive to win it
-      </p>
-
       {lastPlay && (
         <p
           key={plays.length}
@@ -127,8 +123,8 @@ export function DriveScreen() {
           />
           <p className="tempo-hint">
             {live.clockRunning
-              ? "Snap quick to save clock, or milk it if you've got time to spare."
-              : "Clock's stopped — this snap costs nothing extra."}
+              ? "Slow snaps burn clock — and grow your clutch bonus."
+              : "Clock stopped — this snap is free."}
           </p>
         </div>
 

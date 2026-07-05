@@ -166,11 +166,6 @@ export function ResultScreen() {
         </div>
       ) : null}
 
-      <p className="roster-credit">
-        {roster.qb.displayName} to {roster.wr1.displayName}, {roster.wr2.displayName}, {roster.te.displayName},{" "}
-        {roster.rb.displayName} out of the backfield, and {roster.k.displayName} on special teams.
-      </p>
-
       <SubmitScorePanel
         driveLog={driveLog}
         roster={roster}

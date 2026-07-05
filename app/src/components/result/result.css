@@ -144,16 +144,6 @@
   font-weight: 700 !important;
 }
 
-/* ---- Roster credit ---- */
-.roster-credit {
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.92rem;
-  max-width: 60ch;
-  margin: 0 auto 1.5rem;
-  line-height: 1.6;
-}
-
 /* ---- Actions ---- */
 .result-actions {
   display: flex;

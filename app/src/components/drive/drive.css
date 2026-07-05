@@ -598,21 +598,6 @@
   background: rgba(203, 213, 225, 0.07);
 }
 
-/* ---- Stakes strip ---- */
-.stakes-strip {
-  text-align: center;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--muted);
-  margin: 0 0 1.25rem;
-}
-.stakes-deficit {
-  color: var(--loss);
-}
-
 /* ---- Tempo control ---- */
 .tempo-control {
   margin-bottom: 1rem;

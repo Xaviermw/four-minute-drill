@@ -31,7 +31,7 @@ export function RosterSlotPicker({
     <div className="roster-slot">
       <div className="roster-slot-header">
         <span className="roster-slot-label">{label}</span>
-        <span className="roster-slot-value">{selected ? selected.displayName : "Pick one of the 3..."}</span>
+        {selected && <span className="roster-slot-value">{selected.displayName}</span>}
       </div>
       <div className={`player-grid ${large ? "large" : ""}`}>
         {options.map((player, i) => {
@@ -56,7 +56,7 @@ export function RosterSlotPicker({
           <span className="scrub-dice" aria-hidden="true">🎲</span>
           <span className="scrub-copy">
             <b>Give me a scrub · $0</b>
-            <i>Random {positionLabel ?? "player"} from the bargain bin — you don't pick who.</i>
+            <i>Random {positionLabel ?? "player"} — you don't pick who.</i>
           </span>
         </button>
       )}

@@ -42,8 +42,7 @@ export function TeamPanel({
           ))}
         </div>
         <p className="budget-note">
-          Spend it all or leave room to brag — <span className="budget-note-em">scrubs are always $0</span>, so you can
-          never get stuck.
+          Out of cash? <span className="budget-note-em">Scrubs are always $0.</span>
         </p>
       </div>
       <div className="team-panel-grid">

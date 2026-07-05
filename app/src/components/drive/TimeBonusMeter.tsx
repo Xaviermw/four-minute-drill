@@ -20,9 +20,7 @@ export function TimeBonusMeter({ clockSeconds }: { clockSeconds: number }) {
       <div className="tb-track">
         <div className="tb-fill" style={{ width: `${fill * 100}%` }} />
       </div>
-      <p className="tb-hint">
-        {live ? "Score later and it climbs — max ×2.00 at 0:00." : "Kicks in under 2:00. Let the clock run."}
-      </p>
+      <p className="tb-hint">{live ? "Max ×2.00 at 0:00." : "Kicks in under 2:00."}</p>
     </div>
   );
 }
