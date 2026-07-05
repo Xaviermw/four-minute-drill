@@ -35,23 +35,27 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
 2. **Daily fairness**: challenge id = **UTC date**; draft pool seeded by
    `dailyDraftRng(id)`, drive seed by `dailyDriveSeed(id)`. Everyone must get
    identical options/seed for the same id.
-3. **Payout linearity**: `payoutMultiplier` (engine/scoring.ts) is linear in
-   rating so team payout = average of player payouts. UI shows payout
-   (×1.0–×2.0, higher = more points); never resurrect "OVR" labels.
-   `clutchMultiplier` (also scoring.ts) is the single source of truth for the
-   time bonus — the live `TimeBonusMeter` reads it so the preview can't drift
-   from the final score. Keep both there; the sim imports them.
+3. **Salary cap is the balance mechanism** (`draft/pricing.ts`, docs/cap-draft-plan.md).
+   `getPricing(players)` ranks each position $1–$10 (bottom ~20% are $0
+   "scrubs", never dealt — reachable only via the "give me a scrub" gamble);
+   deterministic from the manifest, `CAP = 25`. The draft deals only
+   `dealablePlayers`; cards over the remaining budget lock. The old
+   `payoutMultiplier`/`rosterPayoutMultiplier`/`payoutBand`/`formatPayout`
+   (scoring.ts) are **retained but only for legacy leaderboard rows** (rows with
+   null `spend`); do not resurrect them in the draft/score path. `clutchMultiplier`
+   (scoring.ts) is the single source of truth for the time bonus — the live
+   `TimeBonusMeter` reads it so it can't drift from the final score.
 4. **DriveLog shape** (`seed`, `choices`, `clockSecondsRemaining`, …) is
    stored in Supabase rows — additive changes only. `finalFieldPosition(log)`
    (simResult.ts) is the shared derivation of where a drive ended (0 = scored),
    used by recap, daily summary, the leaderboard submission, and the "Longest
    drives" board. Manifest/player entries also carry `team` + `jersey`.
-   **Scoring**: a win is `base(TD 100/FG 40) × rosterPayout × clutch`; a
-   *scoreless* drive still banks `round(yardsAdvanced × DRIVE_POINTS_PER_YARD
-   0.5) × rosterPayout` (no clutch) — so `score` can be >0 on a `won:false`
-   drive, and `ScoreBreakdown` carries `driveYards`/`drivePoints`. Free play
-   still submits wins-only; the Daily submits every drive (losses now have a
-   real score, not 0).
+   **Scoring** (cap era): a win is `base(TD 100/FG 40) × clutch` — **no roster
+   multiplier** (reported as 1); a *scoreless* drive banks `round(yardsAdvanced
+   × 0.5)`, also unmultiplied — so `score` can be >0 on a `won:false` drive, and
+   `ScoreBreakdown` carries `driveYards`/`drivePoints`. Free play submits
+   wins-only; the Daily submits every drive. Leaderboard rows carry `spend`
+   (team salary; null on pre-cap rows → board shows the legacy payout chip).
 5. **One-fire effects on result**: guard with the drive-log-identity ref
    pattern (see `recordedLog` in ResultScreen) — StrictMode double-mounts.
 6. Scores/streaks writes: daily drives → daily board + device-local day
