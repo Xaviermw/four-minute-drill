@@ -132,21 +132,14 @@
   text-overflow: ellipsis;
 }
 
-.rc-player-ovr {
+.rc-player-price {
   font-family: "Barlow Condensed", "Inter", sans-serif;
   font-weight: 700;
   font-size: 20px;
   min-width: 46px;
   text-align: right;
-}
-.rc-player-ovr.payout-hot {
   color: #ffc233;
-}
-.rc-player-ovr.payout-mid {
-  color: #34e07a;
-}
-.rc-player-ovr.payout-low {
-  color: #93a3ba;
+  font-variant-numeric: tabular-nums;
 }
 
 .rc-footer {

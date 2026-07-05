@@ -1,9 +1,12 @@
 import { useRef, useState } from "react";
 import { trackEvent } from "../analytics/track";
+import { useManifest } from "../data/dataContext";
+import { getPricing } from "../draft/pricing";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { ResultCard } from "./ResultCard";
 import { buildShareText } from "./shareText";
+import { LINEUP_SLOT_ORDER } from "./lineupCode";
 import { canShareImage, copyText, downloadBlob, nodeToPngBlob } from "./shareImage";
 import "./sharePanel.css";
 
@@ -13,9 +16,12 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   const cardRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const nativeShare = canShareImage();
+  const { manifest } = useManifest();
+  const pricing = manifest ? getPricing(manifest.players) : null;
+  const spend = pricing ? LINEUP_SLOT_ORDER.reduce((sum, s) => sum + pricing.priceFor(roster[s]), 0) : undefined;
   // Exactly what "Copy result" puts on the clipboard -- shown read-only so the
   // player sees the emoji drive grid before they share it.
-  const shareText = buildShareText(driveLog, roster);
+  const shareText = buildShareText(driveLog, roster, spend);
 
   function flash(s: Status) {
     setStatus(s);
@@ -95,7 +101,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
 
       {/* Off-screen card that gets snapshotted to PNG. */}
       <div className="share-card-offscreen" aria-hidden="true">
-        <ResultCard ref={cardRef} driveLog={driveLog} roster={roster} />
+        <ResultCard ref={cardRef} driveLog={driveLog} roster={roster} spend={spend} priceFor={pricing?.priceFor} />
       </div>
     </div>
   );

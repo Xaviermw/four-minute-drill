@@ -140,14 +140,10 @@ export function ResultScreen() {
               <span>{driveLog.scoreBreakdown.basePoints} pts</span>
             </li>
             <li style={{ "--i": 1 } as CSSProperties}>
-              <span>Roster payout · weaker = bigger</span>
-              <span>&times;{driveLog.scoreBreakdown.rosterMultiplier.toFixed(2)}</span>
-            </li>
-            <li style={{ "--i": 2 } as CSSProperties}>
               <span>Time bonus · less time left = more</span>
               <span>&times;{driveLog.scoreBreakdown.clockMultiplier.toFixed(2)}</span>
             </li>
-            <li className="score-breakdown-total" style={{ "--i": 3 } as CSSProperties}>
+            <li className="score-breakdown-total" style={{ "--i": 2 } as CSSProperties}>
               <span>Final score</span>
               <span>{driveLog.scoreBreakdown.total} pts</span>
             </li>
@@ -162,11 +158,7 @@ export function ResultScreen() {
               <span>Drive · {driveLog.scoreBreakdown.driveYards} yds advanced</span>
               <span>{driveLog.scoreBreakdown.drivePoints} pts</span>
             </li>
-            <li style={{ "--i": 1 } as CSSProperties}>
-              <span>Roster payout · weaker = bigger</span>
-              <span>&times;{driveLog.scoreBreakdown.rosterMultiplier.toFixed(2)}</span>
-            </li>
-            <li className="score-breakdown-total" style={{ "--i": 2 } as CSSProperties}>
+            <li className="score-breakdown-total" style={{ "--i": 1 } as CSSProperties}>
               <span>Final score</span>
               <span>{driveLog.scoreBreakdown.total} pts</span>
             </li>

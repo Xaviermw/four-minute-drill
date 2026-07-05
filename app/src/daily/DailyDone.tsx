@@ -5,6 +5,7 @@ import { SubmitScorePanel } from "../leaderboard/SubmitScorePanel";
 import { SharePanel } from "../share/SharePanel";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
+import { getPricing } from "../draft/pricing";
 import { useMode } from "../state/ModeProvider";
 import { DailyStreakBadge } from "../components/result/StreakBanners";
 import { DriveRecap } from "../components/result/DriveRecap";
@@ -70,7 +71,13 @@ export function DailyDone({ record }: { record: DailyRecord }) {
         <>
           <div className="daily-lineup">
             {LINEUP_SLOT_ORDER.map((slot) => (
-              <PlayerCard key={slot} player={roster[slot]} selected readOnly />
+              <PlayerCard
+                key={slot}
+                player={roster[slot]}
+                selected
+                readOnly
+                price={manifest ? getPricing(manifest.players).priceFor(roster[slot]) : undefined}
+              />
             ))}
           </div>
           {!record.submitted && (

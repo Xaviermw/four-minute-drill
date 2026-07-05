@@ -1,8 +1,7 @@
-import { rosterPayoutMultiplier } from "../engine";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { formatPayout } from "../utils/formatting";
-import { encodeLineup, LINEUP_SLOT_ORDER } from "./lineupCode";
+import { CAP } from "../draft/pricing";
+import { encodeLineup } from "./lineupCode";
 
 /** Short outcome label for the share blurb (distinct from the on-screen copy). */
 const OUTCOME_LABEL: Record<string, string> = {
@@ -73,16 +72,24 @@ function shortName(displayName: string): string {
 
 /**
  * Wordle/82-0-style shareable summary: a headline with the score, the outcome
- * and team OVR, the six-player lineup, and (when encodable) a "beat it" link.
+ * and cap spend, the six-player lineup, and (when encodable) a "beat it" link.
+ * `spend` is the team's total salary; when omitted the cap line is dropped.
  */
-export function buildShareText(driveLog: DriveLog, roster: DraftedRoster, url = buildShareUrl(roster)): string {
-  const payout = formatPayout(rosterPayoutMultiplier(LINEUP_SLOT_ORDER.map((slot) => roster[slot].rating)));
+export function buildShareText(
+  driveLog: DriveLog,
+  roster: DraftedRoster,
+  spend?: number,
+  url = buildShareUrl(roster)
+): string {
   const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
-  const lines = [
-    `🏈 Four Minute Drill — ${scoreLine}`,
-    `${outcomeLabel(driveLog.endReason)} · ${payout} payout squad`,
-  ];
+  const lines = [`🏈 Four Minute Drill — ${scoreLine}`];
+  if (spend !== undefined) {
+    lines.push(`${outcomeLabel(driveLog.endReason)} · built for $${spend} of $${CAP}`);
+    if (spend < CAP) lines.push(`💰 $${CAP - spend} under the cap`);
+  } else {
+    lines.push(outcomeLabel(driveLog.endReason));
+  }
   if (grid) lines.push(grid);
   lines.push(
     `QB ${shortName(roster.qb.displayName)}  RB ${shortName(roster.rb.displayName)}  WR ${shortName(

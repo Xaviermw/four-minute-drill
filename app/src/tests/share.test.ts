@@ -105,20 +105,27 @@ describe("share text + url", () => {
     expect(url).toBe(`https://example.com/app/?team=${encodeLineup(roster)}`);
   });
 
-  it("summarizes a winning drive with score, outcome, lineup, and link", () => {
+  it("summarizes a winning drive with score, outcome, spend, lineup, and link", () => {
     const roster = makeRoster();
-    const text = buildShareText(wonLog(152, "WIN_FIELD_GOAL"), roster, "https://x.test/?team=abc");
+    const text = buildShareText(wonLog(152, "WIN_FIELD_GOAL"), roster, 19, "https://x.test/?team=abc");
     expect(text).toContain("Four Minute Drill — 152 pts");
     expect(text).toContain("Field goal");
-    expect(text).toContain("payout squad");
+    expect(text).toContain("built for $19 of $25");
+    expect(text).toContain("💰 $6 under the cap");
     expect(text).toContain("QB L.Jackson");
     expect(text).toContain("beat it ▶ https://x.test/?team=abc");
   });
 
   it("says 'no score' and omits points for a loss", () => {
-    const text = buildShareText(wonLog(0, "LOSS_TURNOVER"), makeRoster(), null);
+    const text = buildShareText(wonLog(0, "LOSS_TURNOVER"), makeRoster(), undefined, null);
     expect(text).toContain("no score");
     expect(text).not.toContain("beat it");
+  });
+
+  it("omits the cap line at full spend", () => {
+    const text = buildShareText(wonLog(100, "WIN_TOUCHDOWN"), makeRoster(), 25, null);
+    expect(text).toContain("built for $25 of $25");
+    expect(text).not.toContain("under the cap");
   });
 });
 

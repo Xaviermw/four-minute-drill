@@ -1,9 +1,8 @@
 import { forwardRef } from "react";
-import { payoutMultiplier, rosterPayoutMultiplier } from "../engine";
+import { CAP } from "../draft/pricing";
 import type { DraftedRoster, RosterSlotKey } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { LINEUP_SLOT_ORDER } from "./lineupCode";
-import { formatPayout, payoutBand } from "../utils/formatting";
+import type { ManifestPlayerEntry } from "../types/player";
 import { teamColors } from "../utils/teamColors";
 import type { CSSProperties } from "react";
 import "./resultCard.css";
@@ -31,14 +30,15 @@ const ROWS: { slot: RosterSlotKey; label: string }[] = [
  * result. Self-contained styling in resultCard.css so html-to-image renders it
  * faithfully regardless of the surrounding app layout.
  */
-export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roster: DraftedRoster }>(
-  function ResultCard({ driveLog, roster }, ref) {
-    const payout = rosterPayoutMultiplier(LINEUP_SLOT_ORDER.map((slot) => roster[slot].rating));
+export const ResultCard = forwardRef<
+  HTMLDivElement,
+  { driveLog: DriveLog; roster: DraftedRoster; spend?: number; priceFor?: (p: ManifestPlayerEntry) => number }
+>(function ResultCard({ driveLog, roster, spend, priceFor }, ref) {
     return (
       <div className={`result-card ${driveLog.won ? "won" : "lost"}`} ref={ref}>
         <div className="rc-header">
           <span className="rc-brand">🏈 FOUR MINUTE DRILL</span>
-          <span className="rc-ovr">{formatPayout(payout)} payout</span>
+          {spend !== undefined && <span className="rc-ovr">${spend} of ${CAP}</span>}
         </div>
 
         <div className="rc-hero">
@@ -62,9 +62,7 @@ export const ResultCard = forwardRef<HTMLDivElement, { driveLog: DriveLog; roste
                 <span className="rc-player-pos">{label}</span>
                 {p.jersey != null && <span className="rc-player-jersey">{p.jersey}</span>}
                 <span className="rc-player-name">{p.displayName}</span>
-                <span className={`rc-player-ovr payout-${payoutBand(payoutMultiplier(p.rating))}`}>
-                  {formatPayout(payoutMultiplier(p.rating))}
-                </span>
+                <span className="rc-player-price">{priceFor ? `$${priceFor(p)}` : ""}</span>
               </div>
             );
           })}

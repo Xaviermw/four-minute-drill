@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { createDriveSession } from "../engine/driveSimulator";
 import { MAX_PLAYS_PER_DRIVE } from "../engine/constants";
 import { MIN_SAMPLE_THRESHOLD } from "../engine/situational";
-import { rosterPayoutMultiplier } from "../engine";
 import type { DraftedRosterData } from "../types/roster";
 import { finalFieldPosition, type DriveLog } from "../types/simResult";
 import { makeKickerFixture, makeOutcome, makePlayerFixture } from "./fixtures";
@@ -162,10 +161,8 @@ describe("DriveSession", () => {
     expect(log.score).toBe(0);
   });
 
-  it("a scoreless drive banks marginal points for yards advanced (times payout)", () => {
+  it("a scoreless drive banks marginal points for yards advanced (cap scoring: no roster multiplier)", () => {
     const roster = makeRoster();
-    const ratings = [roster.qb, roster.rb, roster.wr1, roster.wr2, roster.te, roster.k].map((p) => p.rating);
-    const payout = rosterPayoutMultiplier(ratings);
     let sawAdvancingLoss = false;
     for (let seed = 0; seed < 200; seed++) {
       const log = runToCompletion(roster, seed);
@@ -175,8 +172,9 @@ describe("DriveSession", () => {
       }
       const yards = Math.max(0, scenario.fieldPosition - finalFieldPosition(log));
       expect(log.scoreBreakdown.driveYards).toBe(yards);
-      // score = round(round(yards * 0.5) * payout), no clutch bonus on a loss.
-      expect(log.score).toBe(Math.round(Math.round(yards * 0.5) * payout));
+      // Cap scoring: score = round(yards * 0.5), no roster multiplier, no clutch.
+      expect(log.score).toBe(Math.round(yards * 0.5));
+      expect(log.scoreBreakdown.rosterMultiplier).toBe(1);
       expect(log.scoreBreakdown.clockMultiplier).toBe(1);
       if (log.score > 0) sawAdvancingLoss = true;
     }
@@ -268,22 +266,24 @@ describe("scoring formula", () => {
     expect(tdScore).toBeGreaterThan(fgScore);
   });
 
-  it("a weaker (low-rated) roster scores more than a stronger (high-rated) roster for the same field goal and clock", () => {
+  it("cap scoring: roster rating no longer affects the score (the salary cap balances quality, not a multiplier)", () => {
     const scenario1 = { down: 1, distance: 10, fieldPosition: 10, clockSeconds: 200, scoreDiff: -3 };
 
     const stackedRoster = rosterWithRating(95);
     stackedRoster.k = makeKickerFixture({ rating: 95, distanceBuckets: ALWAYS_GOOD_KICK });
     const stackedSession = createDriveSession(stackedRoster, scenario1, {}, {}, 1);
     stackedSession.choosePlay({ kind: "fieldGoal" });
-    const stackedScore = stackedSession.getLog().score;
+    const stackedLog = stackedSession.getLog();
 
     const underdogRoster = rosterWithRating(48);
     underdogRoster.k = makeKickerFixture({ rating: 48, distanceBuckets: ALWAYS_GOOD_KICK });
     const underdogSession = createDriveSession(underdogRoster, scenario1, {}, {}, 1);
     underdogSession.choosePlay({ kind: "fieldGoal" });
-    const underdogScore = underdogSession.getLog().score;
+    const underdogLog = underdogSession.getLog();
 
-    expect(underdogScore).toBeGreaterThan(stackedScore);
+    // Identical field goal + clock -> identical score regardless of rating.
+    expect(underdogLog.score).toBe(stackedLog.score);
+    expect(stackedLog.scoreBreakdown.rosterMultiplier).toBe(1);
   });
 
   it("scoring with less clock left is worth more than scoring with more clock left, all else equal", () => {

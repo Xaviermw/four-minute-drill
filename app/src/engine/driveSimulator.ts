@@ -11,7 +11,7 @@ import {
 import { attemptFieldGoal, kickDistanceFor } from "./kicker";
 import { drawPlayOptions, type PlayCall } from "./playOptions";
 import { makeRng, type RNG } from "./rng";
-import { clutchMultiplier, rosterPayoutMultiplier } from "./scoring";
+import { clutchMultiplier } from "./scoring";
 import {
   rollBlendedInterception,
   rollQbSackOutcome,
@@ -223,43 +223,34 @@ function makeOutcome(partial: Partial<OutcomeRecord>): OutcomeRecord {
   };
 }
 
-/** Roster payout multiplier: lower-rated teams score more. Same value the draft
- * surfaces per player (payout is linear in rating, so the team payout is the
- * average of the players' payouts). */
-function rosterMultiplierFor(roster: DraftedRosterData): number {
-  const ratings = [roster.qb, roster.rb, roster.wr1, roster.wr2, roster.te, roster.k].map((p) => p.rating);
-  return rosterPayoutMultiplier(ratings);
-}
-
 /**
- * On a win, a touchdown is worth more than a field goal, a weaker drafted roster
- * multiplies the score up (the upset/skill bonus), and scoring with less clock
- * left multiplies it up further (the clutch bonus). A scoreless drive still
- * banks marginal points for the yards it advanced (times the roster payout, but
- * no clutch bonus -- you didn't score). Returned itemized so the UI can show the
- * breakdown, not just the final total.
+ * Cap-draft scoring: a touchdown is worth more than a field goal, and scoring
+ * with less clock left multiplies it up (the clutch bonus). A scoreless drive
+ * still banks marginal points for the yards it advanced (no clutch -- you didn't
+ * score). Roster quality is now balanced by the salary cap at draft time, so the
+ * old roster-payout multiplier is retired (reported as 1 for back-compat; see
+ * "Preserving the old system" in docs/cap-draft-plan.md to restore it).
+ * Returned itemized so the UI can show the breakdown, not just the total.
  */
 function computeScore(
   endReason: DriveEndReason,
-  roster: DraftedRosterData,
+  _roster: DraftedRosterData,
   clockAtScoreSeconds: number,
   yardsAdvanced: number
 ): ScoreBreakdown {
   const basePoints = endReason === "WIN_TOUCHDOWN" ? TOUCHDOWN_BASE_POINTS : endReason === "WIN_FIELD_GOAL" ? FIELD_GOAL_BASE_POINTS : 0;
   const baseLabel = endReason === "WIN_TOUCHDOWN" ? "Touchdown" : endReason === "WIN_FIELD_GOAL" ? "Field Goal" : "No Score";
-  const rosterMultiplier = rosterMultiplierFor(roster);
 
   if (basePoints === 0) {
     // Scoreless: marginal credit for the drive, no clutch bonus.
     const driveYards = Math.max(0, Math.round(yardsAdvanced));
     const drivePoints = Math.round(driveYards * DRIVE_POINTS_PER_YARD);
-    const total = Math.round(drivePoints * rosterMultiplier);
-    return { basePoints, baseLabel, rosterMultiplier, clockMultiplier: 1, driveYards, drivePoints, total };
+    return { basePoints, baseLabel, rosterMultiplier: 1, clockMultiplier: 1, driveYards, drivePoints, total: drivePoints };
   }
 
   const clockMultiplier = clutchMultiplier(clockAtScoreSeconds);
-  const total = Math.round(basePoints * rosterMultiplier * clockMultiplier);
-  return { basePoints, baseLabel, rosterMultiplier, clockMultiplier, driveYards: 0, drivePoints: 0, total };
+  const total = Math.round(basePoints * clockMultiplier);
+  return { basePoints, baseLabel, rosterMultiplier: 1, clockMultiplier, driveYards: 0, drivePoints: 0, total };
 }
 
 /**
