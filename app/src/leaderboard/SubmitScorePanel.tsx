@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { trackEvent } from "../analytics/track";
+import { useManifest } from "../data/dataContext";
+import { getPricing } from "../draft/pricing";
+import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import type { DraftedRoster } from "../types/roster";
 import { finalFieldPosition, type DriveLog } from "../types/simResult";
 import {
@@ -39,6 +42,10 @@ export function SubmitScorePanel({
   const [percentile, setPercentile] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { manifest } = useManifest();
+  const spend = manifest
+    ? LINEUP_SLOT_ORDER.reduce((sum, s) => sum + getPricing(manifest.players).priceFor(roster[s]), 0)
+    : null;
   const isDaily = challengeId != null;
   const scored = driveLog.won && driveLog.score > 0;
   // Free play only wants winning scores; the Daily logs every drive.
@@ -58,7 +65,7 @@ export function SubmitScorePanel({
     setError(null);
     setStoredName(trimmed); // remember for the streak board + next time
     try {
-      const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster, challengeId));
+      const { rank: newRank } = await submitScore(buildSubmission(trimmed, driveLog, roster, challengeId, spend));
       setRank(newRank);
       trackEvent("score_submitted", { mode: isDaily ? "daily" : "free", scored, rank: newRank });
       // A scoreless daily drive ranks by how far it drove, not its (zero) score.

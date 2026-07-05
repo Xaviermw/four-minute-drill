@@ -7,11 +7,13 @@ import { expect, test } from "@playwright/test";
 test("draft -> drive -> result renders a score", async ({ page }) => {
   await page.goto("/");
 
-  // Draft: six picks, each taking the first of the three offered cards. Wait for
-  // the "Pick N / 6" counter to advance between picks (the picker fades/remounts).
+  // Draft: six picks, each taking the first affordable card (cap draft locks any
+  // card over the remaining budget); fall back to the $0 scrub gamble if all
+  // three are locked. Scope to the picker grid -- TeamPanel also renders cards.
   for (let pick = 1; pick <= 6; pick++) {
-    // Scope to the picker grid -- TeamPanel also renders (read-only) .player-card.
-    await page.locator(".player-grid .player-card").first().click();
+    const affordable = page.locator(".player-grid .player-card:not(.locked)").first();
+    if (await affordable.count()) await affordable.click();
+    else await page.locator(".scrub-btn").click();
     if (pick < 6) {
       await expect(page.locator(".draft-progress-count")).toContainText(`Pick ${pick + 1}`);
     }

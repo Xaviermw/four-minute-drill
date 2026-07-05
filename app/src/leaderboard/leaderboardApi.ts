@@ -28,6 +28,8 @@ export interface LeaderboardRow {
   /** Yards to the end zone where the drive ended (0 = scored). Drives the
    * "Longest drives" board -- lower is further. */
   final_field_position: number;
+  /** Total cap salary of the team. Null on legacy (pre-cap) rows. */
+  spend: number | null;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -45,6 +47,7 @@ export interface LeaderboardSubmission {
   team_ovr: number;
   time_remaining: number;
   final_field_position: number;
+  spend: number | null;
   roster: LeaderboardPlayer[];
   seed: number;
   choices: DriveChoice[];
@@ -59,12 +62,14 @@ function rosterToPlayers(roster: DraftedRoster): LeaderboardPlayer[] {
 }
 
 /** Builds the insert payload from a finished drive + the name the player typed.
- * Pass `challengeId` for a Daily Challenge score; omit for free play. */
+ * Pass `challengeId` for a Daily Challenge score; omit for free play. `spend` is
+ * the team's cap salary (omit only if pricing is unavailable). */
 export function buildSubmission(
   name: string,
   driveLog: DriveLog,
   roster: DraftedRoster,
-  challengeId: string | null = null
+  challengeId: string | null = null,
+  spend: number | null = null
 ): LeaderboardSubmission {
   return {
     name: name.trim().slice(0, 20),
@@ -73,6 +78,7 @@ export function buildSubmission(
     team_ovr: teamOverall(roster),
     time_remaining: driveLog.clockSecondsRemaining,
     final_field_position: finalFieldPosition(driveLog),
+    spend,
     roster: rosterToPlayers(roster),
     seed: driveLog.seed,
     choices: driveLog.choices,

@@ -44,8 +44,8 @@ function ScoreList({
             {row.name}
             {userId && row.user_id === userId && <span className="lb-you">you</span>}
           </span>
-          <span className="lb-ovr" title="Roster payout multiplier">
-            {formatPayout(payoutMultiplier(row.team_ovr))}
+          <span className="lb-ovr" title={row.spend != null ? "Team salary (of $25 cap)" : "Roster payout multiplier"}>
+            {row.spend != null ? `$${row.spend}` : formatPayout(payoutMultiplier(row.team_ovr))}
           </span>
           <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
           <span className="lb-time" title="Time left when they scored">

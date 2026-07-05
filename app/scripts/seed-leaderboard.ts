@@ -14,6 +14,7 @@ import {
 } from "../src/engine";
 import type { KickerDataset, Manifest, ManifestPlayerEntry, PlayerDataset, Position } from "../src/types/player";
 import type { DraftedRosterData } from "../src/types/roster";
+import { getPricing } from "../src/draft/pricing";
 
 const DATA = resolve(dirname(fileURLToPath(import.meta.url)), "..", "public", "data");
 const manifest: Manifest = JSON.parse(readFileSync(resolve(DATA, "manifest.json"), "utf8"));
@@ -83,6 +84,7 @@ function simulate(bias: Bias) {
     log,
     roster: entries.map((e) => ({ gsisId: e.gsisId, name: e.displayName, position: e.position, rating: e.rating })),
     team_ovr: teamOvr(entries),
+    spend: entries.reduce((sum, e) => sum + getPricing(manifest.players).priceFor(e), 0),
   };
 }
 
@@ -114,6 +116,7 @@ const scores = picked.map((r, i) => ({
   outcome: r.log.endReason,
   team_ovr: r.team_ovr,
   time_remaining: r.log.clockSecondsRemaining,
+  spend: r.spend,
   roster: r.roster,
   seed: r.log.seed,
   choices: r.log.choices,
