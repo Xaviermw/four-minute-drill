@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { captureError } from "../analytics/sentry";
 
 /**
  * Top-level safety net: without this, one render exception blanks the whole
@@ -13,6 +14,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Uncaught error in Four Minute Drill:", error, info.componentStack);
+    captureError(error, { componentStack: info.componentStack });
   }
 
   render() {
