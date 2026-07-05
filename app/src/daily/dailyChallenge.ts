@@ -5,18 +5,22 @@ import { makeRng } from "../engine/rng";
 // resolve against this zone, every player worldwide computes the same "today".
 const CHALLENGE_ZONE = "America/New_York";
 
+// Singleton formatter: Intl.DateTimeFormat construction lazy-loads locale/zone
+// data and is by far the expensive part -- build it once at module scope.
+const EASTERN_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: CHALLENGE_ZONE,
+  hour12: false,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
+
 /** The wall-clock date/time fields in Eastern for a given instant. */
 function easternParts(now: Date): { year: number; month: number; day: number; hour: number; minute: number; second: number } {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: CHALLENGE_ZONE,
-    hour12: false,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).formatToParts(now);
+  const parts = EASTERN_FMT.formatToParts(now);
   const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0);
   const hour = get("hour");
   return { year: get("year"), month: get("month"), day: get("day"), hour: hour === 24 ? 0 : hour, minute: get("minute"), second: get("second") };
