@@ -129,6 +129,18 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   then `rm -rf app/public/data && cp -r data-pipeline/output app/public/data`.
   Curated pool: `data-pipeline/config/roster_pool.yaml` (name resolution
   hard-fails; validate names before the expensive fetch).
+  `slim.py` downsamples oversized situation buckets to
+  `MAX_OUTCOMES_PER_BUCKET` (75), **stratified by TD/turnover/other** so rates
+  are preserved, deterministic per (player, bucket). `sampleSize` stays the FULL
+  count (the engine's confidence gate at `sampleOutcome.ts:190` reads it; only
+  the `outcomes` array shrinks). To slim already-built output without a pbp
+  re-fetch: `python src/slim_existing.py` (stdlib only, in place on
+  `output/players`). Changing the cap forks the daily and invalidates prior
+  shared-drive replays → ship between dailies; verify with
+  `sim-cap-draft.ts` before/after (win% per strategy within ~2pts). The
+  bucket cap only reaches ~35% total reduction (33→21MB) — the many small
+  buckets floor it; the bigger lever (unshipped) is compacting the per-outcome
+  JSON, which would touch `sampleOutcome.ts` + the outcome types.
 - **DB migrations**: numbered SQL in `supabase/migrations/` is source of
   truth; applied manually via the session pooler
   (`aws-1-us-west-2.pooler.supabase.com:6543`, user

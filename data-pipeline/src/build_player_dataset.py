@@ -13,6 +13,7 @@ from identity import get_identity
 from rating import player_rating
 from resolve_players import resolve_players
 from schema import bucket_key, depth_tier_id
+from slim import slim_bucket_outcomes
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "output")
 
@@ -67,7 +68,7 @@ def _to_outcome_record(row, role):
     }
 
 
-def _build_buckets(role_df, role):
+def _build_buckets(role_df, role, gsis_id):
     buckets = defaultdict(list)
     for row in role_df.itertuples(index=False):
         row_dict = row._asdict()
@@ -76,8 +77,10 @@ def _build_buckets(role_df, role):
         key = bucket_key(int(row_dict["down"]), row_dict["ydstogo"], row_dict["yardline_100"])
         buckets[key].append(_to_outcome_record(row_dict, role))
 
+    # sampleSize stays the FULL count (the engine's confidence gate depends on
+    # it); only the stored outcomes array is downsampled for oversized buckets.
     return [
-        {"bucketKey": key, "sampleSize": len(outcomes), "outcomes": outcomes}
+        {"bucketKey": key, "sampleSize": len(outcomes), "outcomes": slim_bucket_outcomes(gsis_id, key, outcomes)}
         for key, outcomes in buckets.items()
     ]
 
@@ -171,7 +174,7 @@ def build_player_dataset(pbp, entry):
         role_dfs[role] = role_df
         if len(role_df) == 0:
             continue
-        roles_out[role] = _build_buckets(role_df, role)
+        roles_out[role] = _build_buckets(role_df, role, gsis_id)
         aggregates_out[role] = _compute_aggregates(role_df, role)
         total_plays += len(role_df)
 
