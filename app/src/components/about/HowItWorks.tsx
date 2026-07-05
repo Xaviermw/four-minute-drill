@@ -2,8 +2,8 @@ import { useRef, useState } from "react";
 import { useModalBehavior } from "../../utils/useModalBehavior";
 import "./howItWorks.css";
 
-/** Footer link + modal explaining where payout, play outcomes, and the final
- * score come from. Self-contained (own open state) so it can sit anywhere. */
+/** Footer link + modal explaining prices, play outcomes, and the final
+ * score. Self-contained (own open state) so it can sit anywhere. */
 export function HowItWorks() {
   const [open, setOpen] = useState(false);
   return (
@@ -32,18 +32,17 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
             <div className="hiw-body">
               <section className="hiw-section">
-                <h3>🏈 Payout — the number on each card</h3>
+                <h3>💵 The $25 cap — every card has a price</h3>
                 <p>
-                  Each card shows a <strong>payout multiplier</strong> (×1.0–×2.0): the weaker the player, the bigger
-                  the payout, so a card’s number is exactly what it does to your score. It’s derived from that
-                  player’s <strong>real NFL production, 2015–2025</strong> (nflverse / nflfastR) — stronger players
-                  (better passing, rushing, catching, kicking) get a <em>smaller</em> payout. Your team’s payout is
-                  the average of its six players’.
+                  Each card wears a <strong>price tag, $1–$10</strong>, from that player’s <strong>real NFL
+                  production, 2015–2025</strong> (nflverse / nflfastR) — the better the player ranks at his
+                  position, the more he costs. You get <strong>$25 for all six picks</strong>: roughly one stud and
+                  bargains, or a balanced build. Cards you can’t afford lock.
                 </p>
                 <p className="hiw-note">
-                  The catch: a big payout means a <strong>weaker squad that’s harder to actually score with</strong>.
-                  The game is that gamble — draft strong enough to win, weak enough to cash in. (Stat lines are shown
-                  so you can judge a player even without a familiar name.)
+                  Out of money? <strong>Scrubs are always $0</strong> — the dice button assigns a random
+                  bottom-of-the-barrel player, so you can never get stuck. You just don’t get to pick who. (Stat
+                  lines are shown so you can judge a player even without a familiar name.)
                 </p>
               </section>
 
@@ -63,21 +62,20 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
 
               <section className="hiw-section">
                 <h3>💯 How your score is calculated</h3>
-                <p>You only score by winning the drive. Then a base value gets multiplied twice:</p>
                 <ul className="hiw-list">
                   <li>
-                    <strong>Base:</strong> Touchdown = 100 pts · Field goal = 40 pts.
+                    <strong>Win the drive:</strong> Touchdown = 100 pts · Field goal = 40 pts.
                   </li>
                   <li>
-                    <strong>Roster payout:</strong> your team’s payout multiplier — ×1.0 for a stacked squad up to
-                    ×2.0 for pure underdogs. <em>Upsets pay.</em>
+                    <strong>Clutch bonus:</strong> the less time on the clock when you score, the bigger the
+                    multiplier — ×1.0 with 2:00+ left, up to ×2.0 at 0:00. Milking the clock is the play.
                   </li>
                   <li>
-                    <strong>Time bonus:</strong> the less time on the clock when you score, the bigger the
-                    multiplier — ×1.0 with 2:00+ left, up to ×2.0 at 0:00.
+                    <strong>Come up short?</strong> You still bank <strong>half a point per yard</strong> your
+                    drive advanced — a deep stall beats a three-and-out.
                   </li>
                 </ul>
-                <p className="hiw-formula">Final score = base × roster × time · (any loss scores 0)</p>
+                <p className="hiw-formula">Win = base × clutch · Loss = yards ÷ 2</p>
               </section>
             </div>
           </div>
