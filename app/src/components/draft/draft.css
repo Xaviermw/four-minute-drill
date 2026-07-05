@@ -403,6 +403,162 @@
   color: var(--amber);
 }
 
+/* ---- Cap draft: price tag (replaces the payout chip on a priced card) ---- */
+.pc-price {
+  margin-left: auto;
+  flex: 0 0 auto;
+  text-align: center;
+  line-height: 0.85;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 8px;
+  padding: 3px 9px;
+}
+.pc-price b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+.pc-price i {
+  font-style: normal;
+  font-family: var(--font-display);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* Over-budget card: dimmed, unclickable, tagged. */
+.player-card.locked {
+  position: relative;
+  opacity: 0.5;
+  filter: saturate(0.4);
+  cursor: not-allowed;
+}
+.player-card.locked:hover {
+  transform: none;
+  border-color: var(--line-2);
+}
+.pc-locked-tag {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--loss);
+  border-radius: 5px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* The $0 scrub gamble button, under the trio. */
+.scrub-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 0.6rem;
+  text-align: left;
+  background: transparent;
+  border: 1.5px dashed var(--line-2);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.95rem;
+  cursor: pointer;
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.scrub-btn:hover {
+  border-color: var(--amber);
+  background: var(--surface-1);
+}
+.scrub-btn:active {
+  transform: translateY(1px);
+}
+.scrub-dice {
+  font-size: 1.5rem;
+  flex: 0 0 auto;
+}
+.scrub-copy b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+.scrub-copy i {
+  display: block;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ---- Cap draft: budget tracker (replaces the payout meter) ---- */
+.budget-tracker {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+}
+.budget-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.budget-top .eyebrow {
+  margin: 0;
+}
+.budget-nums {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+.budget-spent {
+  color: var(--amber);
+}
+.budget-left {
+  color: var(--grass-bright);
+}
+.budget-sep {
+  color: var(--dim);
+  padding: 0 5px;
+}
+.budget-track {
+  display: flex;
+  gap: 2px;
+  margin: 0.6rem 0 0.5rem;
+  height: 14px;
+}
+.budget-seg {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.budget-seg.spent {
+  background: linear-gradient(180deg, #ffd166, #e8a613);
+  border-color: transparent;
+}
+.budget-note {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.budget-note-em {
+  color: var(--grass-bright);
+  font-weight: 600;
+}
+
 .pc-stats {
   padding: 0.6rem 0.75rem 0.35rem;
 }
@@ -443,10 +599,12 @@
 .player-card.large .pc-team {
   font-size: 0.72rem;
 }
-.player-card.large .pc-payout b {
+.player-card.large .pc-payout b,
+.player-card.large .pc-price b {
   font-size: 1.7rem;
 }
-.player-card.large .pc-payout i {
+.player-card.large .pc-payout i,
+.player-card.large .pc-price i {
   font-size: 0.58rem;
 }
 .player-card.large .pc-stats {

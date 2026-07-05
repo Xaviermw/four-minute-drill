@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "../../analytics/track";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
-import { dailyDraftRng, dailyDriveSeed } from "../../daily/dailyChallenge";
+import { dailyDraftRng, dailyDriveSeed, seedFromString } from "../../daily/dailyChallenge";
 import { drawSlotOptions } from "../../draft/draftPool";
+import { CAP, getPricing } from "../../draft/pricing";
+import { makeRng } from "../../engine";
 import { useGameDispatch } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
@@ -57,9 +59,13 @@ export function DraftScreen() {
     setShowIntro(false);
   }
   // In daily mode the pool is seeded by the date so everyone gets the same
-  // three options per slot; free play redraws randomly on each new draft.
+  // three options per slot; free play redraws randomly on each new draft. Only
+  // priced ($1+) players are dealt -- $0 scrubs are reachable only via the gamble.
   const slotOptions = useMemo(
-    () => (manifest ? drawSlotOptions(manifest.players, isDaily ? dailyDraftRng(challengeId) : Math.random) : null),
+    () =>
+      manifest
+        ? drawSlotOptions(getPricing(manifest.players).dealablePlayers, isDaily ? dailyDraftRng(challengeId) : Math.random)
+        : null,
     [manifest, isDaily, challengeId]
   );
 
@@ -70,11 +76,32 @@ export function DraftScreen() {
   // One shot per day: if today's drill is already done, show the recap instead.
   if (isDaily && dailyRecord) return <DailyDone record={dailyRecord} />;
 
+  const pricing = getPricing(loadedManifest.players);
+  const spent = SLOTS.reduce((sum, s) => {
+    const p = roster[s.key];
+    return sum + (p ? pricing.priceFor(p) : 0);
+  }, 0);
+  const budget = CAP - spent;
+
   function pick(slot: RosterSlotKey, player: ManifestPlayerEntry) {
     // Advance immediately -- the draft should feel snappy. The deliberate
     // beat lives in the drive (the ball gliding in with the play result).
     setRoster((prev) => ({ ...prev, [slot]: player }));
     setCurrentSlotIndex((i) => i + 1);
+  }
+
+  // The $0 gamble: assign a random scrub of this position (seeded per
+  // challenge+slot in daily so everyone who gambles gets the same guy).
+  function pickScrub(slot: RosterSlotKey, position: Position) {
+    const drafted = new Set(
+      Object.values(roster)
+        .filter((p): p is ManifestPlayerEntry => Boolean(p))
+        .map((p) => p.gsisId)
+    );
+    const pool = pricing.scrubPool(position).filter((p) => !drafted.has(p.gsisId));
+    if (pool.length === 0) return;
+    const roll = isDaily ? makeRng(seedFromString(`${challengeId}:scrub:${slot}`)).next() : Math.random();
+    pick(slot, pool[Math.floor(roll * pool.length)]);
   }
 
   async function handleContinue() {
@@ -102,8 +129,8 @@ export function DraftScreen() {
         </h1>
         <p className="hint">
           {isDaily
-            ? "Everyone gets the same 3 options at each position today. Draft wisely — you get one attempt."
-            : "Each position gives you 3 random options. The weaker your roster, the bigger the score if you somehow pull it off."}
+            ? "Everyone gets the same 3 options at each position today, and the same $25 cap. Spend it wisely — one attempt."
+            : "3 options at each position, $25 to build all six. Studs cost, scrubs are free — how you spend it is the game."}
         </p>
       </header>
       {showIntro && (
@@ -113,7 +140,7 @@ export function DraftScreen() {
           </button>
           <ul>
             <li>
-              <strong>×Payout</strong> is your score multiplier — weaker players pay more.
+              <strong>$25 cap</strong> for all six picks — studs cost more, scrubs are free.
             </li>
             <li>
               <strong>You call every play</strong> — run, pass, or kick.
@@ -140,6 +167,10 @@ export function DraftScreen() {
             selected={null}
             large
             onPick={(player) => pick(SLOTS[currentSlotIndex].key, player)}
+            priceFor={pricing.priceFor}
+            budget={budget}
+            onScrub={() => pickScrub(SLOTS[currentSlotIndex].key, SLOTS[currentSlotIndex].position)}
+            positionLabel={SLOTS[currentSlotIndex].position}
           />
         </div>
       )}
