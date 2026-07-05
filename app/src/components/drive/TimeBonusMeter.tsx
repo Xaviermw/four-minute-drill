@@ -7,7 +7,7 @@ import "./drive.css";
  * so the meter never lies: ×1.0 with 2:00+ on the clock, climbing to ×2.0 at
  * 0:00. Gives the player a reason to milk the clock before punching it in.
  */
-export function TimeBonusMeter({ clockSeconds }: { clockSeconds: number }) {
+export function TimeBonusMeter({ clockSeconds, showHint }: { clockSeconds: number; showHint?: boolean }) {
   const mult = clutchMultiplier(clockSeconds);
   const fill = Math.max(0, Math.min(1, mult - 1)); // 0 at ×1.0, 1 at ×2.0
   const live = clockSeconds < CLUTCH_REFERENCE_SECONDS;
@@ -20,7 +20,8 @@ export function TimeBonusMeter({ clockSeconds }: { clockSeconds: number }) {
       <div className="tb-track">
         <div className="tb-fill" style={{ width: `${fill * 100}%` }} />
       </div>
-      <p className="tb-hint">{live ? "Max ×2.00 at 0:00." : "Kicks in under 2:00."}</p>
+      {/* Teaching line for rookies only; veterans read the meter itself. */}
+      {showHint && <p className="tb-hint">{live ? "Max ×2.00 at 0:00." : "Kicks in under 2:00."}</p>}
     </div>
   );
 }

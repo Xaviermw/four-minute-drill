@@ -10,6 +10,7 @@ import { isNameAllowed } from "../../leaderboard/nameFilter";
 import { useLeaderboardUI } from "../../leaderboard/LeaderboardUI";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
+import { isRookie, markRookieDone } from "../../state/rookie";
 import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
@@ -50,6 +51,9 @@ export function ResultScreen() {
   const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
   const [daily, setDaily] = useState<{ days: number; best: number; state: DailyStreakState } | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  // Was this the rookie's first-ever drive? Captured at mount, BEFORE the record
+  // effect graduates them -- drives the "Play Today's Drill" conversion CTA.
+  const wasRookie = useRef(isRookie()).current;
   // Count up the actual score -- a scoreless drive still banks marginal yardage
   // points, so a "loss" can land above zero.
   const displayScore = useCountUp(state.phase === "result" ? state.driveLog.score : 0);
@@ -75,7 +79,11 @@ export function ResultScreen() {
       won: state.driveLog.won,
       endReason: state.driveLog.endReason,
       score: state.driveLog.score,
+      rookie: wasRookie,
     });
+    // Any completed drive graduates a rookie: the daily unlocks as the default
+    // and the teaching hints retire from the next drive on.
+    markRookieDone();
     if (mode === "daily") {
       saveDaily({
         challengeId,
@@ -91,7 +99,7 @@ export function ResultScreen() {
       const storedName = getStoredName();
       void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "").then(setFreeStreak);
     }
-  }, [state, mode, challengeId, saveDaily]);
+  }, [state, mode, challengeId, saveDaily, wasRookie]);
 
   if (state.phase !== "result") return null;
   const { driveLog, roster } = state;
@@ -177,7 +185,23 @@ export function ResultScreen() {
       <SharePanel driveLog={driveLog} roster={roster} />
 
       {replayError && <p className="error">{replayError}</p>}
-      {isDaily ? (
+      {!isDaily && wasRookie ? (
+        // The conversion moment: practice is done, funnel them into the daily
+        // while they're warm. This is the whole point of the rookie drive.
+        <div className="continue-cta rookie-cta">
+          <p className="continue-cta-hook">
+            {driveLog.won
+              ? "Practice is over — and you're already scoring. Today's Drill counts."
+              : "That was practice. The real one's waiting — everyone gets the same board."}
+          </p>
+          <button type="button" className="cta-button continue-cta-button" onClick={() => setMode("daily")}>
+            Play Today's Drill →
+          </button>
+          <button type="button" className="ghost-button" onClick={() => dispatch({ type: "RESTART" })}>
+            One more practice
+          </button>
+        </div>
+      ) : isDaily ? (
         <div className="result-actions">
           <button type="button" className="cta-button" onClick={openLeaderboard}>
             Today's Leaderboard

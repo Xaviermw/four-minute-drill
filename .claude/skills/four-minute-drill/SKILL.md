@@ -97,7 +97,18 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   effects (confetti) use the drive-log-identity ref guard.
 - Copy: ball spot via `formatBallOn`; the drive scoreboard is DOWN · BALL ON ·
   SCORE · CLOCK (`DriveFieldVisualizer` takes `scoreDiff`). localStorage flags:
-  `fmd_seen_intro` (coach strip), `fmd_daily_*`/`fmd_daily_streak` (daily).
+  `fmd_seen_intro` (coach strip), `fmd_daily_*`/`fmd_daily_streak` (daily),
+  `fmd_rookie_done` (graduation).
+- **Rookie drive** (`state/rookie.ts`): a visitor with NO `fmd_*` keys is a
+  rookie — ModeProvider defaults them to free play framed as "Rookie Drive ·
+  no stakes"; completing ANY drive graduates them (`markRookieDone` in
+  ResultScreen's record effect) and the result shows the amber "Play Today's
+  Drill →" card. Rookie-ness is SNAPSHOTTED per page load (keys written
+  mid-session, e.g. dismissing the coach strip, must not flip it mid-drive).
+  Teaching hints (tempo, clutch, budget note, scrub sub-line) render **only for
+  rookies** — don't add permanent explainer copy; How It Works is the reference.
+  Funnel events carry a `rookie` prop. e2e: `rookie.spec.ts` covers the loop;
+  note any fresh-context e2e now starts in FREE mode, not daily.
   Share text (`share/shareText.ts`) includes a Wordle-style emoji **drive grid**
   (`buildDriveGrid`: 🟩15+/🟨4-14/⬜1-3/🟥stuffed/🏈TD/❌TO + terminal 🎯/🚫/🛑/🏁);
   SharePanel shows it in a read-only preview. Default scenario is **down 3**.

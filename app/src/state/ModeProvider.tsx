@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { todaysChallengeId } from "../daily/dailyChallenge";
 import { getDailyRecord, markDailySubmitted, saveDailyRecord, type DailyRecord } from "../daily/dailyState";
+import { isRookie } from "./rookie";
 import { useGameDispatch } from "./GameStateProvider";
 
 export type Mode = "daily" | "free";
@@ -26,7 +27,9 @@ const ModeContext = createContext<ModeContextValue | null>(null);
 export function ModeProvider({ children }: { children: ReactNode }) {
   const dispatch = useGameDispatch();
   const challengeId = useMemo(() => todaysChallengeId(), []);
-  const [mode, setModeState] = useState<Mode>("daily");
+  // Rookies start in free play (the practice drive) so their first-ever game
+  // can't burn the one-shot daily; everyone else lands on the daily as usual.
+  const [mode, setModeState] = useState<Mode>(() => (isRookie() ? "free" : "daily"));
   const [dailyRecord, setDailyRecord] = useState<DailyRecord | null>(() => getDailyRecord(challengeId));
 
   const setMode = useCallback(

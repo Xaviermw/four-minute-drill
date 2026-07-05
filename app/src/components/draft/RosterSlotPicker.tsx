@@ -1,4 +1,5 @@
 import type { ManifestPlayerEntry } from "../../types/player";
+import { isRookie } from "../../state/rookie";
 import { PlayerCard } from "./PlayerCard";
 import "./draft.css";
 
@@ -56,7 +57,7 @@ export function RosterSlotPicker({
           <span className="scrub-dice" aria-hidden="true">🎲</span>
           <span className="scrub-copy">
             <b>Give me a scrub · $0</b>
-            <i>Random {positionLabel ?? "player"} — you don't pick who.</i>
+            {isRookie() && <i>Random {positionLabel ?? "player"} — you don't pick who.</i>}
           </span>
         </button>
       )}

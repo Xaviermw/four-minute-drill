@@ -10,6 +10,7 @@ import {
 } from "../../engine";
 import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
+import { isRookie } from "../../state/rookie";
 import type { PlayResult } from "../../types/simResult";
 import { DriveFieldVisualizer } from "./DriveFieldVisualizer";
 import { PlayByPlayFeed } from "./PlayByPlayFeed";
@@ -31,11 +32,14 @@ export function DriveScreen() {
   // play is chosen. Released (null) on reveal -> the field catches up to live.
   const [held, setHeld] = useState<DriveSituation | null>(null);
   const { mode } = useMode();
+  // Snapshotted per mount: rookies get the teaching hints; graduation (any
+  // completed drive) retires them for every later drive.
+  const [rookie] = useState(isRookie);
 
   // One drive start per mount (App only mounts DriveScreen while phase is
   // "driving", so this fires once per drive -- draft, replay, or shared link).
   useEffect(() => {
-    trackEvent("drive_started", { mode });
+    trackEvent("drive_started", { mode, rookie });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -74,7 +78,7 @@ export function DriveScreen() {
 
   return (
     <div className="screen drive-screen">
-      <TimeBonusMeter clockSeconds={display.clockSeconds} />
+      <TimeBonusMeter clockSeconds={display.clockSeconds} showHint={rookie} />
 
       <DriveFieldVisualizer
         fieldPosition={display.fieldPosition}
@@ -121,11 +125,13 @@ export function DriveScreen() {
             disabled={resolving || !live.clockRunning}
             onChange={(e) => setTempoSeconds(Number(e.target.value))}
           />
-          <p className="tempo-hint">
-            {live.clockRunning
-              ? "Slow snaps burn clock — and grow your clutch bonus."
-              : "Clock stopped — this snap is free."}
-          </p>
+          {rookie && (
+            <p className="tempo-hint">
+              {live.clockRunning
+                ? "Slow snaps burn clock — and grow your clutch bonus."
+                : "Clock stopped — this snap is free."}
+            </p>
+          )}
         </div>
 
         {resolving ? (

@@ -2,6 +2,7 @@ import { useManifest } from "../../data/dataContext";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { RosterSlotKey } from "../../types/roster";
 import { CAP, getPricing } from "../../draft/pricing";
+import { isRookie } from "../../state/rookie";
 import { PlayerCard } from "./PlayerCard";
 import "./draft.css";
 
@@ -44,9 +45,11 @@ export function TeamPanel({
             <span key={i} className={`budget-seg ${i < spent ? "spent" : ""}`} />
           ))}
         </div>
-        <p className="budget-note">
-          Out of cash? <span className="budget-note-em">Scrubs are always $0.</span>
-        </p>
+        {isRookie() && (
+          <p className="budget-note">
+            Out of cash? <span className="budget-note-em">Scrubs are always $0.</span>
+          </p>
+        )}
       </div>
       <div className="team-panel-grid">
         {slots.map((slot) => {

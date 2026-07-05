@@ -9,6 +9,7 @@ import { capForChallenge } from "../../draft/capConfig";
 import { makeRng } from "../../engine";
 import { useGameDispatch } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
+import { isRookie } from "../../state/rookie";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
 import { DailyDone } from "../../daily/DailyDone";
@@ -41,6 +42,8 @@ export function DraftScreen() {
     }
   });
   const isDaily = mode === "daily";
+  // Snapshotted per mount: a rookie is drafting their no-stakes practice drive.
+  const [rookie] = useState(isRookie);
 
   // Top of funnel: count each time the player is actually shown a draft to build
   // (not the DailyDone recap). Once per mount, guarded so re-renders don't repeat.
@@ -48,8 +51,8 @@ export function DraftScreen() {
   useEffect(() => {
     if (draftTracked.current || !manifest || (isDaily && dailyRecord)) return;
     draftTracked.current = true;
-    trackEvent("draft_started", { mode });
-  }, [manifest, isDaily, dailyRecord, mode]);
+    trackEvent("draft_started", { mode, rookie });
+  }, [manifest, isDaily, dailyRecord, mode, rookie]);
 
   function dismissIntro() {
     try {
@@ -127,12 +130,24 @@ export function DraftScreen() {
     <div className="screen draft-screen">
       <header className="draft-header">
         <span className="eyebrow">
-          {capLabel ? `${capLabel} · $${cap}` : isDaily ? "Today's Drill · one shot" : "Build your team"}
+          {capLabel
+            ? `${capLabel} · $${cap}`
+            : isDaily
+              ? "Today's Drill · one shot"
+              : rookie
+                ? "Rookie Drive · no stakes"
+                : "Build your team"}
         </span>
         <h1>
           Who can you <span className="headline-accent">win</span> with?
         </h1>
-        <p className="hint">{isDaily ? "Everyone gets the same board today." : "Fresh board every draft."}</p>
+        <p className="hint">
+          {isDaily
+            ? "Everyone gets the same board today."
+            : rookie
+              ? "A practice drive to learn the ropes — Today's Drill unlocks when it's done."
+              : "Fresh board every draft."}
+        </p>
       </header>
       {showIntro && (
         <div className="coach-strip">

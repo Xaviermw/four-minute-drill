@@ -177,6 +177,12 @@
   padding: 0.9rem 2rem;
 }
 
+/* Rookie graduation: same card shape, amber-tinted -- it points at the Daily. */
+.rookie-cta {
+  border-color: rgba(255, 194, 51, 0.4);
+  background: linear-gradient(180deg, rgba(255, 194, 51, 0.1), rgba(255, 194, 51, 0.02));
+}
+
 .ghost-button {
   appearance: none;
   cursor: pointer;
