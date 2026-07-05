@@ -79,14 +79,15 @@ export function buildShareText(
   driveLog: DriveLog,
   roster: DraftedRoster,
   spend?: number,
-  url = buildShareUrl(roster)
+  url = buildShareUrl(roster),
+  cap = CAP
 ): string {
   const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
   const lines = [`🏈 Four Minute Drill — ${scoreLine}`];
   if (spend !== undefined) {
-    lines.push(`${outcomeLabel(driveLog.endReason)} · built for $${spend} of $${CAP}`);
-    if (spend < CAP) lines.push(`💰 $${CAP - spend} under the cap`);
+    lines.push(`${outcomeLabel(driveLog.endReason)} · built for $${spend} of $${cap}`);
+    if (spend < cap) lines.push(`💰 $${cap - spend} under the cap`);
   } else {
     lines.push(outcomeLabel(driveLog.endReason));
   }

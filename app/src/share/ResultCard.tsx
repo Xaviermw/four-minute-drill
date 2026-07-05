@@ -32,13 +32,13 @@ const ROWS: { slot: RosterSlotKey; label: string }[] = [
  */
 export const ResultCard = forwardRef<
   HTMLDivElement,
-  { driveLog: DriveLog; roster: DraftedRoster; spend?: number; priceFor?: (p: ManifestPlayerEntry) => number }
->(function ResultCard({ driveLog, roster, spend, priceFor }, ref) {
+  { driveLog: DriveLog; roster: DraftedRoster; spend?: number; cap?: number; priceFor?: (p: ManifestPlayerEntry) => number }
+>(function ResultCard({ driveLog, roster, spend, cap = CAP, priceFor }, ref) {
     return (
       <div className={`result-card ${driveLog.won ? "won" : "lost"}`} ref={ref}>
         <div className="rc-header">
           <span className="rc-brand">🏈 FOUR MINUTE DRILL</span>
-          {spend !== undefined && <span className="rc-ovr">${spend} of ${CAP}</span>}
+          {spend !== undefined && <span className="rc-ovr">${spend} of ${cap}</span>}
         </div>
 
         <div className="rc-hero">

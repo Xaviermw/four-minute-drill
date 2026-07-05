@@ -189,6 +189,26 @@ export async function fetchDailyDrivePercentile(
   return (beatenCount ?? 0) / totalCount;
 }
 
+/** Headline counts for today's field: how many drives were logged and how many
+ * scored. Two head-count queries; used for the "Today's field" line on
+ * DailyDone. Returns zeros when the leaderboard is disabled. */
+export async function fetchDailyFieldSummary(challengeId: string): Promise<{ total: number; scored: number }> {
+  const supabase = await getSupabase();
+  if (!supabase) return { total: 0, scored: 0 };
+
+  const totalQ = supabase.from(TABLE).select("id", { count: "exact", head: true }).eq("challenge_date", challengeId);
+  const scoredQ = supabase
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .eq("challenge_date", challengeId)
+    .gt("score", 0);
+
+  const [{ count: total, error: e1 }, { count: scored, error: e2 }] = await Promise.all([totalQ, scoredQ]);
+  if (e1) throw new Error(e1.message);
+  if (e2) throw new Error(e2.message);
+  return { total: total ?? 0, scored: scored ?? 0 };
+}
+
 // ---- Win-streak leaderboard ----
 // A streak is consecutive winning drives; its value is the points banked during
 // the run. A loss resets it. The server (record_drive RPC) does the aggregation

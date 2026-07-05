@@ -65,6 +65,17 @@
   font-size: 0.95rem;
   margin: 1rem 0 0;
 }
+.daily-field-line {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.85rem;
+  margin: 0.35rem 0 0;
+}
+.daily-field-line strong {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
 .daily-lineup {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

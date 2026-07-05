@@ -8,15 +8,18 @@ import "./draft.css";
 export function TeamPanel({
   slots,
   roster,
+  cap = CAP,
 }: {
   slots: { key: RosterSlotKey; label: string; position: Position }[];
   roster: Partial<Record<RosterSlotKey, ManifestPlayerEntry>>;
+  /** The day's cap (theme days may vary it); defaults to the standard $25. */
+  cap?: number;
 }) {
   const { manifest } = useManifest();
   const pricing = manifest ? getPricing(manifest.players) : null;
   const picked = slots.map((s) => roster[s.key]).filter((p): p is ManifestPlayerEntry => Boolean(p));
   const spent = pricing ? picked.reduce((sum, p) => sum + pricing.priceFor(p), 0) : 0;
-  const left = CAP - spent;
+  const left = cap - spent;
 
   return (
     <div className="team-panel">
@@ -33,11 +36,11 @@ export function TeamPanel({
           className="budget-track"
           role="meter"
           aria-valuemin={0}
-          aria-valuemax={CAP}
+          aria-valuemax={cap}
           aria-valuenow={spent}
-          aria-label={`Budget: $${spent} of $${CAP} spent`}
+          aria-label={`Budget: $${spent} of $${cap} spent`}
         >
-          {Array.from({ length: CAP }, (_, i) => (
+          {Array.from({ length: cap }, (_, i) => (
             <span key={i} className={`budget-seg ${i < spent ? "spent" : ""}`} />
           ))}
         </div>

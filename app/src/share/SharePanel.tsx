@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { trackEvent } from "../analytics/track";
 import { useManifest } from "../data/dataContext";
 import { getPricing } from "../draft/pricing";
+import { capForChallenge } from "../draft/capConfig";
+import { useMode } from "../state/ModeProvider";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
 import { ResultCard } from "./ResultCard";
@@ -17,11 +19,14 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const nativeShare = canShareImage();
   const { manifest } = useManifest();
+  const { mode, challengeId } = useMode();
   const pricing = manifest ? getPricing(manifest.players) : null;
   const spend = pricing ? LINEUP_SLOT_ORDER.reduce((sum, s) => sum + pricing.priceFor(roster[s]), 0) : undefined;
+  // The cap this drive was built under (theme days can vary it); free play is standard.
+  const { cap } = capForChallenge(mode === "daily" ? challengeId : null);
   // Exactly what "Copy result" puts on the clipboard -- shown read-only so the
   // player sees the emoji drive grid before they share it.
-  const shareText = buildShareText(driveLog, roster, spend);
+  const shareText = buildShareText(driveLog, roster, spend, undefined, cap);
 
   function flash(s: Status) {
     setStatus(s);
@@ -101,7 +106,7 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
 
       {/* Off-screen card that gets snapshotted to PNG. */}
       <div className="share-card-offscreen" aria-hidden="true">
-        <ResultCard ref={cardRef} driveLog={driveLog} roster={roster} spend={spend} priceFor={pricing?.priceFor} />
+        <ResultCard ref={cardRef} driveLog={driveLog} roster={roster} spend={spend} cap={cap} priceFor={pricing?.priceFor} />
       </div>
     </div>
   );

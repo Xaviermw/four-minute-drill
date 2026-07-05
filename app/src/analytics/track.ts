@@ -13,7 +13,8 @@ export type AnalyticsEvent =
   | "drive_completed"
   | "score_submitted"
   | "result_shared"
-  | "lineup_link_opened";
+  | "lineup_link_opened"
+  | "scrub_taken";
 
 export function trackEvent(
   event: AnalyticsEvent,

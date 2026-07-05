@@ -4,7 +4,8 @@ import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
 import { dailyDraftRng, dailyDriveSeed, seedFromString } from "../../daily/dailyChallenge";
 import { drawSlotOptions } from "../../draft/draftPool";
-import { CAP, getPricing } from "../../draft/pricing";
+import { getPricing } from "../../draft/pricing";
+import { capForChallenge } from "../../draft/capConfig";
 import { makeRng } from "../../engine";
 import { useGameDispatch } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
@@ -77,11 +78,12 @@ export function DraftScreen() {
   if (isDaily && dailyRecord) return <DailyDone record={dailyRecord} />;
 
   const pricing = getPricing(loadedManifest.players);
+  const { cap, label: capLabel } = capForChallenge(isDaily ? challengeId : null);
   const spent = SLOTS.reduce((sum, s) => {
     const p = roster[s.key];
     return sum + (p ? pricing.priceFor(p) : 0);
   }, 0);
-  const budget = CAP - spent;
+  const budget = cap - spent;
 
   function pick(slot: RosterSlotKey, player: ManifestPlayerEntry) {
     // Advance immediately -- the draft should feel snappy. The deliberate
@@ -100,6 +102,7 @@ export function DraftScreen() {
     );
     const pool = pricing.scrubPool(position).filter((p) => !drafted.has(p.gsisId));
     if (pool.length === 0) return;
+    trackEvent("scrub_taken", { mode, position });
     const roll = isDaily ? makeRng(seedFromString(`${challengeId}:scrub:${slot}`)).next() : Math.random();
     pick(slot, pool[Math.floor(roll * pool.length)]);
   }
@@ -123,7 +126,9 @@ export function DraftScreen() {
   return (
     <div className="screen draft-screen">
       <header className="draft-header">
-        <span className="eyebrow">{isDaily ? "Today's Drill · one shot" : "Build your team"}</span>
+        <span className="eyebrow">
+          {capLabel ? `${capLabel} · $${cap}` : isDaily ? "Today's Drill · one shot" : "Build your team"}
+        </span>
         <h1>
           Who can you <span className="headline-accent">win</span> with?
         </h1>
@@ -147,7 +152,7 @@ export function DraftScreen() {
           </ul>
         </div>
       )}
-      <TeamPanel slots={SLOTS} roster={roster} />
+      <TeamPanel slots={SLOTS} roster={roster} cap={cap} />
       {!draftComplete && (
         <div className="draft-slot-transition">
           <div className="draft-progress">

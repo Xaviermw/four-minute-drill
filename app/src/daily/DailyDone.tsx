@@ -6,6 +6,7 @@ import { SharePanel } from "../share/SharePanel";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import { getPricing } from "../draft/pricing";
+import { fetchDailyFieldSummary } from "../leaderboard/leaderboardApi";
 import { useMode } from "../state/ModeProvider";
 import { DailyStreakBadge } from "../components/result/StreakBanners";
 import { DriveRecap } from "../components/result/DriveRecap";
@@ -31,11 +32,23 @@ export function DailyDone({ record }: { record: DailyRecord }) {
   const { challengeId, setMode, markSubmitted } = useMode();
   const { open: openLeaderboard } = useLeaderboardUI();
   const [remaining, setRemaining] = useState(() => secondsUntilNextChallenge());
+  const [field, setField] = useState<{ total: number; scored: number } | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setRemaining(secondsUntilNextChallenge()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // How the rest of today's field did -- context for your own result.
+  useEffect(() => {
+    let cancelled = false;
+    fetchDailyFieldSummary(challengeId)
+      .then((f) => !cancelled && setField(f))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [challengeId]);
 
   const { driveLog } = record;
   const roster = manifest ? rosterFromIdList(record.rosterIds, manifest) : null;
@@ -66,6 +79,13 @@ export function DailyDone({ record }: { record: DailyRecord }) {
               driveLog.score > 0 ? ` · +${driveLog.score} pts for the march` : ""
             }`}
       </p>
+
+      {field && field.total >= 5 && (
+        <p className="daily-field-line">
+          Today's field: <strong>{field.total}</strong> drive{field.total === 1 ? "" : "s"} ·{" "}
+          <strong>{Math.round((field.scored / field.total) * 100)}%</strong> scored
+        </p>
+      )}
 
       {roster ? (
         <>
