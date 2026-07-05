@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="index" />
+    <title>Privacy — Four Minute Drill</title>
+    <style>
+      :root {
+        --bg: #080b11;
+        --surface: #161d2a;
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #eef2f8;
+        --muted: #8c99ad;
+        --amber: #ffc233;
+        --grass: #34e07a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      main { max-width: 620px; margin: 0 auto; padding: 48px 22px 72px; }
+      .back {
+        display: inline-block; margin-bottom: 28px; color: var(--muted);
+        text-decoration: none; font-size: 0.9rem;
+      }
+      .back:hover { color: var(--amber); }
+      h1 {
+        font-family: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+        font-weight: 700; font-size: 2.2rem; letter-spacing: 0.01em; margin: 0 0 4px;
+      }
+      .updated { color: var(--muted); font-size: 0.85rem; margin: 0 0 28px; }
+      p { margin: 0 0 16px; }
+      h2 {
+        font-family: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+        font-weight: 700; font-size: 1.35rem; margin: 30px 0 10px;
+      }
+      ul { margin: 0 0 16px; padding-left: 22px; }
+      li { margin-bottom: 8px; }
+      strong { color: var(--text); }
+      a { color: var(--grass); }
+      .card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 12px; padding: 4px 20px; margin: 8px 0 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">← Back to the game</a>
+      <h1>Privacy</h1>
+      <p class="updated">Last updated July 5, 2026</p>
+
+      <p>
+        Four Minute Drill is a free daily football game. It collects as little as it can, has no ads, and sells
+        nothing. Here is exactly what it does and doesn't do with data.
+      </p>
+
+      <h2>What's stored</h2>
+      <div class="card">
+        <ul>
+          <li>
+            The <strong>display name and score</strong> you choose to submit to a public leaderboard. These are
+            visible to everyone by design — that's the leaderboard.
+          </li>
+          <li>
+            An <strong>anonymous account id</strong> — a random identifier (no email, no login) so your own scores
+            can be highlighted as yours and your win streak can be tracked.
+          </li>
+          <li>
+            <strong>Anonymous gameplay analytics</strong> (via Vercel Analytics): aggregate events like "a drive was
+            completed" or "a result was shared," used to understand how the game is played. No personal profiles.
+          </li>
+          <li>
+            <strong>Local settings</strong> stored in your browser (localStorage): your day streak, whether you've
+            seen the intro, and the last name you entered. These never leave your device unless you submit a score.
+          </li>
+        </ul>
+      </div>
+
+      <h2>What's not</h2>
+      <div class="card">
+        <ul>
+          <li>No email address, real name, or account password is ever requested.</li>
+          <li>No advertising, no third-party tracking pixels, no cross-site profiling.</li>
+          <li>Nothing is sold or shared with data brokers.</li>
+        </ul>
+      </div>
+
+      <h2>Deleting your data</h2>
+      <p>
+        Want a leaderboard entry removed? Email
+        <a href="mailto:xavier.weisenreder@gmail.com">xavier.weisenreder@gmail.com</a> with the display name you used
+        and it'll be taken down. You can clear your local settings anytime by clearing this site's browser data.
+      </p>
+
+      <h2>Player data</h2>
+      <p>
+        Player stats and outcomes come from public NFL play-by-play data (nflverse / nflfastR). The game uses no
+        team logos or player photos.
+      </p>
+    </main>
+  </body>
+</html>

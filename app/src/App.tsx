@@ -72,6 +72,10 @@ function AppBody() {
       <footer className="app-footer">
         <HowItWorks />
         <span className="app-footer-sep">·</span>
+        <a className="how-it-works-link" href="/privacy.html">
+          Privacy
+        </a>
+        <span className="app-footer-sep">·</span>
         <span>Data via nflverse / nflfastR</span>
       </footer>
     </div>
