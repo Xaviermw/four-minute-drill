@@ -501,6 +501,62 @@
   color: var(--muted);
 }
 
+/* ---- First-visit gate: practice vs. daily, asked once ---- */
+.rookie-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(4, 6, 10, 0.78);
+  backdrop-filter: blur(3px);
+}
+.rookie-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: 24rem;
+  width: 100%;
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+  background: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  animation: gate-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes gate-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+.rookie-gate-ball {
+  font-size: 2rem;
+  line-height: 1;
+}
+.rookie-gate h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.05;
+}
+.rookie-gate-copy {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.rookie-gate-copy strong {
+  color: var(--text);
+}
+.rookie-gate-primary {
+  width: 100%;
+}
+
 /* ---- Cap draft: budget tracker (replaces the payout meter) ---- */
 .budget-tracker {
   background: var(--surface-1);

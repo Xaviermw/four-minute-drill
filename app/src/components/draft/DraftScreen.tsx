@@ -9,8 +9,9 @@ import { capForChallenge } from "../../draft/capConfig";
 import { makeRng } from "../../engine";
 import { useGameDispatch } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
-import { isRookie } from "../../state/rookie";
+import { isRookie, rookieGateChoice, setRookieGateChoice } from "../../state/rookie";
 import { useGhost } from "../../share/GhostProvider";
+import { RookieGate } from "./RookieGate";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
 import { DailyDone } from "../../daily/DailyDone";
@@ -30,7 +31,7 @@ const SLOTS: { key: RosterSlotKey; label: string; position: Position }[] = [
 export function DraftScreen() {
   const { manifest, error } = useManifest();
   const dispatch = useGameDispatch();
-  const { mode, challengeId, dailyRecord } = useMode();
+  const { mode, challengeId, dailyRecord, setMode } = useMode();
   const [roster, setRoster] = useState<Partial<Record<RosterSlotKey, ManifestPlayerEntry>>>({});
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,9 @@ export function DraftScreen() {
   const isDaily = mode === "daily";
   // Snapshotted per mount: a rookie is drafting their no-stakes practice drive.
   const [rookie] = useState(isRookie);
+  // First-visit gate: rookies choose practice vs. daily instead of being
+  // silently defaulted. Once per session; asks again next visit if ungraduated.
+  const [gateOpen, setGateOpen] = useState(() => rookie && rookieGateChoice() === null);
   // A fresh draft is a new lineup -- any ghost from a shared link no longer applies.
   const { ghost, setGhost } = useGhost();
   useEffect(() => {
@@ -134,6 +138,21 @@ export function DraftScreen() {
 
   return (
     <div className="screen draft-screen">
+      {gateOpen && (
+        <RookieGate
+          onPractice={() => {
+            setRookieGateChoice("practice");
+            trackEvent("rookie_gate", { choice: "practice" });
+            setGateOpen(false);
+          }}
+          onSkip={() => {
+            setRookieGateChoice("daily");
+            trackEvent("rookie_gate", { choice: "skip" });
+            setGateOpen(false);
+            setMode("daily");
+          }}
+        />
+      )}
       <header className="draft-header">
         <span className="eyebrow">
           {capLabel
@@ -147,13 +166,7 @@ export function DraftScreen() {
         <h1>
           Who can you <span className="headline-accent">win</span> with?
         </h1>
-        <p className="hint">
-          {isDaily
-            ? "Everyone gets the same board today."
-            : rookie
-              ? "A practice drive to learn the ropes — Today's Drill unlocks when it's done."
-              : "Fresh board every draft."}
-        </p>
+        <p className="hint">{isDaily ? "Everyone gets the same board today." : "Fresh board every draft."}</p>
       </header>
       {showIntro && (
         <div className="coach-strip">

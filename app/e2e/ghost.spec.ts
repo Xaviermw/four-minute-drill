@@ -8,6 +8,10 @@ test("share link carries a raceable ghost", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/");
 
+  // Fresh context => take the practice path through the first-visit gate.
+  const gateButton = page.getByRole("button", { name: /practice drive/i });
+  if (await gateButton.isVisible().catch(() => false)) await gateButton.click();
+
   // Play any drive to completion (rookie practice works fine).
   await page.locator(".player-grid .player-card").first().waitFor();
   for (let pick = 1; pick <= 6; pick++) {

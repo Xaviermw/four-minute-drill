@@ -1,14 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-// The rookie funnel (macro-review P1): a brand-new visitor must land on a
-// no-stakes practice drive, not burn their one daily shot learning the UI --
-// then get funneled into the daily the moment practice ends.
-test("first visit: practice drive -> graduate -> daily unlocks", async ({ page }) => {
+// The rookie funnel (macro-review P1, opt-in per owner): a brand-new visitor is
+// ASKED -- practice drive or straight to the daily -- instead of silently
+// defaulted. Practice is loudly framed (banner), and completing it funnels
+// them into the daily.
+test("first visit: choose practice -> loud framing -> graduate -> daily unlocks", async ({ page }) => {
   await page.goto("/");
 
-  // Fresh context (no localStorage) => rookie framing, in free-play mode.
+  // Fresh context => the gate asks first.
+  const gate = page.getByRole("dialog");
+  await expect(gate).toContainText("First time here?");
+  await gate.getByRole("button", { name: /practice drive/i }).click();
+
+  // Practice framing: banner + rookie eyebrow + teaching hints.
+  await expect(page.locator(".shared-banner")).toContainText("Practice drive");
   await expect(page.locator(".draft-header .eyebrow")).toContainText("Rookie Drive");
-  // Teaching hints are on for rookies.
   await expect(page.locator(".budget-note")).toBeVisible();
 
   // Complete the practice draft (first affordable card; scrub fallback).
@@ -32,8 +38,22 @@ test("first visit: practice drive -> graduate -> daily unlocks", async ({ page }
   const cta = page.getByRole("button", { name: /Play Today's Drill/ });
   await expect(cta).toBeVisible();
 
-  // ...and clicking it lands on the real daily draft, hints retired.
+  // ...and clicking it lands on the real daily draft, hints retired, banner gone.
   await cta.click();
   await expect(page.locator(".draft-header .eyebrow")).toContainText("Today's Drill");
   await expect(page.locator(".budget-note")).toHaveCount(0);
+  await expect(page.locator(".shared-banner")).toHaveCount(0);
+});
+
+test("first visit: skip goes straight to the daily", async ({ page }) => {
+  await page.goto("/");
+  const gate = page.getByRole("dialog");
+  await expect(gate).toContainText("First time here?");
+  await gate.getByRole("button", { name: /Skip to Today's Drill/i }).click();
+
+  await expect(page.locator(".draft-header .eyebrow")).toContainText("Today's Drill");
+  // Still their first drive: teaching hints stay on until they complete one.
+  await expect(page.locator(".budget-note")).toBeVisible();
+  // No practice banner -- they're playing the real thing, on purpose.
+  await expect(page.locator(".shared-banner")).toHaveCount(0);
 });

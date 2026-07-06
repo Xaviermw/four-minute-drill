@@ -7,7 +7,8 @@ description: Use when implementing features, UI/design changes, data-pipeline ru
 
 Web game: draft 6 real NFL players (QB, RB, WR×2, TE, K), call plays on a
 do-or-die final drive simulated from 2015–2025 nflverse play-by-play, get a
-score. Live at https://four-minute-drill.vercel.app/ (Vercel, root dir `app`).
+score. Live at https://www.fourminutedrill.com/ (Vercel, root dir `app`; apex
+redirects to www; the old four-minute-drill.vercel.app URL still serves).
 
 ## Architecture (respect the layer boundaries)
 
@@ -109,16 +110,22 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   in ghost.ts is wire format: append-only, never reorder. Ghost survives Run
   It Back, cleared on entering the draft. Data slims/refreshes invalidate
   in-flight ghost links (accepted).
-- **Rookie drive** (`state/rookie.ts`): a visitor with NO `fmd_*` keys is a
-  rookie — ModeProvider defaults them to free play framed as "Rookie Drive ·
-  no stakes"; completing ANY drive graduates them (`markRookieDone` in
-  ResultScreen's record effect) and the result shows the amber "Play Today's
-  Drill →" card. Rookie-ness is SNAPSHOTTED per page load (keys written
-  mid-session, e.g. dismissing the coach strip, must not flip it mid-drive).
-  Teaching hints (tempo, clutch, budget note, scrub sub-line) render **only for
-  rookies** — don't add permanent explainer copy; How It Works is the reference.
-  Funnel events carry a `rookie` prop. e2e: `rookie.spec.ts` covers the loop;
-  note any fresh-context e2e now starts in FREE mode, not daily.
+- **Rookie drive** (`state/rookie.ts` + `RookieGate.tsx`): a visitor with NO
+  `fmd_*` keys is a rookie. They are ASKED via a one-time, non-dismissable
+  choice modal ("Run a practice drive" / "Skip to Today's Drill") — owner
+  explicitly rejected silent defaulting as unclear; don't reintroduce it. The
+  choice is session-scoped (`rookieGateChoice`), so an ungraduated rookie is
+  asked again next visit. During practice a persistent amber banner (AppBody)
+  says "Practice drive — nothing counts yet"; the shared-lineup banner takes
+  precedence, and deep-link arrivals skip the gate entirely (the challenge IS
+  their practice). Completing ANY drive graduates them (`markRookieDone` in
+  ResultScreen's record effect) → the amber "Play Today's Drill →" card.
+  Rookie-ness is SNAPSHOTTED per page load (keys written mid-session, e.g.
+  dismissing the coach strip, must not flip it mid-drive). Teaching hints
+  (tempo, clutch, budget note, scrub sub-line) render **only for rookies**.
+  Funnel events carry a `rookie` prop + a `rookie_gate` event logs the choice.
+  e2e: `rookie.spec.ts` covers both paths; any fresh-context e2e must click
+  through the gate first (see smoke/ghost specs).
   Share text (`share/shareText.ts`) includes a Wordle-style emoji **drive grid**
   (`buildDriveGrid`: 🟩15+/🟨4-14/⬜1-3/🟥stuffed/🏈TD/❌TO + terminal 🎯/🚫/🛑/🏁);
   SharePanel shows it in a read-only preview. Default scenario is **down 3**.

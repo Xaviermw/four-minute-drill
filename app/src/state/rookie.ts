@@ -51,3 +51,18 @@ export function markRookieDone(): void {
     /* ignore storage failures */
   }
 }
+
+// ---- First-visit gate ----
+// The rookie is ASKED (a one-time choice modal), not silently defaulted: they
+// pick "practice drive" or "skip to the daily". Session-scoped on purpose --
+// if they close the tab before finishing a drive, they're still a rookie and
+// the gate asks again next visit.
+let gateChoice: "practice" | "daily" | null = null;
+
+export function rookieGateChoice(): "practice" | "daily" | null {
+  return gateChoice;
+}
+
+export function setRookieGateChoice(choice: "practice" | "daily"): void {
+  gateChoice = choice;
+}

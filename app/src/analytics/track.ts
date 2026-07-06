@@ -14,7 +14,8 @@ export type AnalyticsEvent =
   | "score_submitted"
   | "result_shared"
   | "lineup_link_opened"
-  | "scrub_taken";
+  | "scrub_taken"
+  | "rookie_gate";
 
 export function trackEvent(
   event: AnalyticsEvent,

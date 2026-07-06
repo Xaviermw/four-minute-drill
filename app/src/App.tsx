@@ -9,6 +9,7 @@ import { GhostProvider, useGhost } from "./share/GhostProvider";
 import { useSharedLineupDeepLink } from "./share/useSharedLineupDeepLink";
 import { GameStateProvider, useGameState } from "./state/GameStateProvider";
 import { ModeProvider, useMode } from "./state/ModeProvider";
+import { isRookie } from "./state/rookie";
 import "./App.css";
 import "./daily/daily.css";
 
@@ -41,7 +42,14 @@ function ModeToggle() {
 function AppBody() {
   const sharedLineup = useSharedLineupDeepLink();
   const { ghost } = useGhost();
+  const { mode } = useMode();
+  const { phase } = useGameState();
   const { open: openLeaderboard } = useLeaderboardUI();
+  // Practice framing must be impossible to miss: while an ungraduated rookie is
+  // in free play, a persistent banner says so. The shared-lineup banner wins (a
+  // challenge link is its own framing), and the result screen's graduation card
+  // takes over from there. Reading `phase` keeps isRookie() re-evaluated.
+  const practicing = !sharedLineup && mode === "free" && phase !== "result" && isRookie();
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -68,6 +76,11 @@ function AppBody() {
           {ghost
             ? `👻 Racing ${ghost.name ?? "a ghost"}'s drive — ${ghost.score} pts to beat.`
             : "🔗 You’re running a shared lineup — beat their score!"}
+        </div>
+      )}
+      {practicing && (
+        <div className="shared-banner" role="status">
+          🏈 Practice drive — nothing counts yet. Today's Drill unlocks when it's done.
         </div>
       )}
       <main className="app-main">
