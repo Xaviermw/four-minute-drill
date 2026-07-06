@@ -36,7 +36,7 @@ drive*, play for play, on the same field.
 >
 > The part I'm proudest of: share links carry your drive's exact DNA (it's
 > fully deterministic), so a friend doesn't just see your score — they race
-> your ghost, clock-synced, on the same field. Beat my drive: [link]
+> your ghost, clock-synced, on the same field. Beat my drive: https://www.fourminutedrill.com
 
 **Gallery shots to prepare**: priced draft w/ locked card + scrub dice ·
 broadcast field mid-drive · ghost race (banner + ring) · result w/ emoji grid
@@ -75,7 +75,7 @@ participate for a week before posting; Saturday mornings do well)
 > anyone race your exact drive play-by-play — so hosts can literally say
 > "beat my drive" and drop one link. No account, no app install, ~90 seconds.
 > Happy to make you a custom theme day (your show's name on a $15 cap day) if
-> it lands. [link]
+> it lands. https://www.fourminutedrill.com
 
 **Custom theme days as outreach currency**: the cap scaffold supports one-line
 specials — offering "The [Show] $15 Challenge Day" costs us a config entry and
