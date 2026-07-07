@@ -3,6 +3,23 @@ import "./drive.css";
 
 const YARD_TICKS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
+/** A tappable play-call target seated on the field (spike/field-calls). */
+export interface FieldTarget {
+  key: string;
+  /** Yards-to-end-zone the target sits at (visual seat, not a promise). */
+  fieldPosition: number;
+  /** Vertical lane: 0 top ("left"), 1 middle, 2 bottom ("right"). */
+  lane: 0 | 1 | 2;
+  tag: string;
+  tagClass: string;
+  label: string;
+  /** Past the line to gain -- rendered with the gold conversion ring. */
+  beyondSticks: boolean;
+  endZone: boolean;
+  disabled: boolean;
+  onChoose: () => void;
+}
+
 export function DriveFieldVisualizer({
   fieldPosition,
   down,
@@ -11,6 +28,7 @@ export function DriveFieldVisualizer({
   scoreDiff,
   driveStartPosition,
   ghostPosition,
+  targets,
 }: {
   fieldPosition: number;
   down?: number;
@@ -21,6 +39,8 @@ export function DriveFieldVisualizer({
   driveStartPosition?: number;
   /** Where the ghost's drive stood at this game clock (ghost racing). */
   ghostPosition?: number;
+  /** Field-call mode: the dealt options as tappable targets on the turf. */
+  targets?: FieldTarget[];
 }) {
   // fieldPosition = yards to go to the opponent's goal line (yardline_100 convention).
   const progressPct = Math.max(0, Math.min(100, 100 - fieldPosition));
@@ -109,6 +129,26 @@ export function DriveFieldVisualizer({
           <div className="field-marker" style={{ left: `${progressPct}%` }}>
             <div className="field-ball" />
           </div>
+
+          {targets?.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={`field-target ${t.beyondSticks ? "sticks" : ""} ${t.endZone ? "endzone" : ""}`}
+              style={{
+                left: `${Math.max(2, Math.min(98, 100 - t.fieldPosition))}%`,
+                top: `${[24, 50, 76][t.lane]}%`,
+              }}
+              disabled={t.disabled}
+              onClick={t.onChoose}
+            >
+              <span className={`field-target-ring ${t.tagClass}`} aria-hidden="true" />
+              <span className="field-target-chip">
+                <b className={t.tagClass}>{t.tag}</b>
+                <i>{t.label}</i>
+              </span>
+            </button>
+          ))}
         </div>
         <div className="field-endzone away">Four Minute Drill</div>
       </div>
