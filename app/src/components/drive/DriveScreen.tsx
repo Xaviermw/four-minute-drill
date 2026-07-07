@@ -26,8 +26,10 @@ import { TimeBonusMeter } from "./TimeBonusMeter";
 const FIELD_CALLS = typeof window === "undefined" || !window.location.search.includes("classic=1");
 
 /** Visual seat downfield for each call kind (yards past the line of scrimmage).
- * A seat, not a promise -- the engine's depth tiers are unchanged. */
-const SEAT_YARDS = { short: 6, medium: 14, deep: 24, run: 3, designedRun: 4 } as const;
+ * A seat, not a promise -- the engine's depth/gap tiers are unchanged. Ground
+ * game sits at/behind the line: keeper tightest, inside at the line, outside
+ * a touch wider. */
+const SEAT_YARDS = { short: 6, medium: 14, deep: 24, run: 3, runInside: 2, runOutside: 4, designedRun: 1 } as const;
 
 /** Stable lane (0 top "left" / 1 middle / 2 bottom "right") per player so the
  * same guy sits in the same lane all drive -- deterministic, everyone's daily
@@ -108,16 +110,32 @@ export function DriveScreen() {
     const seated: FieldTarget[] = [];
     for (const call of options) {
       if (call.kind === "fieldGoal" || call.kind === "spike") continue; // stay as buttons
-      const player = call.kind === "run" ? roster.rb : call.kind === "designedRun" ? roster.qb : roster[call.target];
+      const isGround = call.kind !== "pass";
+      const player =
+        call.kind === "run" || call.kind === "runInside" || call.kind === "runOutside"
+          ? roster.rb
+          : call.kind === "designedRun"
+            ? roster.qb
+            : roster[call.target];
       const seat = call.kind === "pass" ? SEAT_YARDS[call.depth] : SEAT_YARDS[call.kind];
       const rawFP = live.fieldPosition - seat;
       const endZone = rawFP <= 0;
       let fp = Math.max(1, rawFP);
+      // Ground game gets fixed, football-shaped lanes: inside/keeper up the
+      // middle, outside bouncing wide (RB's home side). Passes seat by the
+      // receiver's stable home lane.
+      const home: 0 | 1 | 2 =
+        call.kind === "runInside" || call.kind === "designedRun"
+          ? 1
+          : call.kind === "runOutside"
+            ? laneFor(player.gsisId) === 2
+              ? 2
+              : 0
+            : laneFor(player.gsisId);
       // Deconflict: chips are wide, so same-lane neighbors need real separation
-      // (~18 yds). Try the player's home lane then the others; if every lane is
-      // crowded at this depth, push the seat further downfield and retry.
+      // (~18 yds). Try the home lane then the others; if every lane is crowded
+      // at this depth, push the seat further downfield and retry.
       const clear = (l: number, x: number) => !seated.some((t) => t.lane === l && Math.abs(t.fieldPosition - x) < 18);
-      const home = laneFor(player.gsisId);
       let lane = home;
       let placed = false;
       for (let bump = 0; bump < 3 && !placed; bump++) {
@@ -128,15 +146,30 @@ export function DriveScreen() {
             break;
           }
         }
-        if (!placed) fp = Math.max(1, fp - 8); // slide deeper, try again
+        // Crowded at this depth everywhere: passes slide deeper downfield,
+        // ground game retreats into the backfield.
+        if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(1, fp - 8);
       }
       const last = player.displayName.split(" ").slice(-1)[0];
       seated.push({
         key: playCallKey(call),
         fieldPosition: fp,
         lane,
-        tag: call.kind === "run" ? "RUN" : call.kind === "designedRun" ? "QB" : call.depth === "short" ? "SHORT" : call.depth === "medium" ? "MED" : "DEEP",
-        tagClass: call.kind === "pass" ? "tag-pass" : "tag-run",
+        tag:
+          call.kind === "run"
+            ? "RUN"
+            : call.kind === "runInside"
+              ? "IN"
+              : call.kind === "runOutside"
+                ? "OUT"
+                : call.kind === "designedRun"
+                  ? "QB"
+                  : call.depth === "short"
+                    ? "SHORT"
+                    : call.depth === "medium"
+                      ? "MED"
+                      : "DEEP",
+        tagClass: isGround ? "tag-run" : "tag-pass",
         label: endZone ? `${last} · EZ` : last,
         beyondSticks: endZone || (lineToGain > 0 && rawFP <= lineToGain),
         endZone,

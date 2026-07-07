@@ -6,6 +6,10 @@ function callTag(call: PlayCall): { text: string; cls: string } {
   switch (call.kind) {
     case "run":
       return { text: "RUN", cls: "tag-run" };
+    case "runInside":
+      return { text: "IN", cls: "tag-run" };
+    case "runOutside":
+      return { text: "OUT", cls: "tag-run" };
     case "designedRun":
       return { text: "QB", cls: "tag-run" };
     case "pass":

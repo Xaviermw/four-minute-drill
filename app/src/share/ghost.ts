@@ -20,9 +20,16 @@ import type { DriveChoice, DriveEndReason, DriveLog } from "../types/simResult";
  * link degrades to the plain "beat their score" flow. Never show a wrong ghost.
  */
 
-// Canonical call enumeration: the 11 offensive calls plus the two persistent
-// actions. Order is part of the wire format -- append-only, never reorder.
-const CALL_ORDER: PlayCall[] = [...ALL_PLAY_CALLS, { kind: "fieldGoal" }, { kind: "spike" }];
+// Canonical call enumeration. Order is part of the wire format -- APPEND-ONLY,
+// never reorder: indexes 0-12 are the legacy palette (old links must keep
+// decoding), 13-14 are the coverage-era gap runs.
+const CALL_ORDER: PlayCall[] = [
+  ...ALL_PLAY_CALLS,
+  { kind: "fieldGoal" },
+  { kind: "spike" },
+  { kind: "runInside" },
+  { kind: "runOutside" },
+];
 const CALL_INDEX = new Map(CALL_ORDER.map((c, i) => [playCallKey(c), i]));
 
 const VERSION = "1";

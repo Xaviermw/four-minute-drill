@@ -48,8 +48,9 @@ function makeRoster(): DraftedRosterData {
 
 const RATES = { leagueAverageRates: {}, leagueAverageKickerRates: {} };
 
-/** Plays a full drive with varied inputs (tempo on even downs, FG on 4th when
- * in range) so the encoding exercises tempo, offense, and kick choices. */
+/** Plays a full drive with varied inputs (rotates through all six coverage
+ * spots -- passes, gap runs, keeper -- tempo on even downs, FG on 4th when in
+ * range) so the encoding exercises the whole palette. */
 function playDrive(roster: DraftedRosterData, seed: number): DriveLog {
   const session = createDriveSession(roster, DEFAULT_SCENARIO, {}, {}, seed);
   for (let i = 0; i < 40; i++) {
@@ -57,7 +58,7 @@ function playDrive(roster: DraftedRosterData, seed: number): DriveLog {
     if (options.length === 0) break;
     const s = session.getSituation();
     const canKick = kickDistanceFor(s.fieldPosition) <= MAX_REALISTIC_FIELD_GOAL_DISTANCE;
-    const call = s.down === 4 && canKick ? ({ kind: "fieldGoal" } as const) : options[0];
+    const call = s.down === 4 && canKick ? ({ kind: "fieldGoal" } as const) : options[(seed + i) % options.length];
     const tempo = s.clockRunning && i % 2 === 0 ? 15 + (i % 21) : undefined;
     const { status } = session.choosePlay(call, tempo);
     if (status !== "continue") break;

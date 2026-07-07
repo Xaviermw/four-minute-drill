@@ -83,7 +83,9 @@ for (let i = 0; i < 40; i++) {
   if (options.length === 0) break;
   const s = session.getSituation();
   const canKick = kickDistanceFor(s.fieldPosition) <= MAX_REALISTIC_FIELD_GOAL_DISTANCE;
-  const { status } = session.choosePlay(s.down === 4 && canKick ? { kind: "fieldGoal" } : options[0]);
+  // Rotate through the coverage (passes, gap runs, keeper) so no single
+    // spot dominates; kick on 4th when in range.
+    const { status } = session.choosePlay(s.down === 4 && canKick ? { kind: "fieldGoal" } : options[i % options.length]);
   if (status !== "continue") break;
 }
 const log = session.getLog();

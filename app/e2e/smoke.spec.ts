@@ -31,8 +31,8 @@ test("draft -> drive -> result renders a score", async ({ page }) => {
   const result = page.locator(".result-screen");
   for (let i = 0; i < 60; i++) {
     if (await result.isVisible().catch(() => false)) break;
-    await page.locator(".play-option-button:not([disabled])").first().click();
-    await page.locator(".result-screen, .play-option-button:not([disabled])").first().waitFor({ timeout: 15_000 });
+    await page.locator(".field-target:not([disabled])").first().click();
+    await page.locator(".result-screen, .field-target:not([disabled])").first().waitFor({ timeout: 15_000 });
   }
 
   await expect(result).toBeVisible({ timeout: 15_000 });

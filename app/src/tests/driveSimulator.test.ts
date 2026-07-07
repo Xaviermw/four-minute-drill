@@ -86,18 +86,29 @@ describe("DriveSession", () => {
     expect(wins).toBeLessThan(trials);
   });
 
-  it("offers 3 distinct options each down, redrawn after each choice", () => {
+  it("deals the 6-spot coverage each down, redrawn after each choice", () => {
     const roster = makeRoster();
     const session = createDriveSession(roster, scenario, {}, {}, 42);
     const firstOptions = session.getOptions();
-    expect(firstOptions).toHaveLength(3);
+    expect(firstOptions).toHaveLength(6);
     expect(session.getOptions()).toEqual(firstOptions); // stable until a choice is made
 
     const { status } = session.choosePlay(firstOptions[0]);
     const secondOptions = session.getOptions();
     // 0 options once the drive has ended (rare on play 1, e.g. a pick-six-style
-    // turnover or immediate touchdown), otherwise always exactly 3.
-    expect(secondOptions).toHaveLength(status === "continue" ? 3 : 0);
+    // turnover or immediate touchdown), otherwise always the full 6-spot deal.
+    expect(secondOptions).toHaveLength(status === "continue" ? 6 : 0);
+  });
+
+  it("gap runs resolve through the RB and legacy plain runs still work", () => {
+    const roster = makeRoster();
+    for (const kind of ["runInside", "runOutside", "run"] as const) {
+      const session = createDriveSession(roster, scenario, {}, {}, 7);
+      session.getOptions();
+      const { play } = session.choosePlay({ kind });
+      expect(play.ballCarrier).toBe("rb");
+      expect(play.role).toBe("rusher");
+    }
   });
 
   it("does not award a first down from a stale historical isFirstDown flag that doesn't match the current distance", () => {
