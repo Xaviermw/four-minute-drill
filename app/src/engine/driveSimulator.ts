@@ -19,6 +19,7 @@ import {
   sampleBlendedReceptionOutcome,
   sampleOutcome,
   sampleQbDesignedRun,
+  sampleRushOutcome,
 } from "./sampleOutcome";
 
 const TOUCHDOWN_BASE_POINTS = 100;
@@ -126,7 +127,10 @@ interface Situation {
 /** resolvePlay only ever handles offensive plays -- fieldGoal/spike are
  * handled directly in createDriveSession since they don't sample real
  * per-player situational data the way these do. */
-export type OffensivePlayCall = Extract<PlayCall, { kind: "run" } | { kind: "designedRun" } | { kind: "pass" }>;
+export type OffensivePlayCall = Extract<
+  PlayCall,
+  { kind: "run" } | { kind: "runInside" } | { kind: "runOutside" } | { kind: "designedRun" } | { kind: "pass" }
+>;
 
 /**
  * Pure, stateless resolution of a single user-chosen play call into a
@@ -151,10 +155,16 @@ export function resolvePlay(
   let isScramble = false;
 
   if (call.kind === "run") {
+    // Legacy (pre-coverage ghost links): the whole rush pool, no gap filter.
     ballCarrierSlot = "rb";
     outcomeRole = "rusher";
     dataset = roster.rb;
     outcome = sampleOutcome(dataset, "rusher", ctx, leagueAverageRates, rng);
+  } else if (call.kind === "runInside" || call.kind === "runOutside") {
+    ballCarrierSlot = "rb";
+    outcomeRole = "rusher";
+    dataset = roster.rb;
+    outcome = sampleRushOutcome(dataset, ctx, leagueAverageRates, rng, call.kind === "runInside" ? "inside" : "outside");
   } else if (call.kind === "designedRun") {
     ballCarrierSlot = "qb";
     outcomeRole = "rusher";

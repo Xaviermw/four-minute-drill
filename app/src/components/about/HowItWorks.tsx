@@ -49,9 +49,15 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
               <section className="hiw-section">
                 <h3>🎲 How plays are decided</h3>
                 <p>
-                  Each play is sampled from that player’s <strong>actual historical plays in a similar
-                  situation</strong> (down, distance, field position). When a situation is too rare to sample, it
-                  falls back to broader samples, then to the player’s season-long rates.
+                  Every down, your whole offense is on the field: each receiver gets <strong>one spot at a dealt
+                  depth</strong> (what the coverage gives you this down), and the ground game — inside run, outside
+                  run, QB keeper — is always there. Tap anyone.
+                </p>
+                <p>
+                  The result is sampled from that player’s <strong>actual historical plays in a similar
+                  situation</strong> (down, distance, field position — and for runs, inside vs. outside). When a
+                  situation is too rare to sample, it falls back to broader samples, then to the player’s
+                  season-long rates.
                 </p>
                 <p>
                   A pass combines both players: <strong>interception risk</strong> leans on the QB (75%) with some

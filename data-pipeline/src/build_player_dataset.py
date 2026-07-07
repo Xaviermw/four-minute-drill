@@ -42,6 +42,20 @@ def _role_subset(pbp, gsis_id, role):
     return pbp[mask]
 
 
+def _gap_tier(row, role):
+    """inside/outside for rusher rows: end = outside; guard/tackle/middle =
+    inside (the between-the-tackles idiom). None for passes or unlabeled runs."""
+    if role != "rusher":
+        return None
+    gap = row.get("run_gap")
+    loc = row.get("run_location")
+    if isinstance(gap, str):
+        return "outside" if gap == "end" else "inside"
+    if isinstance(loc, str) and loc == "middle":
+        return "inside"  # middle carries have no gap label
+    return None
+
+
 def _to_outcome_record(row, role):
     is_touchdown = bool(row.get("pass_touchdown") == 1 or row.get("rush_touchdown") == 1)
     is_complete = None
@@ -61,6 +75,9 @@ def _to_outcome_record(row, role):
         # from air_yards (see schema.depth_tier_id), not nflfastR's pass_length
         # (which is binary short/deep only -- this gives a real middle tier).
         "depthTier": depth_tier_id(row.get("air_yards") if pd.notna(row.get("air_yards")) else None),
+        # Rusher-only: inside/outside from run_gap + run_location, for the
+        # gap-conditioned run calls. None on passes and unlabeled carries.
+        "gapTier": _gap_tier(row, role),
         # Only meaningful for rusher-role rows (always False for passer/
         # receiver). Distinguishes a QB scramble from a designed QB run --
         # both come through the same rusher role/rush_attempt for a QB.

@@ -1,4 +1,4 @@
-import type { AggregateRates, DepthTier, OutcomeRecord, PlayerDataset, PlayerRole } from "../types/player";
+import type { AggregateRates, DepthTier, GapTier, OutcomeRecord, PlayerDataset, PlayerRole } from "../types/player";
 import { QB_OUTCOME_WEIGHT, RECEIVER_OUTCOME_WEIGHT } from "./constants";
 import type { RNG } from "./rng";
 import { shrinkRate } from "./shrinkage";
@@ -198,6 +198,36 @@ export function sampleOutcome(
 
   const rates = getShrunkRates(dataset, role, leagueAverageRates);
   return simulateFromRates(rates, role, ctx.fieldPosition, rng);
+}
+
+/**
+ * Gap-conditioned rush sample (inside vs outside), mirroring the pass-depth
+ * chain: exact bucket gap-filtered -> same-down gap-filtered -> any-gap
+ * relaxation (real carries of the wrong gap beat a synthetic guess) -> plain
+ * shrunk rusher rates. Data built before the gap field exists simply never
+ * matches the filter and falls through -- honest degradation, never a crash.
+ */
+export function sampleRushOutcome(
+  dataset: PlayerDataset,
+  ctx: SampleContext,
+  leagueAverageRates: Partial<Record<PlayerRole, AggregateRates>>,
+  rng: RNG,
+  gap: GapTier
+): OutcomeRecord {
+  const key = bucketKey(ctx.down, ctx.distance, ctx.fieldPosition);
+  const exact = findBucket(dataset, "rusher", key);
+
+  const exactGap = exact?.outcomes.filter((o) => o.gapTier === gap) ?? [];
+  if (exactGap.length >= MIN_SAMPLE_THRESHOLD) {
+    return exactGap[Math.floor(rng.next() * exactGap.length)];
+  }
+
+  const sameDownGap = sameDownOutcomes(dataset, "rusher", ctx.down).filter((o) => o.gapTier === gap);
+  if (sameDownGap.length >= MIN_SAMPLE_THRESHOLD) {
+    return sameDownGap[Math.floor(rng.next() * sameDownGap.length)];
+  }
+
+  return sampleOutcome(dataset, "rusher", ctx, leagueAverageRates, rng);
 }
 
 function poolSackOutcomesForDown(dataset: PlayerDataset, down: number): OutcomeRecord[] {

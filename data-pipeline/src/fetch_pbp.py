@@ -17,6 +17,7 @@ PBP_COLUMNS = [
     "season", "week", "game_id", "posteam", "defteam",
     "down", "ydstogo", "yardline_100", "qtr", "game_seconds_remaining",
     "play_type", "air_yards", "qb_scramble", "yards_gained", "success",
+    "run_location", "run_gap",
     "touchdown", "pass_touchdown", "rush_touchdown",
     "interception", "fumble_lost", "sack",
     "complete_pass", "pass_attempt", "rush_attempt",

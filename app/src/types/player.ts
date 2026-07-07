@@ -2,6 +2,7 @@ export type Position = "QB" | "RB" | "WR" | "TE" | "K";
 export type Tier = "star" | "starter" | "scrub";
 export type PlayerRole = "passer" | "rusher" | "receiver";
 export type DepthTier = "short" | "medium" | "deep";
+export type GapTier = "inside" | "outside";
 export type KickDistanceTier = "under30" | "30s" | "40s" | "50s" | "60plus";
 
 export interface OutcomeRecord {
@@ -13,6 +14,9 @@ export interface OutcomeRecord {
   isFirstDown: boolean;
   /** passer/receiver only; null for rusher/sack rows (no air_yards). */
   depthTier: DepthTier | null;
+  /** rusher only; where the carry went (end = outside; guard/tackle/middle =
+   * inside). Null on passes and on pre-gap data. */
+  gapTier?: GapTier | null;
   /** rusher only; always false for passer/receiver. */
   isScramble: boolean;
 }

@@ -31,12 +31,22 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
 
 1. **Determinism**: a drive is fully reproduced by `(roster, seed, choices)`,
    BUT replay must call `session.getOptions()` before each `choosePlay()` —
-   drawing options consumes RNG. Test: "replaying (roster, seed, choices)
+   the coverage deal consumes **exactly 3 RNG draws per down** (asserted in
+   `playOptions.test.ts`). Test: "replaying (roster, seed, choices)
    reproduces the identical score" in `driveSimulator.test.ts`.
-2. **Daily fairness**: challenge id = **UTC date**; draft pool seeded by
+2. **Daily fairness**: challenge id = **ET date**; draft pool seeded by
    `dailyDraftRng(id)`, drive seed by `dailyDriveSeed(id)`. Everyone must get
    identical options/seed for the same id.
-3. **Salary cap is the balance mechanism** (`draft/pricing.ts`, docs/cap-draft-plan.md).
+3. **The coverage palette** (playOptions.ts): every down deals one spot per
+   pass-catcher (depth dealt = "what the coverage gives"), plus always-on
+   `runInside`/`runOutside` (gap-sampled from `run_gap` data via
+   `sampleRushOutcome`: end=outside, guard/tackle/middle=inside) and the QB
+   keeper. Legacy `{kind:"run"}` + the 11-call `ALL_PLAY_CALLS` stay for old
+   ghost links — CALL_ORDER in ghost.ts is wire format, append-only. The play
+   UI is field targets (`.field-target` on DriveFieldVisualizer); `?classic=1`
+   is the button-list escape hatch. Balance is deliberately **pro-spend**
+   (owner call, 2026-07-07): free targeting rewards owning studs.
+4. **Salary cap is the balance mechanism** (`draft/pricing.ts`, docs/cap-draft-plan.md).
    `getPricing(players)` ranks each position $1–$10 (bottom ~20% are $0
    "scrubs", never dealt — reachable only via the "give me a scrub" gamble);
    deterministic from the manifest, `CAP = 25`. The draft deals only
@@ -46,7 +56,7 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
    null `spend`); do not resurrect them in the draft/score path. `clutchMultiplier`
    (scoring.ts) is the single source of truth for the time bonus — the live
    `TimeBonusMeter` reads it so it can't drift from the final score.
-4. **DriveLog shape** (`seed`, `choices`, `clockSecondsRemaining`, …) is
+5. **DriveLog shape** (`seed`, `choices`, `clockSecondsRemaining`, …) is
    stored in Supabase rows — additive changes only. `finalFieldPosition(log)`
    (simResult.ts) is the shared derivation of where a drive ended (0 = scored),
    used by recap, daily summary, the leaderboard submission, and the "Longest
@@ -57,9 +67,9 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
    `ScoreBreakdown` carries `driveYards`/`drivePoints`. Free play submits
    wins-only; the Daily submits every drive. Leaderboard rows carry `spend`
    (team salary; null on pre-cap rows → board shows the legacy payout chip).
-5. **One-fire effects on result**: guard with the drive-log-identity ref
+6. **One-fire effects on result**: guard with the drive-log-identity ref
    pattern (see `recordedLog` in ResultScreen) — StrictMode double-mounts.
-6. Scores/streaks writes: daily drives → daily board + device-local day
+7. Scores/streaks writes: daily drives → daily board + device-local day
    streak; free-play drives → `record_drive` RPC (returns updated streak).
    Daily does NOT feed the free-play streak board. The **Daily accepts losses**
    (score 0, ranked by `final_field_position`); free play still only takes wins.
@@ -81,8 +91,8 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   STL/LA→LAR, JAC→JAX, WSH→WAS) and a NEUTRAL fallback — always resolve colors
   through `teamColors(team)`, never index the map raw (data keeps historical
   abbrevs). PlayerCard/ResultCard show a team-color band/border + jersey chip +
-  payout chip; play options show a target payout chip; the FG button shows a
-  make-% from `session.getFieldGoalMakePct()` (real engine odds, not a guess).
+  price tag. (Play-option payout chips and the FG make-% hint were removed --
+  owner calls; don't resurrect either.)
 - **Field** = broadcast drive chart (`DriveFieldVisualizer` + drive.css): blue
   scrimmage line, yellow first-down line, amber drive trail + start ring (pass
   `driveStartPosition`), faint "4MD", numerals top+bottom, deep endzones. Uses
@@ -142,7 +152,8 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   Playwright/curl need `npx vite --host 127.0.0.1`.
 - **Tests**: `npx vitest run` (unit, excludes e2e/); `npm run test:e2e`
   (Playwright smoke, own server on port 5175). Smoke selectors it depends on:
-  `.player-grid .player-card`, `.draft-progress-count`, `.play-option-button`,
+  `.player-grid .player-card`, `.draft-progress-count`, `.field-target` (play
+  calls; `.play-option-button` remains on FG/spike + the ?classic=1 list),
   `.result-screen`, `.result-score-unit`.
 - **Build**: `npm run build` (tsc -b && vite build). Verify before commit:
   tsc + vitest + build (+ e2e for UI-flow changes).

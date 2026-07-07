@@ -4,6 +4,7 @@ import {
   kickDistanceFor,
   MANUAL_TEMPO_RANGE,
   MAX_REALISTIC_FIELD_GOAL_DISTANCE,
+  playCallKey,
   SPIKE_AVAILABLE_BELOW_CLOCK_SECONDS,
   type DriveSituation,
   type PlayCall,
@@ -15,10 +16,30 @@ import { ghostDoneAtClock, ghostStepAtClock } from "../../share/ghost";
 import { useGhost } from "../../share/GhostProvider";
 import { formatBallOn, formatClock } from "../../utils/formatting";
 import type { PlayResult } from "../../types/simResult";
-import { DriveFieldVisualizer } from "./DriveFieldVisualizer";
+import { DriveFieldVisualizer, type FieldTarget } from "./DriveFieldVisualizer";
 import { PlayByPlayFeed } from "./PlayByPlayFeed";
 import { PlayOptionButtons } from "./PlayOptionButtons";
 import { TimeBonusMeter } from "./TimeBonusMeter";
+
+// Play calls live ON the field as tappable targets -- the coach's tablet is
+// the interface. ?classic=1 keeps the plain button list as an escape hatch
+// (accessibility / debugging); same options either way.
+const FIELD_CALLS = typeof window === "undefined" || !window.location.search.includes("classic=1");
+
+/** Visual seat downfield for each call kind (yards past the line of scrimmage).
+ * A seat, not a promise -- the engine's depth/gap tiers are unchanged. Ground
+ * game sits at/behind the line: keeper tightest, inside at the line, outside
+ * a touch wider. */
+const SEAT_YARDS = { short: 6, medium: 14, deep: 24, run: 3, runInside: 2, runOutside: 4, designedRun: 1 } as const;
+
+/** Stable lane (0 top "left" / 1 middle / 2 bottom "right") per player so the
+ * same guy sits in the same lane all drive -- deterministic, everyone's daily
+ * looks identical, and it never touches the engine RNG. */
+function laneFor(seedText: string): 0 | 1 | 2 {
+  let h = 0;
+  for (let i = 0; i < seedText.length; i++) h = (h * 31 + seedText.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 3) as 0 | 1 | 2;
+}
 import "./drive.css";
 
 const ANTICIPATION_MS = 700;
@@ -81,6 +102,85 @@ export function DriveScreen() {
 
   const lastPlay = plays[plays.length - 1];
 
+  // Field-call targets: seat each dealt option on the turf. Hidden while a play
+  // resolves (the snap clears the tablet; they reseat with the new spot on
+  // reveal). Collisions bump to the next lane so chips never stack.
+  let fieldTargets: FieldTarget[] | undefined;
+  if (FIELD_CALLS && !resolving) {
+    const lineToGain = live.fieldPosition - live.distance;
+    const seated: FieldTarget[] = [];
+    for (const call of options) {
+      if (call.kind === "fieldGoal" || call.kind === "spike") continue; // stay as buttons
+      const isGround = call.kind !== "pass";
+      const player =
+        call.kind === "run" || call.kind === "runInside" || call.kind === "runOutside"
+          ? roster.rb
+          : call.kind === "designedRun"
+            ? roster.qb
+            : roster[call.target];
+      const seat = call.kind === "pass" ? SEAT_YARDS[call.depth] : SEAT_YARDS[call.kind];
+      const rawFP = live.fieldPosition - seat;
+      const endZone = rawFP <= 0;
+      let fp = Math.max(1, rawFP);
+      // Ground game gets fixed, football-shaped lanes: inside/keeper up the
+      // middle, outside bouncing wide (RB's home side). Passes seat by the
+      // receiver's stable home lane.
+      const home: 0 | 1 | 2 =
+        call.kind === "runInside" || call.kind === "designedRun"
+          ? 1
+          : call.kind === "runOutside"
+            ? laneFor(player.gsisId) === 2
+              ? 2
+              : 0
+            : laneFor(player.gsisId);
+      // Deconflict: chips are wide, so same-lane neighbors need real separation
+      // (~18 yds). Try the home lane then the others; if every lane is crowded
+      // at this depth, push the seat further downfield and retry.
+      const clear = (l: number, x: number) => !seated.some((t) => t.lane === l && Math.abs(t.fieldPosition - x) < 18);
+      let lane = home;
+      let placed = false;
+      for (let bump = 0; bump < 3 && !placed; bump++) {
+        for (const cand of [home, ((home + 1) % 3) as 0 | 1 | 2, ((home + 2) % 3) as 0 | 1 | 2]) {
+          if (clear(cand, fp)) {
+            lane = cand;
+            placed = true;
+            break;
+          }
+        }
+        // Crowded at this depth everywhere: passes slide deeper downfield,
+        // ground game retreats into the backfield.
+        if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(1, fp - 8);
+      }
+      const last = player.displayName.split(" ").slice(-1)[0];
+      seated.push({
+        key: playCallKey(call),
+        fieldPosition: fp,
+        lane,
+        tag:
+          call.kind === "run"
+            ? "RUN"
+            : call.kind === "runInside"
+              ? "IN"
+              : call.kind === "runOutside"
+                ? "OUT"
+                : call.kind === "designedRun"
+                  ? "QB"
+                  : call.depth === "short"
+                    ? "SHORT"
+                    : call.depth === "medium"
+                      ? "MED"
+                      : "DEEP",
+        tagClass: isGround ? "tag-run" : "tag-pass",
+        label: endZone ? `${last} · EZ` : last,
+        beyondSticks: endZone || (lineToGain > 0 && rawFP <= lineToGain),
+        endZone,
+        disabled: resolving,
+        onChoose: () => handleChoose(call),
+      });
+    }
+    fieldTargets = seated;
+  }
+
   // Ghost racing: where the sharer's drive stood at this game clock. Both
   // drives start from the same 4:00, so this is an honest same-clock race.
   const ghostStep = ghost ? ghostStepAtClock(ghost, display.clockSeconds) : null;
@@ -99,6 +199,7 @@ export function DriveScreen() {
         scoreDiff={scenario.scoreDiff}
         driveStartPosition={scenario.fieldPosition}
         ghostPosition={ghostStep?.fieldPosition}
+        targets={fieldTargets}
       />
 
       {ghost && ghostStep && (
@@ -167,9 +268,9 @@ export function DriveScreen() {
             </span>
           </p>
         ) : (
-          <p className="play-panel-heading eyebrow">Call the play</p>
+          <p className="play-panel-heading eyebrow">{FIELD_CALLS ? "Tap a target on the field" : "Call the play"}</p>
         )}
-        <PlayOptionButtons options={options} roster={roster} disabled={resolving} onChoose={handleChoose} />
+        {!FIELD_CALLS && <PlayOptionButtons options={options} roster={roster} disabled={resolving} onChoose={handleChoose} />}
 
         {(canAttemptFieldGoal || canSpike) && (
           <div className="persistent-actions">
