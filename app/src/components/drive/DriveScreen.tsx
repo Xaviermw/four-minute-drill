@@ -21,8 +21,9 @@ import { PlayByPlayFeed } from "./PlayByPlayFeed";
 import { PlayOptionButtons } from "./PlayOptionButtons";
 import { TimeBonusMeter } from "./TimeBonusMeter";
 
-// SPIKE (field-calls branch): play calls live ON the field as tappable targets.
-// Default ON for this preview; ?classic=1 restores the button list.
+// Play calls live ON the field as tappable targets -- the coach's tablet is
+// the interface. ?classic=1 keeps the plain button list as an escape hatch
+// (accessibility / debugging); same options either way.
 const FIELD_CALLS = typeof window === "undefined" || !window.location.search.includes("classic=1");
 
 /** Visual seat downfield for each call kind (yards past the line of scrimmage).

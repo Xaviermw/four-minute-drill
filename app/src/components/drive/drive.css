@@ -439,9 +439,15 @@
 .field-target-chip b {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(91, 157, 255, 0.18);
   color: var(--sky);
+}
+.field-target-chip b.tag-run {
+  background: rgba(52, 224, 122, 0.16);
 }
 .field-target-chip b.tag-run {
   color: var(--grass-bright);
