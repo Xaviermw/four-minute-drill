@@ -94,16 +94,23 @@ Ranked by expected contribution to K:
   friends-of-friends: 20–50 real players. Ask each to send ONE ghost link to
   ONE chat. This is the D7 test bed. Nothing else matters until this cohort
   retains.
-- **Podcasts & newsletters (emails in August, airtime in September; ~4 hrs
-  total).** The wedge channel: perfect audience, format-hungry hosts, and our
-  shared-seed daily is literally a segment format ("we all played it, compare
-  on air"). Tiering: dream (Fantasy Footballers, Matthew Berry's Fantasy Life
-  newsletter, CBS FFT), realistic (mid-size shows, Dynasty pods, local-market
-  football radio's social producers), easy (small Discord-native pods who'll
-  take anything fun). Sweetener: a white-labeled theme day ("The [Show] $15
-  Challenge"). Send 15–25 emails total; expect 2–4 yeses; one mid-size hit
-  moves hundreds of exactly-right players. Follow up once after 5 days, never
-  twice.
+- **Podcast COMMUNITIES & newsletters — the listener route (August; ~3 hrs).**
+  Honest correction (owner called it): no indie game has cold-pitched its way
+  onto a meaningful show pre-traction — Immaculate Grid became podcast
+  furniture *after* going viral, KeepTradeCut became a dynasty-pod staple by
+  being useful, and the products you hear named on big shows are paying
+  sponsors. So the realistic mechanism is bottom-up: (a) **show Discords and
+  listener communities** — be a fan who posts their daily grid where hosts
+  actually hang out; (b) **the mailbag route** — a listener writing "our
+  league's been racing each other's drives on this" lands where a founder
+  pitch never will (recruit July-cohort friends who genuinely listen);
+  (c) **newsletter link roundups** (Fantasy Life-style "fun things" slots) —
+  a far lower bar than airtime; 5–10 short notes to newsletter writers is the
+  only cold outreach worth doing; (d) **small Discord-native pods** (hundreds
+  of listeners, reply to everything) — fine to pitch directly, low stakes.
+  Keep the segment one-pager + white-label theme day as **response assets**
+  for when a host finds us — not door-openers. Big-show airtime is a trophy
+  traction earns, not a channel we buy with emails.
 - **Reddit (kickoff week; 2 hrs + karma-building beforehand).**
   r/fantasyfootball (2M+, the bullseye — verify current self-promo rules;
   typically requires participation history), r/nfl (huge, stricter, meme-ier),
@@ -155,7 +162,9 @@ games), influencer payments, cross-posting spam, Discord server of our own
 
 **August (load the cannon):**
 - 2026 roster data refresh + price freeze (the "why is he retired" killer).
-- Podcast/newsletter emails go out EARLY August (shows book September ahead).
+- Listener-route groundwork: join 2–3 show Discords as a genuine member;
+  newsletter notes (5–10) out early August; brief the July cohort's real
+  podcast listeners on the mailbag mention.
 - Reddit account(s) building genuine comment karma in target subs.
 - PH assets: gallery shots, maker story, hunter lined up.
 - Press-kit page; seed boards modestly post-refresh.
@@ -214,8 +223,9 @@ channel that beats 5% of its traffic converting to D7 players.
 3. Ask 5 friends to do the same in THEIR chats — you need chats you're not in.
 4. Check SFB timing/rules; join genuinely if it's still open.
 5. Start the Monday metrics habit (15 min, the section-8 list).
-6. Draft your podcast target list (10 realistic + 5 dream + 5 easy) while
-   listening weeks are quiet — emails go out Aug 1–7.
+6. List which shows/newsletters your July-cohort friends ACTUALLY follow —
+   the mailbag/Discord route runs through real listeners, and knowing who
+   listens to what is the targeting.
 7. Let me know when the July numbers exist — I'll read them and adjust this
    plan against reality.
 
