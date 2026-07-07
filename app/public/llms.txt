@@ -1,0 +1,19 @@
+# Four Minute Drill
+
+> Free daily NFL football game at https://www.fourminutedrill.com — draft six
+> real players under a $25 salary cap, then call every play of one do-or-die
+> drive (4:00 left, down 3, own 20). Everyone gets the same daily board and
+> drive seed; only the player's decisions differ. No account, ~90 seconds.
+
+- Outcomes are sampled from real NFL play-by-play, 2015–2025 (nflverse).
+- Scoring: touchdown 100 / field goal 40, × a clutch bonus up to ×2.0 at 0:00;
+  scoreless drives bank 0.5 points per yard advanced.
+- Ghost racing: share links encode the drive's exact plays, so a recipient
+  races the sharer's actual drive clock-synced on the same field.
+- New daily at midnight US Eastern; one attempt per daily, unlimited free play.
+- Leaderboards: today's drill, all-time, win streaks, longest drives.
+
+## Pages
+- https://www.fourminutedrill.com/ : play the game
+- https://www.fourminutedrill.com/about.html : rules, scoring, FAQ
+- https://www.fourminutedrill.com/privacy.html : privacy

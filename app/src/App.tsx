@@ -89,6 +89,10 @@ function AppBody() {
       <footer className="app-footer">
         <HowItWorks />
         <span className="app-footer-sep">·</span>
+        <a className="how-it-works-link" href="/about.html">
+          About
+        </a>
+        <span className="app-footer-sep">·</span>
         <a className="how-it-works-link" href="/privacy.html">
           Privacy
         </a>
