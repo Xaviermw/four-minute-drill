@@ -1,0 +1,40 @@
+# Coach Bot: plays today's daily and posts the "beat the Coach" challenge with
+# a raceable ghost link. Runs every morning; with no secrets configured it's a
+# dry run whose post text lands in the job summary for manual copy-paste.
+#
+# Secrets (Settings -> Secrets and variables -> Actions):
+#   BLUESKY_IDENTIFIER, BLUESKY_APP_PASSWORD          -> enables Bluesky
+#   X_APP_KEY, X_APP_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET -> enables X
+name: daily-bot
+
+on:
+  schedule:
+    - cron: "5 14 * * *" # 10:05am ET in summer (9:05 in winter)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Play the daily and post
+        run: npx tsx scripts/daily-bot.ts
+        env:
+          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          X_APP_KEY: ${{ secrets.X_APP_KEY }}
+          X_APP_SECRET: ${{ secrets.X_APP_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
