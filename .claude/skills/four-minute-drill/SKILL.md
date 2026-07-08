@@ -145,6 +145,11 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   >50 → OWN 100-x, else AWAY x), never raw yards-to-endzone in labels.
 - Design source docs: `app/FrontEndDesign.md`, `docs/ux-review.md`,
   `docs/ux-implementation-plan.md`.
+- **Before any significant design/product decision, read
+  `docs/design-handoff.md`** — the departing design lead's judgment layer:
+  taste rules, owner vetoes, specs for unbuilt features (counterfactual coach
+  note, dynamic OG, tendency seating, archive/season record, compaction),
+  and the August-refresh → Sept-1-freeze calendar.
 
 ## Workflows
 
