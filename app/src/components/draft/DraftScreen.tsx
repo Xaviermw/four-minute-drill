@@ -16,7 +16,7 @@ import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
 import { DailyDone } from "../../daily/DailyDone";
 import { RosterSlotPicker } from "./RosterSlotPicker";
-import { TeamPanel } from "./TeamPanel";
+import { BudgetTracker, TeamPanel } from "./TeamPanel";
 import "./draft.css";
 
 const SLOTS: { key: RosterSlotKey; label: string; position: Position }[] = [
@@ -186,7 +186,9 @@ export function DraftScreen() {
           </ul>
         </div>
       )}
-      <TeamPanel slots={SLOTS} roster={roster} cap={cap} />
+      {/* Budget above the picker: the cap must be on screen while choosing
+          (owner layout call) -- the drafted-team grid trails below. */}
+      <BudgetTracker cap={cap} spent={spent} />
       {!draftComplete && (
         <div className="draft-slot-transition">
           <div className="draft-progress">
@@ -218,6 +220,7 @@ export function DraftScreen() {
           </button>
         </div>
       )}
+      <TeamPanel slots={SLOTS} roster={roster} />
     </div>
   );
 }

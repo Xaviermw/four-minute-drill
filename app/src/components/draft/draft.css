@@ -27,8 +27,12 @@
 }
 
 /* ---- Power / OVR meter ---- */
+/* Drafted-team grid: trails the picker (budget sits above the picker instead). */
 .team-panel {
-  margin: 0 0 1.75rem;
+  margin: 1.75rem 0 0.5rem;
+}
+.team-panel-eyebrow {
+  margin: 0 0 0.6rem;
 }
 
 .power-meter {
