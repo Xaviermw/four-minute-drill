@@ -7,6 +7,7 @@ import {
   MAX_PLAYS_PER_DRIVE,
   PLAY_DURATION_RANGE,
   SPIKE_RUNOFF_SECONDS,
+  TWO_MINUTE_WARNING_SECONDS,
 } from "./constants";
 import { attemptFieldGoal, kickDistanceFor } from "./kicker";
 import { drawPlayOptions, type PlayCall } from "./playOptions";
@@ -284,6 +285,9 @@ export function createDriveSession(
   let fieldPosition = scenario.fieldPosition;
   let clock = scenario.clockSeconds;
   let clockRunning = true; // a fresh mid-game scenario starts with a live clock
+  // The two-minute warning is once per game; a scenario starting at/inside
+  // 2:00 has already had it.
+  let twoMinuteWarningUsed = scenario.clockSeconds <= TWO_MINUTE_WARNING_SECONDS;
   let playNumber = 0;
   let endReason: DriveEndReason | null = null;
   const plays: PlayResult[] = [];
@@ -333,8 +337,14 @@ export function createDriveSession(
       outcome,
       description: `${roster.qb.displayName} spikes the ball to stop the clock.`,
     });
+    const preSpikeClock = clock;
     clock -= SPIKE_RUNOFF_SECONDS;
     clockRunning = false;
+    // A spike across 2:00 consumes the warning (ball's already dead anyway).
+    if (!twoMinuteWarningUsed && preSpikeClock > TWO_MINUTE_WARNING_SECONDS && clock <= TWO_MINUTE_WARNING_SECONDS) {
+      twoMinuteWarningUsed = true;
+      play.twoMinuteWarning = true;
+    }
 
     if (clock <= 0) {
       endReason = "LOSS_CLOCK_EXPIRED";
@@ -354,19 +364,42 @@ export function createDriveSession(
     const preSnapClockWasRunning = clockRunning;
     // Every play costs its own snap-to-whistle time, regardless of what
     // happens after the whistle.
+    const prePlayClock = clock;
     clock -= randomInRange(PLAY_DURATION_RANGE);
-    if (outcome.isComplete === false) {
-      // Incomplete pass or sack -- clock stops immediately, no further gap
-      // before the next snap to account for (real-football clock pauses
-      // during a dead-ball interval, however long the offense takes).
+
+    // Two-minute warning: the FIRST crossing of 2:00 is a free stoppage. If
+    // the play itself crossed it, the clock stops at the whistle wherever it
+    // landed; if the crossing would happen during the pre-snap runoff below,
+    // the runoff is cut at exactly 2:00. Once per drive -- a crossing on an
+    // already-dead ball (incompletion/sack) consumes it with no extra benefit,
+    // same as Sundays.
+    const crossedDuringPlay =
+      !twoMinuteWarningUsed && prePlayClock > TWO_MINUTE_WARNING_SECONDS && clock <= TWO_MINUTE_WARNING_SECONDS;
+    if (crossedDuringPlay) {
+      twoMinuteWarningUsed = true;
+      play.twoMinuteWarning = true;
+    }
+
+    if (outcome.isComplete === false || crossedDuringPlay) {
+      // Dead ball: incompletion/sack, or the warning at the whistle -- clock
+      // stops, no pre-snap gap to account for.
       clockRunning = false;
     } else {
       // Clock keeps running -- there's a real gap before the next snap,
       // either the player's chosen tempo or (lacking one) an automatic range.
-      clock -= preSnapClockWasRunning && manualTempoSeconds !== undefined
-        ? manualTempoSeconds
-        : randomInRange(CLOCK_RUNOFF_RUNNING);
-      clockRunning = true;
+      const runoff =
+        preSnapClockWasRunning && manualTempoSeconds !== undefined
+          ? manualTempoSeconds
+          : randomInRange(CLOCK_RUNOFF_RUNNING);
+      if (!twoMinuteWarningUsed && clock > TWO_MINUTE_WARNING_SECONDS && clock - runoff <= TWO_MINUTE_WARNING_SECONDS) {
+        twoMinuteWarningUsed = true;
+        play.twoMinuteWarning = true;
+        clock = TWO_MINUTE_WARNING_SECONDS;
+        clockRunning = false;
+      } else {
+        clock -= runoff;
+        clockRunning = true;
+      }
     }
 
     if (outcome.isTouchdown) {

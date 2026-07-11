@@ -11,6 +11,7 @@ export function PlayByPlayFeed({ plays }: { plays: PlayResult[] }) {
             {ordinalDown(p.down)} &amp; {p.distance} · {formatBallOn(p.fieldPosition)}
           </span>
           <span className="play-description">{p.description}</span>
+          {p.twoMinuteWarning && <span className="play-two-minute">⏱ Two-minute warning</span>}
         </li>
       ))}
     </ul>

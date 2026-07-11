@@ -193,6 +193,65 @@ describe("DriveSession", () => {
     expect(sawAdvancingLoss).toBe(true);
   });
 
+  it("two-minute warning: a crossing during the pre-snap runoff clamps the clock to exactly 2:00, stopped", () => {
+    const roster = makeRoster();
+    // Deterministic 5-yard completed run so the ball stays live after the play.
+    roster.rb.buckets.rusher = [
+      { bucketKey: "1_long_backedup", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+      { bucketKey: "1_long_midfield", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+    ];
+    // 140s on the clock: play duration (5-15s) leaves 125-135 (>120), then the
+    // max 35s tempo would blow through 2:00 -- the warning must cut it there.
+    const session = createDriveSession(roster, { down: 1, distance: 10, fieldPosition: 75, clockSeconds: 140, scoreDiff: -3 }, {}, {}, 3);
+    session.getOptions();
+    const { play } = session.choosePlay({ kind: "run" }, 35);
+    const s = session.getSituation();
+    expect(play.twoMinuteWarning).toBe(true);
+    expect(s.clockSeconds).toBe(120);
+    expect(s.clockRunning).toBe(false);
+  });
+
+  it("two-minute warning: a crossing during the play stops the clock at the whistle, not at 2:00", () => {
+    const roster = makeRoster();
+    roster.rb.buckets.rusher = [
+      { bucketKey: "1_long_backedup", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+      { bucketKey: "1_long_midfield", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+    ];
+    // 125s: the 5-15s play duration itself crosses 2:00 -> stop at the whistle.
+    const session = createDriveSession(roster, { down: 1, distance: 10, fieldPosition: 75, clockSeconds: 125, scoreDiff: -3 }, {}, {}, 3);
+    session.getOptions();
+    const { play } = session.choosePlay({ kind: "run" }, 35);
+    const s = session.getSituation();
+    expect(play.twoMinuteWarning).toBe(true);
+    expect(s.clockSeconds).toBeLessThan(121);
+    expect(s.clockSeconds).toBeGreaterThan(105); // whistle value, tempo NOT charged
+    expect(s.clockRunning).toBe(false);
+  });
+
+  it("two-minute warning: fires once, and never for scenarios starting at/inside 2:00", () => {
+    const roster = makeRoster();
+    roster.rb.buckets.rusher = [
+      { bucketKey: "1_long_backedup", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+      { bucketKey: "1_long_midfield", sampleSize: 20, outcomes: Array.from({ length: 20 }, () => makeOutcome({ yards: 5 })) },
+    ];
+    // Fires on the first crossing...
+    const session = createDriveSession(roster, { down: 1, distance: 10, fieldPosition: 75, clockSeconds: 140, scoreDiff: -3 }, {}, {}, 3);
+    session.getOptions();
+    session.choosePlay({ kind: "run" }, 35);
+    // ...then the next completed play runs the clock normally again.
+    session.getOptions();
+    const { play: second } = session.choosePlay({ kind: "run" }, 20);
+    expect(second.twoMinuteWarning).toBeUndefined();
+    expect(session.getSituation().clockRunning).toBe(true);
+
+    // Starting inside 2:00: the warning already happened; nothing fires.
+    const late = createDriveSession(roster, { down: 1, distance: 10, fieldPosition: 75, clockSeconds: 120, scoreDiff: -3 }, {}, {}, 3);
+    late.getOptions();
+    const { play: latePlay } = late.choosePlay({ kind: "run" }, 20);
+    expect(latePlay.twoMinuteWarning).toBeUndefined();
+    expect(late.getSituation().clockRunning).toBe(true);
+  });
+
   it("spiking consumes a down, costs a fixed 10s, and stops the clock", () => {
     const roster = makeRoster();
     const session = createDriveSession(roster, { down: 1, distance: 10, fieldPosition: 50, clockSeconds: 60, scoreDiff: -3 }, {}, {}, 1);

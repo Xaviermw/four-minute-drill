@@ -318,6 +318,12 @@ export function DriveScreen() {
         </p>
       )}
 
+      {lastPlay?.twoMinuteWarning && (
+        <p className="two-minute-strip" role="status">
+          ⏱ Two-minute warning — the clock stops for free. Every second from here builds your clutch bonus.
+        </p>
+      )}
+
       <div className="play-panel">
         <div className={`tempo-control ${live.clockRunning ? "" : "stopped"}`}>
           <div className="tempo-control-top">

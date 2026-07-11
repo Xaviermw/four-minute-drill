@@ -69,7 +69,15 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
    (team salary; null on pre-cap rows → board shows the legacy payout chip).
 6. **One-fire effects on result**: guard with the drive-log-identity ref
    pattern (see `recordedLog` in ResultScreen) — StrictMode double-mounts.
-7. Scores/streaks writes: daily drives → daily board + device-local day
+7. **Clock rules**: plays cost snap-to-whistle time (PLAY_DURATION_RANGE);
+   completed plays also pre-pay the next snap's gap (chosen tempo 15-35s or
+   auto runoff); incompletions/sacks/spikes stop the clock. The **two-minute
+   warning** (TWO_MINUTE_WARNING_SECONDS=120): first crossing of 2:00 is a
+   free stoppage, once per drive -- clamped to exactly 2:00 if crossed during
+   the pre-snap runoff, stopped at the whistle if crossed during the play;
+   consumed benefit-free on a dead ball; pre-consumed when a scenario starts
+   at/inside 2:00. Flagged on `PlayResult.twoMinuteWarning` (additive).
+8. Scores/streaks writes: daily drives → daily board + device-local day
    streak; free-play drives → `record_drive` RPC (returns updated streak).
    Daily does NOT feed the free-play streak board. The **Daily accepts losses**
    (score 0, ranked by `final_field_position`); free play still only takes wins.

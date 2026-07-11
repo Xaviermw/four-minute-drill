@@ -77,6 +77,10 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
                     multiplier — ×1.0 with 2:00+ left, up to ×2.0 at 0:00. Milking the clock is the play.
                   </li>
                   <li>
+                    <strong>Two-minute warning:</strong> the first time the clock crosses 2:00 it stops, free —
+                    just like Sundays. It hands you a dead ball right as the clutch bonus starts building.
+                  </li>
+                  <li>
                     <strong>Come up short?</strong> You still bank <strong>half a point per yard</strong> your
                     drive advanced — a deep stall beats a three-and-out.
                   </li>

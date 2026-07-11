@@ -21,6 +21,9 @@ export interface PlayResult {
   ballCarrierName: string;
   outcome: OutcomeRecord;
   description: string;
+  /** Set on the play whose clock crossing triggered the (once-per-drive)
+   * two-minute warning. Additive -- absent on older logs. */
+  twoMinuteWarning?: boolean;
 }
 
 export type DriveEndReason =

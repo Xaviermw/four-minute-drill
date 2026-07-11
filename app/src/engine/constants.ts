@@ -29,6 +29,12 @@ export const MAX_REALISTIC_FIELD_GOAL_DISTANCE = 65; // kick_distance, not field
 // gets a bonus, regardless of how much time the scenario started with.
 export const CLUTCH_REFERENCE_SECONDS = 120;
 
+// The two-minute warning: the first time a drive's clock crosses 2:00, the
+// stoppage is free (once per drive). Numerically equal to the clutch
+// threshold -- the warning hands you a stopped clock exactly when every
+// remaining second starts paying -- but kept separate: they're different rules.
+export const TWO_MINUTE_WARNING_SECONDS = 120;
+
 export const LEAGUE_AVG_TARGET_SHARE = 1 / 3; // fallback when a receiver lacks aggregate data
 export const LEAGUE_AVG_RUSH_SHARE = 1;
 
