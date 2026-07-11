@@ -3,20 +3,21 @@ import { ALL_PLAY_CALLS, drawPlayOptions, playCallKey } from "../engine/playOpti
 import { makeRng } from "../engine/rng";
 
 describe("drawPlayOptions (the coverage deal)", () => {
-  it("deals one spot per pass-catcher plus the full ground game, every down", () => {
+  it("deals exactly ONE spot per skill player, every down", () => {
     for (let seed = 0; seed < 50; seed++) {
       const options = drawPlayOptions(makeRng(seed));
-      expect(options).toHaveLength(6);
+      expect(options).toHaveLength(5);
       const keys = options.map(playCallKey);
-      expect(new Set(keys).size).toBe(6); // no duplicate spots
+      expect(new Set(keys).size).toBe(5); // no duplicate spots
 
       // Exactly one spot per receiver...
       for (const target of ["wr1", "wr2", "te"]) {
         expect(options.filter((o) => o.kind === "pass" && o.target === target)).toHaveLength(1);
       }
-      // ...and the fixed ground game.
-      expect(keys).toContain("runInside");
-      expect(keys).toContain("runOutside");
+      // ...exactly one RB run, its gap dealt...
+      const rbRuns = options.filter((o) => o.kind === "runInside" || o.kind === "runOutside");
+      expect(rbRuns).toHaveLength(1);
+      // ...and the QB keeper.
       expect(keys).toContain("designedRun");
     }
   });
@@ -25,22 +26,26 @@ describe("drawPlayOptions (the coverage deal)", () => {
     expect(ALL_PLAY_CALLS).toHaveLength(11);
   });
 
-  it("deals every depth to every receiver across many downs", () => {
-    const seen = new Set<string>();
+  it("deals every depth and both run gaps across many downs", () => {
+    const depths = new Set<string>();
+    const gaps = new Set<string>();
     for (let seed = 0; seed < 500; seed++) {
       for (const call of drawPlayOptions(makeRng(seed))) {
-        if (call.kind === "pass") seen.add(`${call.target}_${call.depth}`);
+        if (call.kind === "pass") depths.add(`${call.target}_${call.depth}`);
+        if (call.kind === "runInside" || call.kind === "runOutside") gaps.add(call.kind);
       }
     }
-    expect(seen.size).toBe(9); // 3 receivers x 3 depths all reachable
+    expect(depths.size).toBe(9); // 3 receivers x 3 depths all reachable
+    expect(gaps.size).toBe(2); // both run looks get dealt
   });
 
-  it("consumes exactly three RNG draws per deal (replay alignment)", () => {
-    // Two RNGs from the same seed: one feeds a deal, the other burns 3 draws
+  it("consumes exactly four RNG draws per deal (replay alignment)", () => {
+    // Two RNGs from the same seed: one feeds a deal, the other burns 4 draws
     // manually -- they must land in the same state (next float identical).
     const a = makeRng(1234);
     const b = makeRng(1234);
     drawPlayOptions(a);
+    b.next();
     b.next();
     b.next();
     b.next();

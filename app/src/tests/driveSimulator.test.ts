@@ -86,18 +86,18 @@ describe("DriveSession", () => {
     expect(wins).toBeLessThan(trials);
   });
 
-  it("deals the 6-spot coverage each down, redrawn after each choice", () => {
+  it("deals the 5-spot coverage each down, redrawn after each choice", () => {
     const roster = makeRoster();
     const session = createDriveSession(roster, scenario, {}, {}, 42);
     const firstOptions = session.getOptions();
-    expect(firstOptions).toHaveLength(6);
+    expect(firstOptions).toHaveLength(5);
     expect(session.getOptions()).toEqual(firstOptions); // stable until a choice is made
 
     const { status } = session.choosePlay(firstOptions[0]);
     const secondOptions = session.getOptions();
     // 0 options once the drive has ended (rare on play 1, e.g. a pick-six-style
-    // turnover or immediate touchdown), otherwise always the full 6-spot deal.
-    expect(secondOptions).toHaveLength(status === "continue" ? 6 : 0);
+    // turnover or immediate touchdown), otherwise always the full 5-spot deal.
+    expect(secondOptions).toHaveLength(status === "continue" ? 5 : 0);
   });
 
   it("gap runs resolve through the RB and legacy plain runs still work", () => {

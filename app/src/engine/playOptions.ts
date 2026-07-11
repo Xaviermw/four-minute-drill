@@ -30,13 +30,18 @@ export const ALL_PLAY_CALLS: PlayCall[] = [
 ];
 
 /**
- * The per-down "coverage" deal: every pass-catcher gets exactly one spot whose
- * DEPTH is dealt (the fiction: what the defense gives you this down), plus the
- * always-available ground game (RB inside/outside, QB keeper). This replaced
- * the old draw-3-of-11 hand once the salary cap took over as the constraint --
- * you paid for your stud; you can always target him.
+ * The per-down "coverage" deal -- ONE spot per skill player, always: every
+ * pass-catcher gets a spot whose DEPTH is dealt, the RB gets a run whose GAP
+ * is dealt (some downs the front gives you the inside, some the edge), and
+ * the QB keeper is the fifth spot. The fiction throughout: what the defense
+ * gives you this down. This replaced the old draw-3-of-11 hand once the
+ * salary cap took over as the constraint -- you paid for your stud; you can
+ * always target him.
  *
- * Consumes exactly three RNG draws per down (one per receiver), so the
+ * The gap deal is 50/50 by design (real carries skew ~4:1 inside; an even
+ * deal keeps the edge in the game as the spicier look).
+ *
+ * Consumes exactly FOUR RNG draws per down (three depths + one gap), so the
  * replay rule is unchanged: call this before every choosePlay.
  */
 export function drawPlayOptions(rng: RNG): PlayCall[] {
@@ -44,7 +49,8 @@ export function drawPlayOptions(rng: RNG): PlayCall[] {
     const depth = DEPTH_TIERS[Math.floor(rng.next() * DEPTH_TIERS.length)];
     return { kind: "pass", target, depth };
   });
-  return [...passes, { kind: "runInside" }, { kind: "runOutside" }, { kind: "designedRun" }];
+  const rbRun: PlayCall = rng.next() < 0.5 ? { kind: "runInside" } : { kind: "runOutside" };
+  return [...passes, rbRun, { kind: "designedRun" }];
 }
 
 const DEPTH_LABEL: Record<DepthTier, string> = { short: "Short", medium: "Intermediate", deep: "Deep" };

@@ -31,17 +31,17 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
 
 1. **Determinism**: a drive is fully reproduced by `(roster, seed, choices)`,
    BUT replay must call `session.getOptions()` before each `choosePlay()` —
-   the coverage deal consumes **exactly 3 RNG draws per down** (asserted in
-   `playOptions.test.ts`). Test: "replaying (roster, seed, choices)
+   the coverage deal consumes **exactly 4 RNG draws per down** (3 depths +
+   1 RB gap, asserted in `playOptions.test.ts`). Test: "replaying (roster, seed, choices)
    reproduces the identical score" in `driveSimulator.test.ts`.
 2. **Daily fairness**: challenge id = **ET date**; draft pool seeded by
    `dailyDraftRng(id)`, drive seed by `dailyDriveSeed(id)`. Everyone must get
    identical options/seed for the same id.
-3. **The coverage palette** (playOptions.ts): every down deals one spot per
-   pass-catcher (depth dealt = "what the coverage gives"), plus always-on
-   `runInside`/`runOutside` (gap-sampled from `run_gap` data via
-   `sampleRushOutcome`: end=outside, guard/tackle/middle=inside) and the QB
-   keeper. Legacy `{kind:"run"}` + the 11-call `ALL_PLAY_CALLS` stay for old
+3. **The coverage palette** (playOptions.ts): **one spot per skill player,
+   every down** (owner rule 2026-07-08). Pass-catchers get a dealt depth; the
+   RB gets ONE run whose gap is dealt 50/50 (`runInside`/`runOutside`,
+   gap-sampled from `run_gap` data via `sampleRushOutcome`: end=outside,
+   guard/tackle/middle=inside); the QB keeper is the fifth spot. Legacy `{kind:"run"}` + the 11-call `ALL_PLAY_CALLS` stay for old
    ghost links — CALL_ORDER in ghost.ts is wire format, append-only. The play
    UI is field targets (`.field-target` on DriveFieldVisualizer); `?classic=1`
    is the button-list escape hatch. Balance is deliberately **pro-spend**
