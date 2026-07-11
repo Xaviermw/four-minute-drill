@@ -167,7 +167,11 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   (Playwright smoke, own server on port 5175). Smoke selectors it depends on:
   `.player-grid .player-card`, `.draft-progress-count`, `.field-target` (play
   calls; `.play-option-button` remains on FG/spike + the ?classic=1 list),
-  `.result-screen`, `.result-score-unit`.
+  `.result-screen`, `.result-score-unit`. `layout-audit.spec.ts` plays five
+  full drives asserting every down has 5 on-turf, non-stacked, tappable
+  targets (ring AND `.field-target-chip` boxes) — run it after any change to
+  target seating, chip layout, or `--chip-shift`. Give every Playwright
+  action an explicit timeout: the default is unlimited and hangs, not fails.
 - **Build**: `npm run build` (tsc -b && vite build). Verify before commit:
   tsc + vitest + build (+ e2e for UI-flow changes).
 - **Data pipeline** (only when roster/seasons/fields change): venv at
