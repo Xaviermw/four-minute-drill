@@ -10,6 +10,9 @@ export interface FieldTarget {
   fieldPosition: number;
   /** Vertical lane: 0 top ("left"), 1 middle, 2 bottom ("right"). */
   lane: 0 | 1 | 2;
+  /** Chalk scribble (route/handoff path) in field % coords, ending at the
+   * target ring. Pure flavor -- the tag carries the real mechanic. */
+  route?: { x: number; y: number }[];
   tag: string;
   tagClass: string;
   label: string;
@@ -129,6 +132,22 @@ export function DriveFieldVisualizer({
           <div className="field-marker" style={{ left: `${progressPct}%` }}>
             <div className="field-ball" />
           </div>
+
+          {targets && targets.some((t) => t.route) && (
+            <svg className="field-routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              {targets.map(
+                (t) =>
+                  t.route && (
+                    <polyline
+                      key={t.key}
+                      points={t.route.map((p) => `${p.x},${p.y}`).join(" ")}
+                      className={t.tagClass}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )
+              )}
+            </svg>
+          )}
 
           {targets?.map((t) => (
             <button

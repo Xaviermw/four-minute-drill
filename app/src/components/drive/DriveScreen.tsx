@@ -40,6 +40,82 @@ function laneFor(seedText: string): 0 | 1 | 2 {
   for (let i = 0; i < seedText.length; i++) h = (h * 31 + seedText.charCodeAt(i)) | 0;
   return (Math.abs(h) % 3) as 0 | 1 | 2;
 }
+
+function hashOf(seedText: string): number {
+  let h = 0;
+  for (let i = 0; i < seedText.length; i++) h = (h * 31 + seedText.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+const LANE_Y = [24, 50, 76] as const;
+
+/**
+ * Route scribbles -- pure chalk. Each depth tier cycles through common route
+ * shapes so every down looks like a called play; the engine still only knows
+ * short/medium/deep (taste rule: scribbles are flavor, tags are truth).
+ *
+ * A shape is waypoints of [alongFrac, lateral]: along 0=line of scrimmage,
+ * 1=the target (may overshoot for hooks); lateral is % of field height,
+ * positive = toward the NEAR SIDELINE for the target's lane, negative =
+ * toward the middle. Every route ends at (1, 0) -- the target ring is the
+ * catch point.
+ */
+const ROUTE_SHAPES: Record<"short" | "medium" | "deep", [number, number][][]> = {
+  short: [
+    [[0, 10], [0.35, 10], [1, 0]], // slant
+    [[0, -9], [1, -9], [1, 0]], // quick out
+    [[0, 0], [1.16, 0], [1, 4]], // hitch
+    [[0, 14], [1, 0]], // drag
+  ],
+  medium: [
+    [[0, -11], [1, -11], [1, 0]], // out
+    [[0, 11], [1, 11], [1, 0]], // dig
+    [[0, 0], [1.1, 0], [1, -4]], // comeback
+    [[0, 13], [0.5, 13], [1, 0]], // deep cross
+  ],
+  deep: [
+    [[0, 0], [1, 0]], // go
+    [[0, 8], [0.55, 8], [1, 0]], // post (breaks to the middle)
+    [[0, -8], [0.55, -8], [1, 0]], // corner (breaks to the sideline)
+  ],
+};
+
+type RoutePt = { x: number; y: number };
+const clampPt = (x: number, y: number): RoutePt => ({
+  x: Math.max(1.5, Math.min(98.5, x)),
+  y: Math.max(7, Math.min(93, y)),
+});
+
+/** Builds the scribble for one target: shaped routes for passes, handoff paths
+ * for the ground game. `variant` cycles the family per down (deterministic:
+ * player hash + play count -- never the engine RNG). */
+function buildRoute(
+  kind: "short" | "medium" | "deep" | "runInside" | "runOutside" | "designedRun",
+  losX: number,
+  targetX: number,
+  targetY: number,
+  lane: 0 | 1 | 2,
+  variant: number
+): RoutePt[] {
+  // "Out" = toward the near sideline: up for the top lane, down for the bottom,
+  // hash-picked for the middle lane.
+  const outSign = lane === 0 ? -1 : lane === 2 ? 1 : variant % 2 === 0 ? -1 : 1;
+
+  if (kind === "runInside") {
+    return [clampPt(losX - 3, 50), clampPt(losX - 0.5, targetY), clampPt(targetX, targetY)];
+  }
+  if (kind === "runOutside") {
+    // The sweep: swing wide past the target's lane, then turn upfield into it.
+    return [clampPt(losX - 3, 50), clampPt(losX - 1, targetY + outSign * 8), clampPt(targetX, targetY)];
+  }
+  if (kind === "designedRun") {
+    return [clampPt(losX - 2.5, 50 - outSign * 5), clampPt(losX - 0.5, targetY), clampPt(targetX, targetY)];
+  }
+
+  const family = ROUTE_SHAPES[kind];
+  const shape = family[variant % family.length];
+  return shape.map(([along, lateral]) => clampPt(losX + along * (targetX - losX), targetY + lateral * outSign));
+}
 import "./drive.css";
 
 const ANTICIPATION_MS = 700;
@@ -152,10 +228,22 @@ export function DriveScreen() {
         if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(1, fp - 8);
       }
       const last = player.displayName.split(" ").slice(-1)[0];
+      // Chalk: cycle the route family per down (player hash + play count --
+      // deterministic, never the engine RNG).
+      const routeKind = call.kind === "pass" ? call.depth : call.kind === "run" ? "runInside" : call.kind;
+      const route = buildRoute(
+        routeKind,
+        100 - live.fieldPosition,
+        100 - fp,
+        LANE_Y[lane],
+        lane,
+        hashOf(player.gsisId) + plays.length
+      );
       seated.push({
         key: playCallKey(call),
         fieldPosition: fp,
         lane,
+        route,
         tag:
           call.kind === "run"
             ? "RUN"

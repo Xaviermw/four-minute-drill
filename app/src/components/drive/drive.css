@@ -379,6 +379,35 @@
   color: var(--muted);
 }
 
+/* Chalk layer: route scribbles from the line of scrimmage to each target.
+   Pure flavor -- the depth/gap tags carry the real mechanic. */
+.field-routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  animation: chalk-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes chalk-in {
+  from {
+    opacity: 0;
+  }
+}
+.field-routes polyline {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7 6;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+.field-routes polyline.tag-run {
+  stroke: rgba(120, 240, 165, 0.85);
+}
+
 /* ---- Field-call targets (spike/field-calls): tappable play calls on the turf ---- */
 .field-target {
   position: absolute;
