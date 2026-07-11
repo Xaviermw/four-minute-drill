@@ -411,6 +411,9 @@
 /* ---- Field-call targets (spike/field-calls): tappable play calls on the turf ---- */
 .field-target {
   position: absolute;
+  /* Fixed to the ring's width: the button box never spills over an end zone.
+     The wider chip overflows it and is re-seated with --chip-shift. */
+  width: 38px;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
@@ -464,6 +467,9 @@
   border-radius: 6px;
   padding: 2px 6px;
   white-space: nowrap;
+  /* Slide by (50 - left)% of the chip's own width: centered mid-field, hugging
+     the turf side at either goal line. Contained for any chip width. */
+  transform: translateX(var(--chip-shift, 0%));
 }
 .field-target-chip b {
   font-family: var(--font-display);

@@ -196,8 +196,19 @@ export function DriveScreen() {
             : roster[call.target];
       const seat = call.kind === "pass" ? SEAT_YARDS[call.depth] : SEAT_YARDS[call.kind];
       const rawFP = live.fieldPosition - seat;
-      const endZone = rawFP <= 0;
-      let fp = Math.max(1, rawFP);
+      const endZone = call.kind === "pass" && rawFP <= 0;
+      // Compressive seating: near the goal line the nominal seats overflow and
+      // would stack at the boundary (three unusable rings on the edge). Scale
+      // pass seats into the space that exists -- short < med < deep stay
+      // visually distinct -- with rings floored at the 3; the EZ tag carries
+      // the "this is an endzone shot" truth.
+      let fp: number;
+      if (call.kind === "pass" && rawFP < 4) {
+        const remain = { short: 0.6, medium: 0.38, deep: 0.15 }[call.depth];
+        fp = Math.max(3, live.fieldPosition * remain);
+      } else {
+        fp = Math.max(3, rawFP);
+      }
       // Ground game gets fixed, football-shaped lanes: inside/keeper up the
       // middle, outside bouncing wide (RB's home side). Passes seat by the
       // receiver's stable home lane.
@@ -225,7 +236,7 @@ export function DriveScreen() {
         }
         // Crowded at this depth everywhere: passes slide deeper downfield,
         // ground game retreats into the backfield.
-        if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(1, fp - 8);
+        if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(3, fp - 8);
       }
       const last = player.displayName.split(" ").slice(-1)[0];
       // Chalk: cycle the route family per down (player hash + play count --

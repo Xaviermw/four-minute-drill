@@ -149,14 +149,20 @@ export function DriveFieldVisualizer({
             </svg>
           )}
 
-          {targets?.map((t) => (
+          {targets?.map((t) => {
+            // Clamp keeps the 38px ring button on the turf; --chip-shift slides
+            // the wider chip by (50 - left)% of its own width so it is contained
+            // for ANY chip width at either goal line (background-position trick).
+            const left = Math.max(5, Math.min(95, 100 - t.fieldPosition));
+            return (
             <button
               key={t.key}
               type="button"
               className={`field-target ${t.beyondSticks ? "sticks" : ""} ${t.endZone ? "endzone" : ""}`}
               style={{
-                left: `${Math.max(2, Math.min(98, 100 - t.fieldPosition))}%`,
+                left: `${left}%`,
                 top: `${[24, 50, 76][t.lane]}%`,
+                ["--chip-shift" as string]: `${50 - left}%`,
               }}
               disabled={t.disabled}
               onClick={t.onChoose}
@@ -167,7 +173,8 @@ export function DriveFieldVisualizer({
                 <i>{t.label}</i>
               </span>
             </button>
-          ))}
+            );
+          })}
         </div>
         <div className="field-endzone away">Four Minute Drill</div>
       </div>
