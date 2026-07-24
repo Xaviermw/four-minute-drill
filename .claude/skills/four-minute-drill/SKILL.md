@@ -169,8 +169,12 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   calls; `.play-option-button` remains on FG/spike + the ?classic=1 list),
   `.result-screen`, `.result-score-unit`. `layout-audit.spec.ts` plays five
   full drives asserting every down has 5 on-turf, non-stacked, tappable
-  targets (ring AND `.field-target-chip` boxes) — run it after any change to
-  target seating, chip layout, or `--chip-shift`. Give every Playwright
+  targets (ring AND `.field-target-chip` boxes, incl. pairwise no-overlap) at
+  360px — the strictest width — run it after any change to target seating,
+  chip layout, `--chip-shift`, or chip sides. Lane rows are 17/50/83 in BOTH
+  DriveScreen (LANE_Y) and DriveFieldVisualizer, paired with the field's
+  200px floor so below/above label bands physically clear across lanes —
+  change any of the three together or labels mash. Give every Playwright
   action an explicit timeout: the default is unlimited and hangs, not fails.
 - **Build**: `npm run build` (tsc -b && vite build). Verify before commit:
   tsc + vitest + build (+ e2e for UI-flow changes).
