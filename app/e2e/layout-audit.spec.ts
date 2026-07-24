@@ -21,6 +21,8 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
   expect(area, `${where}: playing area missing`).not.toBeNull();
 
   const boxes: { x: number; y: number; w: number; h: number }[] = [];
+  const chips: { x: number; y: number; w: number; h: number }[] = [];
+  const chipDescs: string[] = [];
   for (let i = 0; i < 5; i++) {
     const t = targets.nth(i);
     await expect(t, `${where}: target ${i} disabled`).toBeEnabled();
@@ -38,7 +40,7 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
     );
     boxes.push({ x: box!.x, y: box!.y, w: box!.width, h: box!.height });
 
-    // The label chip overflows the fixed-width button, so check it separately.
+    // The label chip overflows the fixed-size button, so check it separately.
     const chip = await t.locator(".field-target-chip").boundingBox();
     expect(chip, `${where}: target ${i} chip has no box`).not.toBeNull();
     expect(chip!.x, `${where}: target ${i} CHIP spills off the LEFT of the field`).toBeGreaterThanOrEqual(
@@ -48,6 +50,33 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
       chip!.x + chip!.width,
       `${where}: target ${i} CHIP spills off the RIGHT of the field`
     ).toBeLessThanOrEqual(area!.x + area!.width + 4);
+    expect(chip!.y, `${where}: target ${i} CHIP spills off the TOP of the field`).toBeGreaterThanOrEqual(
+      area!.y - 4
+    );
+    expect(
+      chip!.y + chip!.height,
+      `${where}: target ${i} CHIP spills off the BOTTOM of the field`
+    ).toBeLessThanOrEqual(area!.y + area!.height + 4);
+    chips.push({ x: chip!.x, y: chip!.y, w: chip!.width, h: chip!.height });
+    chipDescs.push(
+      `"${(await t.innerText()).replace(/\s+/g, " ").trim()}" ${
+        (await t.getAttribute("class"))?.includes("chip-above") ? "above" : "below"
+      } @${Math.round(chip!.x)}..${Math.round(chip!.x + chip!.width)},y${Math.round(chip!.y)}`
+    );
+  }
+
+  // No two labels may overlap -- the mobile "texts mash together" bug. A 2px
+  // tolerance forgives borders kissing; real overlap fails.
+  for (let a = 0; a < chips.length; a++) {
+    for (let b = a + 1; b < chips.length; b++) {
+      const xOver = Math.min(chips[a].x + chips[a].w, chips[b].x + chips[b].w) - Math.max(chips[a].x, chips[b].x);
+      const yOver = Math.min(chips[a].y + chips[a].h, chips[b].y + chips[b].h) - Math.max(chips[a].y, chips[b].y);
+      if (xOver > 2 && yOver > 2) await page.screenshot({ path: `${DIR}/audit-mash.png` });
+      expect(
+        xOver > 2 && yOver > 2,
+        `${where}: chips overlap (${Math.round(xOver)}x${Math.round(yOver)}px): ${chipDescs[a]} vs ${chipDescs[b]}`
+      ).toBe(false);
+    }
   }
 
   // No two targets stacked: centers must be meaningfully apart.
@@ -74,7 +103,9 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
 test("layout audit: every down of five drives has a playable field", async ({ page }) => {
   // Five full drives with real play-resolution animation run ~7 minutes.
   test.setTimeout(560_000);
-  await page.setViewportSize({ width: 480, height: 1000 });
+  // Phone width: the tightest layout -- every px-overlap check is strictest
+  // here, and the wider desktop field passes a fortiori.
+  await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
   const gateButton = page.getByRole("button", { name: /practice drive/i });
   if (await gateButton.isVisible().catch(() => false)) await gateButton.click();

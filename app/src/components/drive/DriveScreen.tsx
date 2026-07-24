@@ -47,7 +47,10 @@ function hashOf(seedText: string): number {
   return Math.abs(h);
 }
 
-const LANE_Y = [24, 50, 76] as const;
+// Lane rows for the three field lanes, in % of field height. Spread so one
+// lane's "below" label band physically clears the next lane's "above" band
+// at the minimum field height -- keep in sync with DriveFieldVisualizer.
+const LANE_Y = [17, 50, 83] as const;
 
 /**
  * Route scribbles -- pure chalk. Each depth tier cycles through common route
@@ -269,14 +272,78 @@ export function DriveScreen() {
                     : call.depth === "medium"
                       ? "MED"
                       : "DEEP",
+        tagShort:
+          call.kind === "run"
+            ? "RUN"
+            : call.kind === "runInside"
+              ? "IN"
+              : call.kind === "runOutside"
+                ? "OUT"
+                : call.kind === "designedRun"
+                  ? "QB"
+                  : call.depth === "short"
+                    ? "S"
+                    : call.depth === "medium"
+                      ? "M"
+                      : "D",
         tagClass: isGround ? "tag-run" : "tag-pass",
         label: endZone ? `${last} · EZ` : last,
         beyondSticks: endZone || (lineToGain > 0 && rawFP <= lineToGain),
         endZone,
+        chipSide: "below",
         disabled: resolving,
         onChoose: () => handleChoose(call),
       });
     }
+    // Chip placement: labels are huge relative to a phone-width field (a
+    // quarter of the turf each), so their side of the ring is chosen by
+    // exhaustive search -- 5 labels x 2 sides is only 32 assignments. Two
+    // labels collide when they share a lane+side, or across adjacent lanes
+    // where one lane's "below" band meets the next lane's "above" band (the
+    // lane gap is shorter than two chip offsets). Widths are estimated for
+    // the narrowest field (abbreviated tags on a ~250px turf); overestimating
+    // only costs a harmless flip, never a mash. Ties prefer labels under
+    // their rings.
+    const chipSpan = (t: FieldTarget) => {
+      // Calibrated against measured chips (audit diagnostics): ~5.2px/char +
+      // 26px of tag/padding at the mobile sizes, on a ~250px turf.
+      const w = (26 + 5.2 * (t.tagShort.length + t.label.length)) / 2.5; // px -> % of turf width
+      const left = Math.max(8, Math.min(92, 100 - t.fieldPosition)); // keep in sync with the visualizer clamp
+      return { lo: left - (left / 100) * w, hi: left + (1 - left / 100) * w };
+    };
+    const spans = seated.map(chipSpan);
+    const xOver = (a: number, b: number) =>
+      Math.max(0, Math.min(spans[a].hi, spans[b].hi) - Math.max(spans[a].lo, spans[b].lo));
+    let best = { total: Infinity, aboves: Infinity, mask: 0 };
+    for (let mask = 0; mask < 1 << seated.length; mask++) {
+      let total = 0;
+      let aboves = 0;
+      for (let a = 0; a < seated.length; a++) {
+        const sa = mask & (1 << a) ? "above" : "below";
+        if (sa === "above") aboves++;
+        for (let b = a + 1; b < seated.length; b++) {
+          const sb = mask & (1 << b) ? "above" : "below";
+          const la = seated[a].lane;
+          const lb = seated[b].lane;
+          if (la === lb && sa === sb) {
+            // Same lane + same side is the one geometrically GUARANTEED mash
+            // (rings sit only ~18 yds apart): outweigh any cross-lane cost.
+            if (xOver(a, b) > 0) total += xOver(a, b) + 40;
+          } else if (
+            Math.abs(la - lb) === 1 &&
+            (la < lb ? sa === "below" && sb === "above" : sb === "below" && sa === "above")
+          ) {
+            total += xOver(a, b);
+          }
+        }
+      }
+      if (total < best.total - 1e-9 || (total < best.total + 1e-9 && aboves < best.aboves)) {
+        best = { total, aboves, mask };
+      }
+    }
+    seated.forEach((t, i) => {
+      t.chipSide = best.mask & (1 << i) ? "above" : "below";
+    });
     fieldTargets = seated;
   }
 

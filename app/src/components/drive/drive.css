@@ -83,7 +83,9 @@
 /* ---- Field (broadcast drive chart) ---- */
 .field-track {
   display: flex;
-  height: clamp(180px, 24vh, 240px);
+  /* 200px floor: at the 17/50/83 lane rows this is the minimum height where
+     one lane's "below" label band clears the next lane's "above" band. */
+  height: clamp(200px, 24vh, 240px);
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -411,14 +413,15 @@
 /* ---- Field-call targets (spike/field-calls): tappable play calls on the turf ---- */
 .field-target {
   position: absolute;
-  /* Fixed to the ring's width: the button box never spills over an end zone.
-     The wider chip overflows it and is re-seated with --chip-shift. */
+  /* Fixed to the ring's box: the button never spills over an end zone and the
+     ring sits exactly on its seat (routes connect). The wider chip is an
+     absolutely-positioned child, re-seated with --chip-shift. */
   width: 38px;
+  height: 38px;
   transform: translate(-50%, -50%);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
   background: none;
   border: none;
   padding: 6px;
@@ -459,6 +462,9 @@
   box-shadow: 0 0 14px rgba(255, 225, 0, 0.7), inset 0 0 8px rgba(255, 225, 0, 0.4);
 }
 .field-target-chip {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -467,9 +473,15 @@
   border-radius: 6px;
   padding: 2px 6px;
   white-space: nowrap;
-  /* Slide by (50 - left)% of the chip's own width: centered mid-field, hugging
-     the turf side at either goal line. Contained for any chip width. */
-  transform: translateX(var(--chip-shift, 0%));
+  /* Slide by -left% of the chip's own width from the ring's center: centered
+     mid-field, hugging the turf side at either goal line. Contained for any
+     chip width (background-position trick). */
+  transform: translateX(var(--chip-shift, -50%));
+}
+/* Same-lane neighbors alternate sides so their labels can never mash. */
+.field-target.chip-above .field-target-chip {
+  top: auto;
+  bottom: calc(100% - 4px);
 }
 .field-target-chip b {
   font-family: var(--font-display);
@@ -507,6 +519,29 @@
 }
 .field-target.endzone .field-target-chip {
   border-color: rgba(255, 225, 0, 0.6);
+}
+/* Phones: the field is ~250px of turf, so the chips slim down and the pass
+   tags abbreviate (SHORT -> S). */
+.field-target-chip .tag-abbr {
+  display: none;
+}
+@media (max-width: 430px) {
+  .field-target-chip {
+    gap: 3px;
+    padding: 1px 4px;
+  }
+  .field-target-chip b {
+    font-size: 0.6rem;
+  }
+  .field-target-chip i {
+    font-size: 0.64rem;
+  }
+  .field-target-chip .tag-full {
+    display: none;
+  }
+  .field-target-chip .tag-abbr {
+    display: inline;
+  }
 }
 
 /* Two-minute warning: the free stoppage, announced like the broadcast does. */

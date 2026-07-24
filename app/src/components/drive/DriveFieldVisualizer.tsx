@@ -14,8 +14,13 @@ export interface FieldTarget {
    * target ring. Pure flavor -- the tag carries the real mechanic. */
   route?: { x: number; y: number }[];
   tag: string;
+  /** Abbreviated tag for phone widths (S/M/D for the pass depths). */
+  tagShort: string;
   tagClass: string;
   label: string;
+  /** Which side of the ring the label hangs on -- assigned so no two labels
+   * ever mash together, even on narrow screens. */
+  chipSide: "below" | "above";
   /** Past the line to gain -- rendered with the gold conversion ring. */
   beyondSticks: boolean;
   endZone: boolean;
@@ -150,26 +155,33 @@ export function DriveFieldVisualizer({
           )}
 
           {targets?.map((t) => {
-            // Clamp keeps the 38px ring button on the turf; --chip-shift slides
-            // the wider chip by (50 - left)% of its own width so it is contained
-            // for ANY chip width at either goal line (background-position trick).
-            const left = Math.max(5, Math.min(95, 100 - t.fieldPosition));
+            // Clamp keeps the 38px ring button on the turf even on a ~270px
+            // phone field (8% > half the button); --chip-shift slides the wider
+            // chip by -left% of its own width from the ring's center, so it is
+            // contained for ANY chip width at either goal line
+            // (background-position trick).
+            const left = Math.max(8, Math.min(92, 100 - t.fieldPosition));
             return (
             <button
               key={t.key}
               type="button"
-              className={`field-target ${t.beyondSticks ? "sticks" : ""} ${t.endZone ? "endzone" : ""}`}
+              className={`field-target ${t.beyondSticks ? "sticks" : ""} ${t.endZone ? "endzone" : ""} ${
+                t.chipSide === "above" ? "chip-above" : ""
+              }`}
               style={{
                 left: `${left}%`,
-                top: `${[24, 50, 76][t.lane]}%`,
-                ["--chip-shift" as string]: `${50 - left}%`,
+                top: `${[17, 50, 83][t.lane]}%`,
+                ["--chip-shift" as string]: `${-left}%`,
               }}
               disabled={t.disabled}
               onClick={t.onChoose}
             >
               <span className={`field-target-ring ${t.tagClass}`} aria-hidden="true" />
               <span className="field-target-chip">
-                <b className={t.tagClass}>{t.tag}</b>
+                <b className={t.tagClass}>
+                  <span className="tag-full">{t.tag}</span>
+                  <span className="tag-abbr">{t.tagShort}</span>
+                </b>
                 <i>{t.label}</i>
               </span>
             </button>
