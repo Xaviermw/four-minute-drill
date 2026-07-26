@@ -14,6 +14,7 @@ import {
   fetchDailyScores,
   fetchTopScores,
   fetchTopStreaks,
+  isNetworkError,
   type LeaderboardRow,
   type StreakRow,
 } from "./leaderboardApi";
@@ -131,8 +132,15 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
       return;
     }
     let cancelled = false;
+    // Network-level failures (offline, or the backend napping) get a human
+    // line instead of the browser's raw "Failed to fetch".
     const fail = (err: unknown) =>
-      !cancelled && setError(err instanceof Error ? err.message : "Could not load leaderboard.");
+      !cancelled &&
+      setError(
+        isNetworkError(err) || !(err instanceof Error) || !err.message
+          ? "The leaderboard is unreachable right now — scores are safe, check back soon."
+          : err.message
+      );
     // getCurrentUserId doesn't create a session -- only players who've already
     // played have one, so we can highlight their rows as "you".
     getCurrentUserId().then((id) => !cancelled && setUserId(id));

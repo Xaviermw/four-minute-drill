@@ -9,6 +9,7 @@ import {
   buildSubmission,
   fetchDailyDrivePercentile,
   getStoredName,
+  isNetworkError,
   setStoredName,
   submitScore,
 } from "./leaderboardApi";
@@ -76,7 +77,12 @@ export function SubmitScorePanel({
       setState("done");
       onSubmitted?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submit failed.");
+      // Network-level failures get a human line, not the raw fetch error.
+      setError(
+        isNetworkError(err) || !(err instanceof Error) || !err.message
+          ? "Can't reach the leaderboard right now — your drive is safe, try again in a bit."
+          : err.message
+      );
       setState("idle");
     }
   }

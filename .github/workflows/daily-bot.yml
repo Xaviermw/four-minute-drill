@@ -29,6 +29,21 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - run: npm ci
+      # Free-tier Supabase pauses after ~7 idle days and takes the leaderboard
+      # down with it (DNS vanishes). One daily read keeps it awake AND turns
+      # this job red -- which emails the owner -- the day the backend is
+      # unreachable. URL + anon key are scraped from the live bundle: both are
+      # public by design, and this always matches what production ships.
+      - name: Keep Supabase awake (and alert if it is down)
+        run: |
+          bundle_path=$(curl -sf https://www.fourminutedrill.com/ | grep -oE 'assets/index-[^"]+\.js' | head -1)
+          bundle=$(curl -sf "https://www.fourminutedrill.com/${bundle_path}")
+          url=$(echo "$bundle" | grep -oE 'https://[a-z0-9]+\.supabase\.co' | head -1)
+          key=$(echo "$bundle" | grep -oE 'sb_publishable_[A-Za-z0-9_-]+' | head -1)
+          if [ -z "$url" ] || [ -z "$key" ]; then echo "::error::Could not extract Supabase config from the live bundle"; exit 1; fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" -m 20 "$url/rest/v1/scores?select=id&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key")
+          echo "Supabase ping: HTTP $status"
+          if [ "$status" != "200" ]; then echo "::error::Supabase unreachable (HTTP $status) -- the project may be paused; restore it at supabase.com"; exit 1; fi
       - name: Play the daily and post
         run: npx tsx scripts/daily-bot.ts
         env:

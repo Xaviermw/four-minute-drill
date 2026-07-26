@@ -182,3 +182,20 @@ submit panel appears on a winning result. Set the same two vars in your deploy
 host's environment for production.
 
 See `.env.local.example` for the template.
+## 5. Free-tier auto-pause (leaderboard suddenly dead?)
+
+Free Supabase projects **pause after ~7 idle days**. A paused project's DNS is
+removed entirely, so every client call fails with `ERR_NAME_NOT_RESOLVED` and
+the leaderboard modal shows its "unreachable right now" line. The game itself
+keeps working — scores just can't load or submit.
+
+**To revive**: supabase.com dashboard → this project → **Restore project**.
+Takes a minute or two; all data is preserved. (Projects paused more than ~90
+days can be deleted, so don't sit on it.)
+
+**Prevention**: the `daily-bot` GitHub Action pings the REST API once a day
+("Keep Supabase awake" step), which counts as activity and prevents the pause.
+The step also fails the workflow when Supabase is unreachable, so GitHub
+emails you the day the backend goes dark instead of a player finding out
+first. It scrapes the project URL + publishable key from the live site bundle
+(both public by design) — no secrets needed.

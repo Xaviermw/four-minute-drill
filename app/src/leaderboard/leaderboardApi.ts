@@ -86,6 +86,17 @@ export function buildSubmission(
   };
 }
 
+/**
+ * True when an error means "couldn't reach Supabase at all" (device offline,
+ * or the free-tier project paused and its DNS removed). supabase-js flattens
+ * the underlying fetch TypeError into a plain Error whose MESSAGE carries the
+ * browser's network phrasing, so this has to sniff text, per browser family.
+ */
+export function isNetworkError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return /failed to fetch|networkerror|load failed|network request failed/i.test(msg);
+}
+
 /** Inserts a score and returns its all-time rank (1 = best). Throws on failure. */
 export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank: number }> {
   const supabase = await getSupabase();
