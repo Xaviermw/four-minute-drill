@@ -242,6 +242,13 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   via the pooler afterward.
 - Full-page Playwright screenshots paint the sticky header mid-content —
   capture artifact, not a bug.
+- **package-lock regen**: npm on this Windows machine biases the lock toward
+  the existing node_modules and silently DROPS foreign-platform optional
+  nodes (fsevents, @emnapi/*, wasm32-wasi) — local `npm ci` passes, Linux CI
+  fails "Missing: @emnapi/runtime". Regenerate ONLY in a clean room: copy
+  package.json to an empty temp dir, `npm install --package-lock-only`
+  there, copy the lock back, validate with `npm ci` (check its real exit
+  code — don't pipe it into tail). CI runs Node 24 to match local npm 11.
 - Windows shell: LF/CRLF warnings on `git add` are normal noise. Use temp
   script files instead of inline `node -e` with template literals (bash eats
   backticks).
