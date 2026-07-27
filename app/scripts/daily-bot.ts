@@ -35,8 +35,7 @@ import { drawSlotOptions } from "../src/draft/draftPool";
 import { getPricing } from "../src/draft/pricing";
 import { capForChallenge } from "../src/draft/capConfig";
 import { DEFAULT_SCENARIO } from "../src/data/startDrive";
-import { buildDriveGrid, buildShareUrl } from "../src/share/shareText";
-import { parseGhostParam, replayDriveCore } from "../src/share/ghost";
+import { buildDriveGrid } from "../src/share/shareText";
 import type { DriveLog } from "../src/types/simResult";
 import type { KickerDataset, Manifest, ManifestPlayerEntry, PlayerDataset } from "../src/types/player";
 import type { DraftedRoster, DraftedRosterData, RosterSlotKey } from "../src/types/roster";
@@ -110,17 +109,12 @@ function playCoachDrive(): { log: DriveLog; spend: number; roster: DraftedRoster
 // ---- Compose: morning challenge --------------------------------------------
 
 function composeChallenge(): { post: string; url: string } {
-  const { log, spend, roster, rosterData } = playCoachDrive();
+  const { log, spend } = playCoachDrive();
 
-  // Ghost link, self-checked: replay must reproduce the score.
-  let url = buildShareUrl(roster, ORIGIN, log, BOT_NAME);
-  const parsed = url?.includes("&g=") ? parseGhostParam(`?${url.split("?")[1]}`) : null;
-  const replayOk = parsed ? replayDriveCore(rosterData, manifest, parsed.seed, parsed.choices)?.log.score === log.score : false;
-  if (!replayOk) {
-    console.error("ghost self-check FAILED -- posting plain team link");
-    url = buildShareUrl(roster, ORIGIN);
-  }
-  if (!url) throw new Error("could not build a share URL");
+  // Plain link, owner call 2026-07-27: a stranger's first tap should land on
+  // the DRAFT (the acquisition hook), not inside the Coach's roster. The
+  // one-tap ghost race stays for friend-to-friend shares from the app.
+  const url = ORIGIN;
 
   const dateLabel = new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
   const grid = buildDriveGrid(log);
