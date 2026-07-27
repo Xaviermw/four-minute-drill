@@ -145,9 +145,12 @@ Ranked by expected contribution to K:
 - **A press-kit page** (screenshots, one-paragraph description, contact) —
   30 minutes, saves every future email an attachment.
 
-**Explicitly not doing:** paid ads (economics never work for free daily
-games), influencer payments, cross-posting spam, Discord server of our own
-(a ghost town hurts more than none), TikTok-first strategy.
+**Explicitly not doing:** influencer payments, cross-posting spam, Discord
+server of our own (a ghost town hurts more than none), TikTok-first strategy.
+~~Paid ads~~ — **revised 2026-07-27**: owner moved to a zero-founder-hours +
+ad-budget model; see `marketing-automation-plan.md` for the small, timed ad
+plan and the automation-first channel reordering that supersedes the
+founder-time assumptions in this section.
 
 ## 7. Timing — the calendar is the strategy
 
