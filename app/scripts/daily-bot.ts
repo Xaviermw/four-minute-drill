@@ -180,6 +180,7 @@ async function postBluesky(post: string, url: string): Promise<void> {
   const identifier = process.env.BLUESKY_IDENTIFIER;
   const password = process.env.BLUESKY_APP_PASSWORD;
   if (!identifier || !password || dryRun) return console.log("bluesky: skipped");
+  configuredPlatforms++;
   const sess = await fetch("https://bsky.social/xrpc/com.atproto.server.createSession", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -205,17 +206,24 @@ async function postBluesky(post: string, url: string): Promise<void> {
       },
     }),
   });
-  console.log(res.ok ? "bluesky: posted" : `bluesky: FAILED ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`bluesky: FAILED ${res.status} ${await res.text()}`);
+  console.log("bluesky: posted");
 }
 
 async function postX(post: string): Promise<void> {
   const { X_APP_KEY, X_APP_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET } = process.env;
   if (!X_APP_KEY || !X_APP_SECRET || !X_ACCESS_TOKEN || !X_ACCESS_SECRET || dryRun) return console.log("x: skipped");
+  configuredPlatforms++;
   const { TwitterApi } = await import("twitter-api-v2");
   const client = new TwitterApi({ appKey: X_APP_KEY, appSecret: X_APP_SECRET, accessToken: X_ACCESS_TOKEN, accessSecret: X_ACCESS_SECRET });
   await client.v2.tweet(post);
   console.log("x: posted");
 }
+
+// A platform with secrets configured that fails to post must turn the run red
+// (GitHub then emails the owner) -- a green run with no post is how outages
+// go unnoticed for a week. Unconfigured platforms still skip silently.
+let configuredPlatforms = 0;
 
 async function publish(kind: string, post: string, url: string): Promise<void> {
   console.log("---- post ----\n" + post + "\n--------------");
@@ -223,7 +231,12 @@ async function publish(kind: string, post: string, url: string): Promise<void> {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## ${BOT_NAME} ${kind} — ${challengeId}\n\n\`\`\`\n${post}\n\`\`\`\n`);
   }
   const results = await Promise.allSettled([postBluesky(post, url), postX(post)]);
-  for (const r of results) if (r.status === "rejected") console.error(r.reason);
+  const failures = results.filter((r) => r.status === "rejected");
+  for (const r of failures) console.error((r as PromiseRejectedResult).reason);
+  if (failures.length > 0) {
+    console.error(`::error::${failures.length} of ${configuredPlatforms} configured platform(s) failed to post`);
+    process.exitCode = 1;
+  }
 }
 
 // ---- Mode dispatch (only when run as a script -- import stays side-effect-free
