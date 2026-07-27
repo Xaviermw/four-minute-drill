@@ -1,6 +1,8 @@
-# Coach Bot: plays today's daily and posts the "beat the Coach" challenge with
-# a raceable ghost link. Runs every morning; with no secrets configured it's a
-# dry run whose post text lands in the job summary for manual copy-paste.
+# Coach Bot: two runs a day. Morning -- plays today's daily and posts the
+# "beat the Coach" challenge with a raceable ghost link. Evening -- posts the
+# day's results pulled from the public board (skips quiet days). With no
+# secrets configured both are dry runs whose post text lands in the job
+# summary for manual copy-paste.
 #
 # Secrets (Settings -> Secrets and variables -> Actions):
 #   BLUESKY_IDENTIFIER, BLUESKY_APP_PASSWORD          -> enables Bluesky
@@ -9,8 +11,15 @@ name: daily-bot
 
 on:
   schedule:
-    - cron: "5 14 * * *" # 10:05am ET in summer (9:05 in winter)
-  workflow_dispatch: {}
+    - cron: "5 14 * * *" # challenge: 10:05am ET in summer (9:05 in winter)
+    - cron: "0 3 * * *" # recap: 11:00pm ET in summer (10:00 in winter)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Post to make"
+        type: choice
+        options: [challenge, recap]
+        default: challenge
 
 permissions:
   contents: read
@@ -47,9 +56,14 @@ jobs:
           status=$(curl -s -o /dev/null -w "%{http_code}" -m 20 "$url/rest/v1/scores?select=id&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key")
           echo "Supabase ping: HTTP $status"
           if [ "$status" != "200" ]; then echo "::error::Supabase unreachable (HTTP $status) -- the project may be paused; restore it at supabase.com"; exit 1; fi
+          # Recap mode reads the board with the same public values.
+          echo "SUPABASE_URL=$url" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$key" >> "$GITHUB_ENV"
       - name: Play the daily and post
         run: npx tsx scripts/daily-bot.ts
         env:
+          # Scheduled runs pick their mode by which cron fired; manual runs by input.
+          BOT_MODE: ${{ github.event.inputs.mode || (github.event.schedule == '0 3 * * *' && 'recap' || 'challenge') }}
           BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
           X_APP_KEY: ${{ secrets.X_APP_KEY }}

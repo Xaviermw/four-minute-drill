@@ -47,15 +47,19 @@ Ads are justified ONLY as ignition for the share loop — buy the seed cohort,
 let K-factor do the multiplying. The July plan said "no paid ads" under a
 founder-hours model; under a budget model they're the right tool.
 
-- **Budget: $400–600 total.** $100 smoke test late August (validate the
-  funnel while the season's warming up), the rest as a kickoff-week burst
-  (Sep 8–14), which is when a daily NFL habit is actually formable.
-- **Where:** (1) **Reddit Ads** — feed placement targeted to
-  r/fantasyfootball / r/nfl / r/DynastyFF. It's the audience bullseye and the
-  legitimate way to be in those communities without karma-building. (2)
-  **Meta (IG/FB)** — interest-targeted mobile traffic, cheapest reach for a
-  thumb-first game. Skip Google Search (no query volume exists yet) and
-  TikTok (creative production is a founder-hours tax).
+- **Budget: $400–600 total.** $100 multi-source smoke test late August
+  (owner call 2026-07-27: try several sources, not Reddit-only), the rest as
+  a kickoff-week burst (Sep 8–14) weighted to whichever source won the test.
+- **Smoke-test split — $40 Reddit / $40 Meta / $20 X.** Three sources is the
+  statistical ceiling for $100 (fewer than ~40 clicks per channel reads as
+  noise). (1) **Reddit Ads** — feed placement targeted to r/fantasyfootball /
+  r/nfl / r/DynastyFF; the audience bullseye and the legitimate way into
+  those communities without karma-building. (2) **Meta (IG/FB)** —
+  interest-targeted mobile traffic, cheapest reach for a thumb-first game.
+  (3) **X Ads** — near-free to add since the game's account exists for Coach
+  Bot; football-interest + follower-lookalike targeting. Skip Google Search
+  (no query volume exists yet) and TikTok (video creative is a founder-hours
+  tax; revisit if a screen-capture clip ever pops organically).
 - **Creative:** I build it — static cards from the OG pipeline (real drive,
   real prices, "Draft under $25. One drive. Everyone gets the same board.")
   plus a 20s screen-capture GIF of a two-minute-warning finish. A/B the
