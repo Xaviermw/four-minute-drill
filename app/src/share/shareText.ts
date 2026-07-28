@@ -29,17 +29,23 @@ export function buildShareUrl(
   roster: DraftedRoster,
   origin: string = typeof window !== "undefined" ? window.location.origin + window.location.pathname : "",
   driveLog?: DriveLog,
-  sharerName?: string
+  sharerName?: string,
+  spend?: number
 ): string | null {
   const token = encodeLineup(roster);
   if (token === null) return null;
   const base = origin.replace(/[?#].*$/, "").replace(/\/$/, "");
   let url = `${base}/?team=${token}`;
   const ghost = driveLog ? encodeGhostParam(driveLog) : null;
-  if (ghost) {
+  if (driveLog && ghost) {
     url += `&g=${ghost}`;
     const name = sharerName?.trim().slice(0, 20);
     if (name) url += `&by=${encodeURIComponent(name)}`;
+    // Extra crumbs for the OG-image edge function (rendered without a replay);
+    // ghost parsing ignores unknown params, so these are wire-compatible.
+    const code = buildDriveCode(driveLog);
+    if (code) url += `&r=${code}`;
+    if (spend !== undefined) url += `&sp=${spend}`;
   }
   return url;
 }
@@ -74,6 +80,35 @@ export function buildDriveGrid(driveLog: DriveLog): string {
   return squares.join("");
 }
 
+/**
+ * URL-safe letter form of the drive grid, carried on share links (`r=`) so the
+ * OG-image edge function can render the squares without replaying the drive:
+ *   t TD · x turnover · g 15+ · y 4-14 · w 1-3 · r stuffed
+ *   terminal: F FG good · m FG missed · d downs · c clock
+ * Same walk as buildDriveGrid -- keep the two in lockstep.
+ */
+export function buildDriveCode(driveLog: DriveLog): string {
+  const letters: string[] = [];
+  for (const p of driveLog.plays) {
+    if (p.role === "kicker" || p.role === "special") continue;
+    if (p.outcome.isTouchdown) letters.push("t");
+    else if (p.outcome.isTurnover) letters.push("x");
+    else if (p.outcome.yards >= 15) letters.push("g");
+    else if (p.outcome.yards >= 4) letters.push("y");
+    else if (p.outcome.yards >= 1) letters.push("w");
+    else letters.push("r");
+  }
+  const terminal: Partial<Record<string, string>> = {
+    WIN_FIELD_GOAL: "F",
+    LOSS_MISSED_FIELD_GOAL: "m",
+    LOSS_TURNOVER_ON_DOWNS: "d",
+    LOSS_CLOCK_EXPIRED: "c",
+  };
+  const marker = terminal[driveLog.endReason];
+  if (marker) letters.push(marker);
+  return letters.join("");
+}
+
 /** First initial + last name, e.g. "Lamar Jackson" -> "L.Jackson". */
 function shortName(displayName: string): string {
   const parts = displayName.trim().split(/\s+/);
@@ -96,7 +131,7 @@ export function buildShareText(
   cap = CAP,
   sharerName?: string
 ): string {
-  if (url === undefined) url = buildShareUrl(roster, undefined, driveLog, sharerName);
+  if (url === undefined) url = buildShareUrl(roster, undefined, driveLog, sharerName, spend);
   const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
   const lines = [`🏈 Four Minute Drill — ${scoreLine}`];
