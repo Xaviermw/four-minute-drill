@@ -60,10 +60,12 @@ founder-hours model; under a budget model they're the right tool.
   r/nfl / r/DynastyFF; the audience bullseye and the legitimate way into
   those communities without karma-building. (2) **Meta (IG/FB)** —
   interest-targeted mobile traffic, cheapest reach for a thumb-first game.
-  (3) **X Ads** — near-free to add since the game's account exists for Coach
-  Bot; football-interest + follower-lookalike targeting. Skip Google Search
-  (no query volume exists yet) and TikTok (video creative is a founder-hours
-  tax; revisit if a screen-capture clip ever pops organically).
+  (3) ~~X Ads~~ — DROPPED 2026-07-27: X now gates Ads Manager behind an
+  X Premium subscription (~$8/mo); a recurring fee for a $20 one-shot test
+  inverts the "nearly free to add" rationale. The $20 folds into the Reddit
+  kickoff burst. Revisit only if September scale justifies it. Skip Google
+  Search (no query volume exists yet) and TikTok (video creative is a
+  founder-hours tax; revisit if a screen-capture clip ever pops organically).
 - **Creative:** I build it — static cards from the OG pipeline (real drive,
   real prices, "Draft under $25. One drive. Everyone gets the same board.")
   plus a 20s screen-capture GIF of a two-minute-warning finish. A/B the
