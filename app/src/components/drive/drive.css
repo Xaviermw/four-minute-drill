@@ -94,6 +94,9 @@
 
 .field-playing-area {
   position: relative;
+  /* Above the endzone siblings so overflowing chalk (EZ route tails) paints
+     over the paint instead of clipping at the goal line. */
+  z-index: 1;
   flex: 1;
   min-width: 0;
   background: radial-gradient(140% 120% at 50% -30%, rgba(255, 255, 255, 0.07), transparent 55%),
@@ -390,6 +393,7 @@
   height: 100%;
   z-index: 3;
   pointer-events: none;
+  overflow: visible; /* EZ route tails pierce the goal line into the paint */
   animation: chalk-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes chalk-in {

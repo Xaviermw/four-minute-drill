@@ -247,16 +247,20 @@ export function DriveScreen() {
       }
       const last = player.displayName.split(" ").slice(-1)[0];
       // Chalk: cycle the route family per down (player hash + play count --
-      // deterministic, never the engine RNG).
+      // deterministic, never the engine RNG). The scribble tip lands exactly on
+      // the ring (same clamp as the visualizer), and an end-zone shot's route
+      // pierces the goal line into the paint -- the SVG overflows for this.
       const routeKind = call.kind === "pass" ? call.depth : call.kind === "run" ? "runInside" : call.kind;
+      const ringX = Math.max(8, Math.min(92, 100 - fp));
       const route = buildRoute(
         routeKind,
         100 - live.fieldPosition,
-        100 - fp,
+        ringX,
         LANE_Y[lane],
         lane,
         hashOf(player.gsisId) + plays.length
       );
+      if (endZone) route.push({ x: Math.min(105, ringX + 13), y: route[route.length - 1].y });
       seated.push({
         key: playCallKey(call),
         fieldPosition: fp,
