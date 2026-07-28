@@ -47,9 +47,13 @@ Ads are justified ONLY as ignition for the share loop — buy the seed cohort,
 let K-factor do the multiplying. The July plan said "no paid ads" under a
 founder-hours model; under a budget model they're the right tool.
 
-- **Budget: $400–600 total.** $100 multi-source smoke test late August
-  (owner call 2026-07-27: try several sources, not Reddit-only), the rest as
-  a kickoff-week burst (Sep 8–14) weighted to whichever source won the test.
+- **Budget: $400–600 total.** $100 multi-source smoke test (owner call
+  2026-07-27: try several sources, not Reddit-only), the rest as a
+  kickoff-week burst (Sep 8–14) weighted to whichever source won the test.
+  Owner call 2026-07-27: Reddit starts EARLY rather than waiting for late
+  August — $15 lifetime now (`utm_campaign=smoke-early`, ends Aug 10), $25
+  held for the kickoff ramp (`smoke-kickoff`); the early/late conversion
+  comparison is itself a finding.
 - **Smoke-test split — $40 Reddit / $40 Meta / $20 X.** Three sources is the
   statistical ceiling for $100 (fewer than ~40 clicks per channel reads as
   noise). (1) **Reddit Ads** — feed placement targeted to r/fantasyfootball /
