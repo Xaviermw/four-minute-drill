@@ -134,6 +134,8 @@
 
 .app-footer {
   display: flex;
+  flex-wrap: wrap; /* seven items now -- phones take two tidy rows */
+  row-gap: 0.35rem;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
@@ -141,6 +143,9 @@
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   padding: 1.5rem 1rem 2rem;
+}
+.app-footer > span:last-child {
+  white-space: nowrap;
 }
 
 .app-footer-sep {

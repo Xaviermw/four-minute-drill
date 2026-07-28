@@ -97,6 +97,23 @@ function AppBody() {
           Privacy
         </a>
         <span className="app-footer-sep">·</span>
+        <a className="how-it-works-link" href="https://x.com/fourminutedrill" target="_blank" rel="noopener noreferrer">
+          X
+        </a>
+        <span className="app-footer-sep">·</span>
+        <a
+          className="how-it-works-link"
+          href="https://bsky.app/profile/fourminutedrill.bsky.social"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Bluesky
+        </a>
+        <span className="app-footer-sep">·</span>
+        <a className="how-it-works-link" href="mailto:fourminutedrill@gmail.com">
+          Contact
+        </a>
+        <span className="app-footer-sep">·</span>
         <span>Data via nflverse / nflfastR</span>
       </footer>
     </div>
