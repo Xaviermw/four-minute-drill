@@ -225,11 +225,17 @@ export function DriveScreen() {
             : laneFor(player.gsisId);
       // Deconflict: chips are wide, so same-lane neighbors need real separation
       // (~18 yds). Try the home lane then the others; if every lane is crowded
-      // at this depth, push the seat further downfield and retry.
+      // at this depth, slide the seat and retry. Passes slide deeper downfield
+      // -- except pinned at the goal-line floor, where deeper doesn't exist
+      // (Math.max(3, fp-8) was a silent no-op there: audit-caught mash at
+      // AWAY 2), so they retreat backward like the ground game. Four bumps,
+      // not three: at +8 per bump the 18-yd window is only clearable in one
+      // lane after bump 3 (24 yds).
       const clear = (l: number, x: number) => !seated.some((t) => t.lane === l && Math.abs(t.fieldPosition - x) < 18);
+      const slide = isGround || fp <= 3 ? 8 : -8;
       let lane = home;
       let placed = false;
-      for (let bump = 0; bump < 3 && !placed; bump++) {
+      for (let bump = 0; bump < 4 && !placed; bump++) {
         for (const cand of [home, ((home + 1) % 3) as 0 | 1 | 2, ((home + 2) % 3) as 0 | 1 | 2]) {
           if (clear(cand, fp)) {
             lane = cand;
@@ -237,9 +243,7 @@ export function DriveScreen() {
             break;
           }
         }
-        // Crowded at this depth everywhere: passes slide deeper downfield,
-        // ground game retreats into the backfield.
-        if (!placed) fp = isGround ? Math.min(99, fp + 8) : Math.max(3, fp - 8);
+        if (!placed) fp = Math.max(3, Math.min(99, fp + slide));
       }
       const last = player.displayName.split(" ").slice(-1)[0];
       // Chalk: cycle the route family per down (player hash + play count --
