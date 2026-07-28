@@ -149,6 +149,14 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   SharePanel shows it in a read-only preview. Default scenario is **down 3**.
   Draft picks advance instantly (no transition delay) — the deliberate beat is
   the ball gliding in on the drive result, not the draft.
+- **Dynamic OG cards** (share unfurls): ghost links carry `r=` (letter drive
+  code) + `sp=` (spend); `api/og.ts` (@vercel/og edge fn, plain-object
+  elements, no JSX) renders score/squares/name; `middleware.ts` swaps
+  og:image/og:title ONLY on `?g=` links and fails open. THREE things in
+  lockstep: buildDriveGrid emojis ↔ buildDriveCode letters (shareText.ts) ↔
+  SQUARE color map (api/og.ts). Plain visits must keep static og.png.
+  Vercel preview deployments are auth-free (owner disabled protection
+  2026-07-28) — test middleware/functions on a branch preview before main.
 - Football conventions in copy: ball spot as "OWN 20"/"AWAY 29" (yardline_100
   >50 → OWN 100-x, else AWAY x), never raw yards-to-endzone in labels.
 - Design source docs: `app/FrontEndDesign.md`, `docs/ux-review.md`,
