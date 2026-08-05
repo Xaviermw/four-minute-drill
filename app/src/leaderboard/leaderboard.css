@@ -271,6 +271,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* The name is the row's point -- guarantee it space even when the auto
+     columns (outcome, clock, score) are hungry on narrow screens. */
+  min-width: 76px;
+}
+/* Phones: the outcome's colored dot carries win/loss on its own -- the text
+   ("Turnover on downs") was starving the name column to nothing. */
+@media (max-width: 430px) {
+  .lb-outcome-label {
+    display: none;
+  }
+  .leaderboard-row {
+    gap: 0.45rem;
+  }
 }
 
 .lb-ovr {

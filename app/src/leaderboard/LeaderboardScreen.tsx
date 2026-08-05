@@ -48,7 +48,10 @@ function ScoreList({
           <span className="lb-ovr" title={row.spend != null ? "Team salary (of $25 cap)" : "Roster payout multiplier"}>
             {row.spend != null ? `$${row.spend}` : formatPayout(payoutMultiplier(row.team_ovr))}
           </span>
-          <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
+          <span className="lb-outcome">
+            {outcomeLabel(row.outcome).split(" ")[0]}
+            <span className="lb-outcome-label"> {outcomeLabel(row.outcome).split(" ").slice(1).join(" ")}</span>
+          </span>
           <span className="lb-time" title="Time left when they scored">
             ⏱ {formatClock(row.time_remaining)}
           </span>
@@ -85,7 +88,10 @@ function DriveList({
             {row.name}
             {userId && row.user_id === userId && <span className="lb-you">you</span>}
           </span>
-          <span className="lb-outcome">{outcomeLabel(row.outcome)}</span>
+          <span className="lb-outcome">
+            {outcomeLabel(row.outcome).split(" ")[0]}
+            <span className="lb-outcome-label"> {outcomeLabel(row.outcome).split(" ").slice(1).join(" ")}</span>
+          </span>
           <span className="lb-reached" title="Where the drive ended">
             {row.final_field_position <= 0 ? "Scored" : `to ${formatBallOn(row.final_field_position)}`}
           </span>
