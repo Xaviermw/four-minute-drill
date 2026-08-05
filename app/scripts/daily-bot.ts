@@ -30,7 +30,7 @@ import { appendFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createDriveSession, kickDistanceFor, makeRng, MAX_REALISTIC_FIELD_GOAL_DISTANCE } from "../src/engine";
-import { dailyDraftRng, dailyDriveSeed, seedFromString, todaysChallengeId } from "../src/daily/dailyChallenge";
+import { dailyDraftRng, dailyDriveSeed, formatChallengeDate, seedFromString, todaysChallengeId } from "../src/daily/dailyChallenge";
 import { drawSlotOptions } from "../src/draft/draftPool";
 import { getPricing } from "../src/draft/pricing";
 import { capForChallenge } from "../src/draft/capConfig";
@@ -50,15 +50,21 @@ const manifest = JSON.parse(readFileSync(join(DATA, "manifest.json"), "utf8")) a
 const loadData = (id: string) => JSON.parse(readFileSync(join(DATA, "players", `${id}.json`), "utf8"));
 
 const challengeId = todaysChallengeId();
+// Recap targets "the evening being recapped", robust to GitHub cron lag: a
+// 12-hour shift maps any run between noon ET and noon-ET-next-day onto the
+// day whose board it should read. (Audit finding 2026-08-05: the 11pm cron
+// fired at 1:51am ET, read the NEW day's empty board, and skipped the
+// 9-player Aug 4 recap.)
+const recapChallengeId = todaysChallengeId(new Date(Date.now() - 12 * 3600 * 1000));
 
 // ---- The Coach's daily drive (deterministic; used by BOTH modes) ----------
 
-function playCoachDrive(): { log: DriveLog; spend: number; roster: DraftedRoster; rosterData: DraftedRosterData } {
-  // Draft today's board like a sensible human: balanced spend under the cap.
+function playCoachDrive(id: string = challengeId): { log: DriveLog; spend: number; roster: DraftedRoster; rosterData: DraftedRosterData } {
+  // Draft that day's board like a sensible human: balanced spend under the cap.
   const pricing = getPricing(manifest.players);
-  const { cap } = capForChallenge(challengeId);
-  const board = drawSlotOptions(pricing.dealablePlayers, dailyDraftRng(challengeId));
-  const botRng = makeRng(seedFromString(`${challengeId}:coachbot`));
+  const { cap } = capForChallenge(id);
+  const board = drawSlotOptions(pricing.dealablePlayers, dailyDraftRng(id));
+  const botRng = makeRng(seedFromString(`${id}:coachbot`));
 
   const SLOTS: RosterSlotKey[] = ["qb", "rb", "wr1", "wr2", "te", "k"];
   const roster = {} as Record<RosterSlotKey, ManifestPlayerEntry>;
@@ -92,7 +98,7 @@ function playCoachDrive(): { log: DriveLog; spend: number; roster: DraftedRoster
     te: loadData(roster.te.gsisId) as PlayerDataset,
     k: loadData(roster.k.gsisId) as KickerDataset,
   };
-  const session = createDriveSession(rosterData, DEFAULT_SCENARIO, manifest.leagueAverageRates, manifest.leagueAverageKickerRates, dailyDriveSeed(challengeId));
+  const session = createDriveSession(rosterData, DEFAULT_SCENARIO, manifest.leagueAverageRates, manifest.leagueAverageKickerRates, dailyDriveSeed(id));
   for (let i = 0; i < 40; i++) {
     const options = session.getOptions();
     if (options.length === 0) break;
@@ -136,30 +142,36 @@ interface BoardRow {
   spend: number | null;
 }
 
-export function composeRecap(rows: BoardRow[], coachScore: number): string | null {
-  // The bot's own submission never counts as a player.
-  const players = rows.filter((r) => r.name !== BOT_NAME);
+export function composeRecap(rows: BoardRow[], coachScore: number, dateLabel: string): string | null {
+  // One entry per PERSON: dedupe repeat submitters to their best score (never
+  // inflate the count), and the bot's own row never counts as a player.
+  const best = new Map<string, BoardRow>();
+  for (const r of rows) {
+    if (r.name === BOT_NAME) continue;
+    const prev = best.get(r.name);
+    if (!prev || r.score > prev.score) best.set(r.name, r);
+  }
+  const players = [...best.values()];
   if (players.length < MIN_RECAP_PLAYERS) return null;
   const beatCoach = players.filter((r) => r.score > coachScore).length;
   const top = players.reduce((a, b) => (b.score > a.score ? b : a));
-  const dateLabel = new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
 
   const topLine = top.spend !== null ? `🥇 ${top.score} pts on a $${top.spend} squad.` : `🥇 Top drive: ${top.score} pts.`;
   const coachLine =
     beatCoach === 0
       ? `🤖 ${BOT_NAME}'s ${coachScore} held up against all ${players.length} of them. Unacceptable.`
       : `${players.length} played · ${beatCoach} beat ${BOT_NAME}'s ${coachScore}.`;
-  let post = [`🌙 ${dateLabel} drill closes at midnight ET.`, coachLine, topLine, `Fresh board tomorrow ▶ ${ORIGIN}`].join("\n");
+  let post = [`🌙 The ${dateLabel} drill is in the books.`, coachLine, topLine, `Fresh board at midnight ET ▶ ${ORIGIN}`].join("\n");
   if (post.length > 292) post = [coachLine, `Fresh board at midnight ▶ ${ORIGIN}`].join("\n");
   return post;
 }
 
-async function fetchTodaysBoard(): Promise<BoardRow[]> {
+async function fetchBoard(id: string): Promise<BoardRow[]> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("recap mode needs SUPABASE_URL + SUPABASE_ANON_KEY");
   const res = await fetch(
-    `${url}/rest/v1/scores?select=name,score,spend&challenge_date=eq.${challengeId}&order=score.desc&limit=200`,
+    `${url}/rest/v1/scores?select=name,score,spend&challenge_date=eq.${id}&order=score.desc&limit=200`,
     { headers: { apikey: key, Authorization: `Bearer ${key}` } }
   );
   if (!res.ok) throw new Error(`board fetch failed: HTTP ${res.status}`);
@@ -219,10 +231,10 @@ async function postX(post: string): Promise<void> {
 // go unnoticed for a week. Unconfigured platforms still skip silently.
 let configuredPlatforms = 0;
 
-async function publish(kind: string, post: string, url: string): Promise<void> {
+async function publish(kind: string, post: string, url: string, id: string = challengeId): Promise<void> {
   console.log("---- post ----\n" + post + "\n--------------");
   if (process.env.GITHUB_STEP_SUMMARY) {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## ${BOT_NAME} ${kind} — ${challengeId}\n\n\`\`\`\n${post}\n\`\`\`\n`);
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## ${BOT_NAME} ${kind} — ${id}\n\n\`\`\`\n${post}\n\`\`\`\n`);
   }
   const results = await Promise.allSettled([postBluesky(post, url), postX(post)]);
   const failures = results.filter((r) => r.status === "rejected");
@@ -240,12 +252,16 @@ const isMain = process.argv[1] && import.meta.url === new URL(`file://${process.
 if (isMain) {
   const mode = process.env.BOT_MODE === "recap" ? "recap" : "challenge";
   if (mode === "recap") {
-    const rows = await fetchTodaysBoard();
-    const post = composeRecap(rows, playCoachDrive().log.score);
+    const rows = await fetchBoard(recapChallengeId);
+    const post = composeRecap(
+      rows,
+      playCoachDrive(recapChallengeId).log.score,
+      formatChallengeDate(recapChallengeId).replace(/, \d{4}$/, "") // "Aug 5", not a legal notice
+    );
     if (post === null) {
       console.log(`recap: skipped -- quiet day (${rows.length} rows, need ${MIN_RECAP_PLAYERS}+ non-bot players)`);
     } else {
-      await publish("recap", post, ORIGIN);
+      await publish("recap", post, ORIGIN, recapChallengeId);
     }
   } else {
     const { post, url } = composeChallenge();

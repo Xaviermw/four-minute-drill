@@ -12,7 +12,12 @@ name: daily-bot
 on:
   schedule:
     - cron: "5 14 * * *" # challenge: 10:05am ET in summer (9:05 in winter)
-    - cron: "0 3 * * *" # recap: 11:00pm ET in summer (10:00 in winter)
+    # Recap: 9:23pm ET summer. Off-peak minute + pre-midnight slack because
+    # GitHub cron lag is real (observed ~3h at 03:00 UTC: the run crossed
+    # midnight ET and read the wrong day's board). The bot also aims recap at
+    # "the evening being recapped" via a 12h shift, so even a huge delay
+    # posts about the right day.
+    - cron: "23 1 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -63,7 +68,7 @@ jobs:
         run: npx tsx scripts/daily-bot.ts
         env:
           # Scheduled runs pick their mode by which cron fired; manual runs by input.
-          BOT_MODE: ${{ github.event.inputs.mode || (github.event.schedule == '0 3 * * *' && 'recap' || 'challenge') }}
+          BOT_MODE: ${{ github.event.inputs.mode || (github.event.schedule == '23 1 * * *' && 'recap' || 'challenge') }}
           BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
           X_APP_KEY: ${{ secrets.X_APP_KEY }}
