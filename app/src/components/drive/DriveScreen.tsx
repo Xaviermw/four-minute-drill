@@ -223,27 +223,43 @@ export function DriveScreen() {
               ? 2
               : 0
             : laneFor(player.gsisId);
-      // Deconflict: chips are wide, so same-lane neighbors need real separation
-      // (~18 yds). Try the home lane then the others; if every lane is crowded
-      // at this depth, slide the seat and retry. Passes slide deeper downfield
-      // -- except pinned at the goal-line floor, where deeper doesn't exist
-      // (Math.max(3, fp-8) was a silent no-op there: audit-caught mash at
-      // AWAY 2), so they retreat backward like the ground game. Four bumps,
-      // not three: at +8 per bump the 18-yd window is only clearable in one
-      // lane after bump 3 (24 yds).
-      const clear = (l: number, x: number) => !seated.some((t) => t.lane === l && Math.abs(t.fieldPosition - x) < 18);
-      const slide = isGround || fp <= 3 ? 8 : -8;
+      // Deconflict: chips are wide, so same-lane neighbors need ~18 yds of
+      // separation. Each target tries seat offsets in preference order across
+      // the three lanes. Passes slide deeper downfield; the ground game
+      // prefers downfield too (owner-flagged: backfield seats made the chalk
+      // draw a QB "running backward 12 yards") but keeps the backfield as
+      // LAST-RESORT relief -- removing it entirely overcrowds the forward
+      // corridor. The goal-line pinch (fp<=3) sends everyone backward, where
+      // downfield doesn't exist. If nothing clears 18 yds, take the candidate
+      // with the LARGEST gap -- never wherever the loop happened to stop
+      // (audit-caught: two rings 0px apart).
+      const laneOrder = [home, ((home + 1) % 3) as 0 | 1 | 2, ((home + 2) % 3) as 0 | 1 | 2];
+      // Ground: forward first, backfield as relief, then deep-forward
+      // fallbacks -- when backed up (fp near 90) the backfield clamps to
+      // nothing (audit-caught 9-yd give-up at OWN 10), so forward is the only
+      // real room.
+      const offsets = fp <= 3 ? [0, 8, 16, 24, 32] : isGround ? [0, -8, -16, 8, 16, -24, -32] : [0, -8, -16, -24, -32];
+      const base = fp;
       let lane = home;
       let placed = false;
-      for (let bump = 0; bump < 4 && !placed; bump++) {
-        for (const cand of [home, ((home + 1) % 3) as 0 | 1 | 2, ((home + 2) % 3) as 0 | 1 | 2]) {
-          if (clear(cand, fp)) {
-            lane = cand;
+      let best = { lane: home, fp: base, gap: -1 };
+      for (const off of offsets) {
+        const cand = Math.max(3, Math.min(99, base + off));
+        for (const l of laneOrder) {
+          const gap = seated.reduce((g, t) => (t.lane === l ? Math.min(g, Math.abs(t.fieldPosition - cand)) : g), Infinity);
+          if (gap >= 18) {
+            lane = l;
+            fp = cand;
             placed = true;
             break;
           }
+          if (gap > best.gap) best = { lane: l, fp: cand, gap };
         }
-        if (!placed) fp = Math.max(3, Math.min(99, fp + slide));
+        if (placed) break;
+      }
+      if (!placed) {
+        lane = best.lane;
+        fp = best.fp;
       }
       const last = player.displayName.split(" ").slice(-1)[0];
       // Chalk: cycle the route family per down (player hash + play count --

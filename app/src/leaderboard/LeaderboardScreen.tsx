@@ -12,6 +12,7 @@ import { useModalBehavior } from "../utils/useModalBehavior";
 import {
   fetchDailyLongestDrives,
   fetchDailyScores,
+  fetchMyStreak,
   fetchTopScores,
   fetchTopStreaks,
   isNetworkError,
@@ -123,6 +124,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const [dailyDrives, setDailyDrives] = useState<LeaderboardRow[] | null>(null);
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
   const [streaks, setStreaks] = useState<StreakRow[] | null>(null);
+  const [myStreak, setMyStreak] = useState<StreakRow | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -154,6 +156,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     fetchDailyLongestDrives(challengeId, 25).then((d) => !cancelled && setDailyDrives(d)).catch(fail);
     fetchTopScores(100).then((d) => !cancelled && setRows(d)).catch(fail);
     fetchTopStreaks(100).then((d) => !cancelled && setStreaks(d)).catch(fail);
+    fetchMyStreak().then((d) => !cancelled && setMyStreak(d)).catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -265,6 +268,13 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           )}
 
           {/* ---- Win streaks ---- */}
+          {tab === "streak" && myStreak && (!myStreak.name || myStreak.name === "Anonymous") && myStreak.best_points > 0 && (
+            <p className="lb-claim-nudge">
+              🔥 You've banked <b>{myStreak.best_points} pts</b> ({myStreak.best_wins} win
+              {myStreak.best_wins === 1 ? "" : "s"}) — but it's unlisted. Put a name on your next winning drive to
+              claim your spot.
+            </p>
+          )}
           {tab === "streak" && streaks !== null && streaks.length === 0 && !error && (
             <p className="leaderboard-empty">
               No streaks yet. Win drives back-to-back — a loss ends the run and banks your points.

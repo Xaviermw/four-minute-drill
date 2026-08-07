@@ -2,7 +2,7 @@ import type { DraftedRoster } from "../types/roster";
 import { finalFieldPosition, type DriveChoice, type DriveLog } from "../types/simResult";
 import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
-import { ensureAnonSession, getSupabase } from "./supabaseClient";
+import { ensureAnonSession, getCurrentUserId, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
 
@@ -112,7 +112,14 @@ export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank:
   // Rank = number of strictly-better scores + 1, within the same board (this
   // day's daily scores, or the all-time free-play board). Ties share the lower
   // rank -- good enough for a casual leaderboard.
-  let q = supabase.from(TABLE).select("id", { count: "exact", head: true }).gt("score", entry.score);
+  // Legacy pre-cap rows (null spend) are off the boards (owner call
+  // 2026-08-07) -- exclude them from rank math too, or "#4" counts ghosts
+  // of the old economy.
+  let q = supabase
+    .from(TABLE)
+    .select("id", { count: "exact", head: true })
+    .gt("score", entry.score)
+    .not("spend", "is", null);
   q = entry.challenge_date ? q.eq("challenge_date", entry.challenge_date) : q.is("challenge_date", null);
   const { count, error: countError } = await q;
   if (countError) throw new Error(countError.message);
@@ -129,7 +136,9 @@ export async function fetchTopScores(limit = 100): Promise<LeaderboardRow[]> {
     .from(TABLE)
     .select("*")
     .is("challenge_date", null) // all-time board excludes daily-challenge scores
+    .not("spend", "is", null) // and legacy pre-cap rows (the old x1.1-chip era)
     .order("score", { ascending: false })
+    .order("spend", { ascending: true }) // tie-break: cheaper roster outranks (owner call)
     .order("created_at", { ascending: true })
     .limit(limit);
   if (error) throw new Error(error.message);
@@ -146,6 +155,7 @@ export async function fetchDailyScores(challengeId: string, limit = 100): Promis
     .select("*")
     .eq("challenge_date", challengeId)
     .order("score", { ascending: false })
+    .order("spend", { ascending: true }) // tie-break: cheaper roster outranks (owner call)
     .order("created_at", { ascending: true })
     .limit(limit);
   if (error) throw new Error(error.message);
@@ -288,7 +298,26 @@ export async function recordDrive(driveLog: DriveLog, name: string): Promise<Str
   }
 }
 
-/** Fetches the top win-streaks by banked points, highest first. */
+/** The viewer's own streak row (named or not), for the claim-your-spot nudge
+ * on the streak board. Null when they've never recorded a free-play drive. */
+export async function fetchMyStreak(): Promise<StreakRow | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .from(STREAK_TABLE)
+    .select("user_id,name,best_points,best_wins,current_points,current_wins")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return null;
+  return (data as StreakRow) ?? null;
+}
+
+/** Fetches the top win-streaks by banked points, highest first. Named players
+ * only (owner call 2026-08-05): a wall of "Anonymous" is anti-social-proof,
+ * and the unlisted-streak nudge turns claiming a name into the engagement
+ * hook. Streaks are still TRACKED for everyone -- display-level filter only. */
 export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
   const supabase = await getSupabase();
   if (!supabase) return [];
@@ -297,6 +326,8 @@ export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
     .from(STREAK_TABLE)
     .select("user_id,name,best_points,best_wins,current_points,current_wins")
     .gt("best_points", 0)
+    .not("name", "is", null)
+    .neq("name", "Anonymous")
     .order("best_points", { ascending: false })
     .order("updated_at", { ascending: true })
     .limit(limit);

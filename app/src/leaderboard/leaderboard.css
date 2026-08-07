@@ -275,6 +275,21 @@
      columns (outcome, clock, score) are hungry on narrow screens. */
   min-width: 76px;
 }
+/* Unlisted-streak nudge: the claim-your-spot hook for anonymous streakers. */
+.lb-claim-nudge {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: color-mix(in srgb, var(--amber) 10%, var(--bg-1));
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  border-radius: var(--radius);
+}
+.lb-claim-nudge b {
+  color: var(--amber);
+}
+
 /* Phones: the outcome's colored dot carries win/loss on its own -- the text
    ("Turnover on downs") was starving the name column to nothing. */
 @media (max-width: 430px) {
