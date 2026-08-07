@@ -188,8 +188,17 @@ export function DriveScreen() {
   if (FIELD_CALLS && !resolving) {
     const lineToGain = live.fieldPosition - live.distance;
     const seated: FieldTarget[] = [];
-    for (const call of options) {
-      if (call.kind === "fieldGoal" || call.kind === "spike") continue; // stay as buttons
+    // Open field: ground seats FIRST, anchored at the line where runs make
+    // football sense, and the passes flex deeper around them ("the route
+    // seats deeper" is always sensible, "the QB runs backward" never is --
+    // owner-flagged twice). Red zone flips: compressive seating pins the
+    // passes to the band at the line, so THEY anchor and a run yielding
+    // backward there reads as a pitch (audit-caught stacking at AWAY 15).
+    const playable = options.filter((c) => c.kind !== "fieldGoal" && c.kind !== "spike");
+    const grounds = playable.filter((c) => c.kind !== "pass");
+    const passes = playable.filter((c) => c.kind === "pass");
+    const seatingOrder = live.fieldPosition > 22 ? [...grounds, ...passes] : [...passes, ...grounds];
+    for (const call of seatingOrder) {
       const isGround = call.kind !== "pass";
       const player =
         call.kind === "run" || call.kind === "runInside" || call.kind === "runOutside"
