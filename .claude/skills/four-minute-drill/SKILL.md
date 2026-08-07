@@ -157,6 +157,13 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   SQUARE color map (api/og.ts). Plain visits must keep static og.png.
   Vercel preview deployments are auth-free (owner disabled protection
   2026-07-28) — test middleware/functions on a branch preview before main.
+- **Field-target seating order is regime-conditional** (DriveScreen, hard-won
+  across 4 audit-caught failure rounds): open field (fp > 22) seats GROUND
+  first anchored at the LOS (runs must never read backward — owner-flagged
+  twice) with routes flexing deeper; red zone seats PASSES first (compressive
+  seating pins them to the goal-line band) and ground yields backward as a
+  pitch. Give-up placement takes the largest-gap candidate, never
+  last-tried. Don't unify the two regimes; they want opposite priorities.
 - Football conventions in copy: ball spot as "OWN 20"/"AWAY 29" (yardline_100
   >50 → OWN 100-x, else AWAY x), never raw yards-to-endzone in labels.
 - Design source docs: `app/FrontEndDesign.md`, `docs/ux-review.md`,
