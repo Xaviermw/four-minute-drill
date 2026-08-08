@@ -40,9 +40,8 @@ that compounds.
   a later "claim your history via email" can graft on without rework.
 - **Season archives/awards** -- end-of-season problem, happily.
 
-## Open questions for the owner (non-blocking, defaults chosen)
+## Decided (owner, 2026-08-08)
 
-- Do daily LOSSES count their marginal points toward the season total?
-  Default YES (consistent with "the daily accepts losses"; every play adds).
-- Does the pre-season (now-Sept 9) show a practice season table? Default NO
-  (one table, starts opening day, maximum narrative clarity).
+- Daily LOSSES count their marginal points toward the season total — every
+  play adds (consistent with "the daily accepts losses").
+- No practice table pre-season: ONE season table, starting opening day.
