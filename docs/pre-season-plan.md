@@ -101,3 +101,12 @@ Goal: dailies can vary the cap ("$15 Tightwad Tuesday") with one config line.
 - Public repo: no secrets; grep staged files.
 - **No scoring/economy changes** — the cap economy is locked until Sept 1+.
 - Migrations (none needed in this batch) go pooler-first, then deploy.
+
+
+## Addendum 2026-08-08: Season Score is the kickoff feature
+
+Owner concept, spec'd in season-score-spec.md: cumulative daily-drill score
+from opening day, season table + "your season" strip, no accounts. Build
+Aug 15-25 after the data refresh; additive UI outside the Sep 1 freeze.
+This is the launch week's product story ("the season starts, every drill
+counts") and the retention lever the Aug test week's D1 data points at.
