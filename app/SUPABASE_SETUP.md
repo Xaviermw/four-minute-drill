@@ -199,3 +199,12 @@ The step also fails the workflow when Supabase is unreachable, so GitHub
 emails you the day the backend goes dark instead of a player finding out
 first. It scrapes the project URL + publishable key from the live site bundle
 (both public by design) — no secrets needed.
+
+## 6. Source attribution (migration 010)
+
+`scores.source` and `streaks.source` carry the player's first-touch
+`utm_source` ("reddit", "meta", null = organic), captured client-side on
+first visit and sticky thereafter. `record_drive` gained `p_source` (the old
+3-arg signature was dropped -- defaulted params overload, they don't
+replace). The streak row keeps its FIRST source forever. Cohort question it
+answers: `select source, count(*), avg(best_wins) from streaks group by 1`.

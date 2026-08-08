@@ -2,6 +2,7 @@ import type { DraftedRoster } from "../types/roster";
 import { finalFieldPosition, type DriveChoice, type DriveLog } from "../types/simResult";
 import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
+import { getFirstTouchSource } from "../analytics/source";
 import { ensureAnonSession, getCurrentUserId, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
@@ -37,6 +38,8 @@ export interface LeaderboardRow {
   user_id: string | null;
   /** Daily Challenge id (ET date) this score is for, or null for free play. */
   challenge_date: string | null;
+  /** First-touch acquisition tag (utm_source), or null for organic/legacy. */
+  source: string | null;
 }
 
 /** The payload we insert (server fills id/created_at). */
@@ -52,6 +55,8 @@ export interface LeaderboardSubmission {
   seed: number;
   choices: DriveChoice[];
   challenge_date: string | null;
+  /** First-touch acquisition tag (utm_source), or null for organic. */
+  source: string | null;
 }
 
 function rosterToPlayers(roster: DraftedRoster): LeaderboardPlayer[] {
@@ -83,6 +88,7 @@ export function buildSubmission(
     seed: driveLog.seed,
     choices: driveLog.choices,
     challenge_date: challengeId,
+    source: getFirstTouchSource(),
   };
 }
 
@@ -289,6 +295,7 @@ export async function recordDrive(driveLog: DriveLog, name: string): Promise<Str
       p_won: driveLog.won,
       p_points: driveLog.score,
       p_name: name.trim().slice(0, 20) || null,
+      p_source: getFirstTouchSource(),
     });
     if (error) throw error;
     return (data as StreakUpdate) ?? null;
