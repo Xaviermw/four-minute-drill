@@ -391,3 +391,12 @@
     background-position: -200% 0;
   }
 }
+
+/* "Date scored" under the name on the all-time board. */
+.lb-date {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--dim);
+  letter-spacing: 0.02em;
+}

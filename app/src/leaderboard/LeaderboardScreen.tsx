@@ -24,18 +24,31 @@ import "./leaderboard.css";
 
 type Tab = "daily" | "score" | "streak";
 
+function scoredDate(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
+  });
+}
+
 function ScoreList({
   rows,
   userId,
   loadingId,
   onPlay,
   playLabel,
+  showDate = false,
 }: {
   rows: LeaderboardRow[];
   userId: string | null;
   loadingId: string | null;
   onPlay: (row: LeaderboardRow) => void;
   playLabel: string;
+  /** All-time board: show when each score was posted (daily is one date). */
+  showDate?: boolean;
 }) {
   return (
     <ol className="leaderboard-list">
@@ -45,6 +58,7 @@ function ScoreList({
           <span className="lb-name">
             {row.name}
             {userId && row.user_id === userId && <span className="lb-you">you</span>}
+            {showDate && <span className="lb-date">{scoredDate(row.created_at)}</span>}
           </span>
           <span className="lb-ovr" title={row.spend != null ? "Team salary (of $25 cap)" : "Roster payout multiplier"}>
             {row.spend != null ? `$${row.spend}` : formatPayout(payoutMultiplier(row.team_ovr))}
@@ -263,6 +277,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                 loadingId={loadingId}
                 onPlay={playLineup}
                 playLabel="Play this lineup"
+                showDate
               />
             )
           )}
