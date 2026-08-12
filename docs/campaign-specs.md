@@ -59,7 +59,8 @@ adsmanager.facebook.com → Create. Leads with the Reddit-proven creative.
 - Objective: **Traffic** (decline any Advantage+ campaign upsell; A/B off)
 - Campaign name: `4md-meta-test`
 - Ad set: Conversion location **Website** · Performance goal **Maximize
-  link clicks** (Landing Page Views needs the pixel we skipped)
+  number of landing page views** (no longer needs the pixel — Meta measures
+  the load in its in-app browser; optimizes for arrivals, not thumb-taps)
 - Budget: **$40 LIFETIME** on the ad set · Schedule Aug 14 → Aug 24
 - Audience: US, 18+, detailed targeting/interests: **Fantasy football**
   (+ NFL if it asks for more) — if the UI pushes "Advantage+ audience",
