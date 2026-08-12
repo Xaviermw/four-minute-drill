@@ -52,6 +52,35 @@ proven kickoff lead. Corollary: passive A/B doesn't happen in Max; to learn
 a runner-up, test SEQUENTIALLY (pause the coach-bot headline in the trickle
 for ~a week and let the algorithm elect #2).
 
+## Meta $40 test (Aug 14 – ~24)
+
+adsmanager.facebook.com → Create. Leads with the Reddit-proven creative.
+
+- Objective: **Traffic** (decline any Advantage+ campaign upsell; A/B off)
+- Campaign name: `4md-meta-test`
+- Ad set: Conversion location **Website** · Performance goal **Maximize
+  link clicks** (Landing Page Views needs the pixel we skipped)
+- Budget: **$40 LIFETIME** on the ad set · Schedule Aug 14 → Aug 24
+- Audience: US, 18+, detailed targeting/interests: **Fantasy football**
+  (+ NFL if it asks for more) — if the UI pushes "Advantage+ audience",
+  add those as interest suggestions; it constrains delivery enough at $40
+- Placements: switch OFF Advantage+ placements → manual: **Facebook Feed,
+  Instagram Feed, Facebook Reels, Instagram Reels** only (Audience Network
+  is where small budgets go to die)
+- Ad: Identity = Four Minute Drill Page · Single image ·
+  **coach-bot-1200x628.png** (the proven board)
+  - Primary text: `Our robot coach scored 9 points today. Beat him or live
+    with that.`
+  - Headline: `One drive. $25 cap. Free.`
+  - Description: `New drill daily — same board as everyone.`
+  - URL: `https://www.fourminutedrill.com/?utm_source=meta&utm_medium=cpc&utm_campaign=meta-test`
+  - CTA button: **Play Game** (Meta has it)
+- Account spending limit $40 should already be set (runbook §2 step 5) —
+  belt and suspenders with the lifetime budget.
+- Expect "in review" up to ~24h on a first ad. Benchmarks from Reddit:
+  $0.14 CPC / 4.0% CTR — Meta will likely cost more per click; what matters
+  is cost per PLAYING device via the `meta` source tag, readable in SQL.
+
 ## Kickoff burst (Sep 8–14) — TBD after the Meta test
 
 Reddit ≥ $40 leading with the PROVEN combo (coach-bot board + robot-coach
