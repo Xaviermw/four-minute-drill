@@ -24,12 +24,17 @@ suggests the budget exhausted around Aug 7 (daily players drop Aug 8).
 | Production errors (Sentry) | 0 |
 | **Cost per playing device** (even attributing only ~2/3) | **≈ $0.25–0.30** |
 
-## The number nobody buys: the post-campaign floor
+## The post-campaign floor (calibrated: it's a handful, not an audience)
 
 Ads stopped Aug 8. Daily players since, with **zero spend**: 1, 2, 2, 3
-(Aug 9–12). A standing organic daily audience now exists where none did on
-July 31. Small, but it's the retention signal money can't fake — and it's
-what Season Score is designed to multiply.
+(Aug 9–12) — a few people, not an audience (owner's correction, kept
+honest). The defensible claim is the RATE, not the count: ~1–2% of the 216
+acquired devices formed a daily-ish habit in week one, pre-season, with no
+season mechanic and no reminders. The kickoff bet is that all three
+multipliers move at once: in-season relevance raises the rate, Season Score
+raises the rate, and a bigger top-funnel multiplies the base it applies to.
+At kickoff-scale traffic (~2,000 visitors), today's rates alone would seed
+20–40 daily regulars — before the product improvements bite.
 
 ## Gates → verdicts
 
