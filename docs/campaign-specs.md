@@ -41,8 +41,20 @@ campaigns, build fresh):
 
 ("daily fantasy" phrasing stays banned — reads as DFS gambling to reviewers.)
 
+## Finding (Aug 13, smoke-test Assets tab): one combo took every impression
+
+Reddit Max does NOT rotate assets at small budgets -- it elected one combo
+immediately and served it 7,226/7,226: **coach-bot board + "Our robot coach
+scored 9 points today. Beat him or live with that." + Play Now**. All other
+headlines/images: zero impressions. So the 4.0% CTR belongs entirely to the
+robot-coach taunt -- the cleanest possible single-creative result, and the
+proven kickoff lead. Corollary: passive A/B doesn't happen in Max; to learn
+a runner-up, test SEQUENTIALLY (pause the coach-bot headline in the trickle
+for ~a week and let the algorithm elect #2).
+
 ## Kickoff burst (Sep 8–14) — TBD after the Meta test
 
-Reddit ≥ $40 with the same creative family; headline set narrowed to the
-smoke test's per-headline winners. Meta allocation decided by its $40 test.
-Final smoke-test benchmarks to beat: $0.14 CPC, 4.0% CTR, ~$0.25/player.
+Reddit ≥ $40 leading with the PROVEN combo (coach-bot board + robot-coach
+taunt headline); runner-up creative from the trickle's sequential test.
+Meta allocation decided by its $40 test. Benchmarks to beat: $0.14 CPC,
+4.0% CTR, ~$0.25/player.
