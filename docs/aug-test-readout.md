@@ -6,10 +6,11 @@ aug1-test-week.md; verdicts below.
 
 ## Acquisition (Reddit dashboard)
 
-Aug 5 snapshot (final screenshot pending — owner): $25.89 spent, 3,523
-impressions, 148 clicks, **$0.17 CPC, 4.20% CTR** (4–8× the ~0.5–1% feed-ad
-benchmark). Extrapolated final at full $40: ~220–240 clicks. Spend pattern
-suggests the budget exhausted around Aug 7 (daily players drop Aug 8).
+FINAL (owner dashboard, Aug 12): **$39.35 spent, 7,226 impressions, 289
+clicks, $0.14 CPC, 4.0% CTR** (4–8× the ~0.5–1% feed-ad benchmark). Budget
+effectively exhausted around Aug 7 (daily players drop Aug 8). Click →
+playing-device ratio: 216/289 ≈ 75% even before counting organic arrivals —
+the funnel barely leaks.
 
 ## What the money bought (our database, ground truth)
 
@@ -22,7 +23,7 @@ suggests the budget exhausted around Aug 7 (daily players drop Aug 8).
 | Named players on 3+ different days | 2 |
 | Best score / best win streak | 200 (ceiling) / 6 straight |
 | Production errors (Sentry) | 0 |
-| **Cost per playing device** (even attributing only ~2/3) | **≈ $0.25–0.30** |
+| **Cost per playing device** (even attributing only ~2/3) | **≈ $0.27** ($39.35 / ~145–216) |
 
 ## The post-campaign floor (calibrated: it's a handful, not an audience)
 
