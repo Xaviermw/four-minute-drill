@@ -40,6 +40,19 @@ now!" nags forever — ignore them.
 7. Expect a short new-account review; ads may sit "in review" a day or two
    the first time. Normal.
 
+**If Meta blocks the new business account** ("not allowed to advertise" —
+hit 2026-08-07; newborn Business portfolios get auto-flagged): request
+review at facebook.com/accountquality, then don't wait — take the
+personal-profile path, which skips Business Manager entirely and is the
+normal route at this scale:
+
+1. Create the Page from your personal profile: **facebook.com/pages/create**
+   (same name/category/bio as above).
+2. Run ads from your personal Ads Manager: **adsmanager.facebook.com** —
+   every profile gets an ad account; add the card there.
+3. Set the hard cap there too: Billing → Payment settings → **Account
+   spending limit → $40**.
+
 ## 3. X Ads (~5 min)
 
 1. Log in to x.com AS @fourminutedrill, then go to ads.x.com.
