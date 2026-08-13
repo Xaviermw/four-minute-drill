@@ -39,9 +39,12 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
    identical options/seed for the same id.
 3. **The coverage palette** (playOptions.ts): **one spot per skill player,
    every down** (owner rule 2026-07-08). Pass-catchers get a dealt depth; the
-   RB gets ONE run whose gap is dealt 50/50 (`runInside`/`runOutside`,
-   gap-sampled from `run_gap` data via `sampleRushOutcome`: end=outside,
-   guard/tackle/middle=inside); the QB keeper is the fifth spot. Legacy `{kind:"run"}` + the 11-call `ALL_PLAY_CALLS` stay for old
+   RB gets ONE dealt look on a SINGLE draw — inside 35% / outside 35% /
+   **swing pass 30%** (`{kind:"pass",target:"rb",depth:"short"}`, resolved on
+   the back's own receiver book; added 2026-08-13, CALL_ORDER appended). Gap
+   runs sample `run_gap` via `sampleRushOutcome` (end=outside,
+   guard/tackle/middle=inside); the QB keeper is the fifth spot. Still
+   exactly FOUR draws per down. Same-surname chips render F.Last. Legacy `{kind:"run"}` + the 11-call `ALL_PLAY_CALLS` stay for old
    ghost links — CALL_ORDER in ghost.ts is wire format, append-only. The play
    UI is field targets (`.field-target` on DriveFieldVisualizer); `?classic=1`
    is the button-list escape hatch. Balance is deliberately **pro-spend**
