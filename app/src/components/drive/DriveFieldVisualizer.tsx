@@ -133,6 +133,14 @@ export function DriveFieldVisualizer({
             </>
           )}
 
+          {/* The ask zone: what this down demands, shaded LOS -> sticks (or the
+              end zone on goal-to-go). Reads as an area even at phone scale. */}
+          {showScoreboard && (
+            <div
+              className="field-ask"
+              style={{ left: `${progressPct}%`, width: `${Math.max(0, (fdPct ?? 100) - progressPct)}%` }}
+            />
+          )}
           {fdPct !== undefined && (
             <div className="field-fd" style={{ left: `${fdPct}%` }}>
               <span className="field-fd-tag">1ST</span>

@@ -1,0 +1,73 @@
+<!doctype html><html><head>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0b0f17; font-family:"Barlow Condensed",sans-serif; width:360px; }
+.sb { display:grid; grid-template-columns:1fr 1fr; background:#131a28; border-radius:10px; margin:8px; padding:6px 0; }
+.sb div { text-align:center; padding:4px; }
+.sb .l { font-size:9px; letter-spacing:2px; color:#57637a; font-weight:700; }
+.sb .v { font-size:18px; color:#eef2f8; font-weight:700; }
+.sb .v.big { font-size:24px; }
+.sb .v.amber { color:#ffc233; }
+.sb .v.red { color:#ff6b6b; }
+/* THE CAMERA: 45 yards across 344px = 7.6px/yd */
+.cam { position:relative; height:250px; margin:0 8px; border-radius:10px; overflow:hidden;
+  background: repeating-linear-gradient(90deg, #2b8a4b 0 38px, #257a41 38px 76px); border:1px solid rgba(255,255,255,.14); }
+.yard { position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.35); }
+.ylab { position:absolute; top:6px; font-size:13px; color:rgba(255,255,255,.5); font-weight:700; font-style:italic; }
+.ask { position:absolute; top:0; bottom:0; left:76px; width:76px;
+  background:linear-gradient(90deg, rgba(62,160,255,.10), rgba(255,225,0,.18)); }
+.los { position:absolute; top:0; bottom:0; left:76px; width:4px; background:#3ea0ff; box-shadow:0 0 16px rgba(62,160,255,.9); }
+.fd { position:absolute; top:0; bottom:0; left:152px; width:4px; background:#ffe100; box-shadow:0 0 16px rgba(255,225,0,.8); }
+.fdtag { position:absolute; top:8px; left:158px; background:#ffe100; color:#1a1a00; font-weight:800; font-size:11px; padding:1px 5px; border-radius:3px; }
+.ball { position:absolute; left:68px; top:118px; width:26px; height:16px; border-radius:50%/60%;
+  background:radial-gradient(circle at 35% 30%, #c97f43, #6f3512); border:1.5px solid #3d1e0c; }
+svg.routes { position:absolute; inset:0; width:100%; height:100%; }
+svg.routes polyline { fill:none; stroke:rgba(255,255,255,.8); stroke-width:2.5; stroke-dasharray:7 5; }
+svg.routes polyline.g { stroke:rgba(120,240,165,.85); }
+.ring { position:absolute; width:34px; height:34px; border-radius:50%; border:4px solid #5b9dff;
+  background:rgba(8,11,17,.45); box-shadow:0 0 14px rgba(91,157,255,.55); transform:translate(-50%,-50%); }
+.ring::after { content:""; position:absolute; inset:0; margin:auto; width:8px; height:8px; border-radius:50%; background:currentColor; color:#5b9dff; }
+.ring.gold { border-color:#ffe100; box-shadow:0 0 16px rgba(255,225,0,.7); color:#ffe100; }
+.ring.grn { border-color:#34e07a; box-shadow:0 0 14px rgba(52,224,122,.55); color:#34e07a; }
+.chip { position:absolute; transform:translate(-50%,0); background:rgba(8,11,17,.85); border:1px solid rgba(255,255,255,.2);
+  border-radius:6px; padding:2px 8px; font-size:14px; font-weight:600; color:#fff; white-space:nowrap; }
+/* MINIMAP: full 100 yards, 6px tall context strip */
+.mini { position:relative; height:14px; margin:6px 8px 10px; border-radius:7px; overflow:hidden;
+  background:linear-gradient(90deg, #5a1a24 0 6%, #1d5c36 6% 94%, #16295c 94% 100%); }
+.mini .win { position:absolute; top:0; bottom:0; left:14%; width:45%; border:1.5px solid rgba(255,255,255,.75); border-radius:7px; background:rgba(255,255,255,.08); }
+.mini .mb { position:absolute; top:50%; left:24%; width:7px; height:7px; border-radius:50%; background:#c97f43; transform:translate(-50%,-50%); border:1px solid #3d1e0c; }
+.mini .mfd { position:absolute; top:0; bottom:0; left:34%; width:2px; background:#ffe100; }
+.cap { text-align:center; color:#57637a; font-size:11px; letter-spacing:2px; font-weight:700; padding-bottom:8px; }
+</style></head><body>
+<div class="sb">
+  <div><div class="l">DOWN</div><div class="v big amber">2nd &amp; 10</div></div>
+  <div><div class="l">BALL ON</div><div class="v">OWN 24</div></div>
+  <div><div class="l">SCORE</div><div class="v red">Down 3</div></div>
+  <div><div class="l">CLOCK</div><div class="v amber">3:52</div></div>
+</div>
+<div class="cam">
+  <div class="yard" style="left:38px"></div><div class="ylab" style="left:30px">20</div>
+  <div class="yard" style="left:114px"></div><div class="ylab" style="left:106px">30</div>
+  <div class="yard" style="left:190px"></div><div class="ylab" style="left:182px">40</div>
+  <div class="yard" style="left:266px"></div><div class="ylab" style="left:258px">50</div>
+  <div class="yard" style="left:342px"></div>
+  <div class="ask"></div>
+  <svg class="routes" viewBox="0 0 344 250" preserveAspectRatio="none">
+    <polyline class="g" points="60,125 66,140 96,148"/>
+    <polyline points="80,125 130,125 132,60 190,52"/>
+    <polyline points="80,125 150,125 210,125"/>
+    <polyline points="80,125 120,190 240,198"/>
+    <polyline class="g" points="66,110 84,104"/>
+  </svg>
+  <div class="los"></div><div class="fd"></div><div class="fdtag">1ST</div>
+  <div class="ball"></div>
+  <div class="ring grn" style="left:96px; top:148px"></div><div class="chip" style="left:96px; top:170px">Judkins</div>
+  <div class="ring gold" style="left:190px; top:52px"></div><div class="chip" style="left:190px; top:74px">Njoku</div>
+  <div class="ring gold" style="left:210px; top:125px"></div><div class="chip" style="left:210px; top:147px">Switzer</div>
+  <div class="ring gold" style="left:240px; top:198px"></div><div class="chip" style="left:240px; top:220px">Johnson</div>
+  <div class="ring grn" style="left:84px; top:104px"></div><div class="chip" style="left:84px; top:64px">Allen</div>
+</div>
+<div class="mini"><div class="win"></div><div class="mb"></div><div class="mfd"></div></div>
+<div class="cap">FULL DRIVE ▲ CAMERA FOLLOWS THE BALL</div>
+</body></html>

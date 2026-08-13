@@ -948,3 +948,32 @@
     font-size: 0.68rem;
   }
 }
+
+/* ---- Mobile legibility pack (docs/mobile-field-plan.md, option C) ---- */
+/* The ask zone: LOS -> sticks shaded so the down's demand reads as an area. */
+.field-ask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(62, 160, 255, 0.08), rgba(255, 225, 0, 0.15));
+  transition:
+    left 1.1s cubic-bezier(0.22, 0.9, 0.3, 1),
+    width 1.1s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+@media (max-width: 480px) {
+  /* Taller field + thicker anchor lines: every yard gets more pixels where
+     pixels are scarcest. */
+  .field-track {
+    height: clamp(240px, 34vh, 280px);
+  }
+  .field-fd,
+  .field-marker {
+    width: 4px;
+  }
+  /* The Down cell is the situation -- loudest thing on the scoreboard. */
+  .sb-cell:first-child .sb-value {
+    font-size: 1.3rem;
+  }
+}
