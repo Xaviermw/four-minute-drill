@@ -93,7 +93,7 @@ const clampPt = (x: number, y: number): RoutePt => ({
  * for the ground game. `variant` cycles the family per down (deterministic:
  * player hash + play count -- never the engine RNG). */
 function buildRoute(
-  kind: "short" | "medium" | "deep" | "runInside" | "runOutside" | "designedRun",
+  kind: "short" | "medium" | "deep" | "swing" | "runInside" | "runOutside" | "designedRun",
   losX: number,
   targetX: number,
   targetY: number,
@@ -110,6 +110,10 @@ function buildRoute(
   if (kind === "runOutside") {
     // The sweep: swing wide past the target's lane, then turn upfield into it.
     return [clampPt(losX - 3, 50), clampPt(losX - 1, targetY + outSign * 8), clampPt(targetX, targetY)];
+  }
+  if (kind === "swing") {
+    // Out of the backfield: a step behind the QB, arc to the flat, settle.
+    return [clampPt(losX - 2, 50 + outSign * 3), clampPt(losX + 1, targetY + outSign * 6), clampPt(targetX, targetY)];
   }
   if (kind === "designedRun") {
     return [clampPt(losX - 2.5, 50 - outSign * 5), clampPt(losX - 0.5, targetY), clampPt(targetX, targetY)];
@@ -293,7 +297,8 @@ export function DriveScreen() {
       // deterministic, never the engine RNG). The scribble tip lands exactly on
       // the ring (same clamp as the visualizer), and an end-zone shot's route
       // pierces the goal line into the paint -- the SVG overflows for this.
-      const routeKind = call.kind === "pass" ? call.depth : call.kind === "run" ? "runInside" : call.kind;
+      const routeKind =
+        call.kind === "pass" ? (call.target === "rb" ? "swing" : call.depth) : call.kind === "run" ? "runInside" : call.kind;
       const ringX = Math.max(8, Math.min(92, 100 - fp));
       const route = buildRoute(
         routeKind,
@@ -318,11 +323,13 @@ export function DriveScreen() {
                 ? "OUT"
                 : call.kind === "designedRun"
                   ? "QB"
-                  : call.depth === "short"
-                    ? "SHORT"
-                    : call.depth === "medium"
-                      ? "MED"
-                      : "DEEP",
+                  : call.target === "rb"
+                    ? "SWING"
+                    : call.depth === "short"
+                      ? "SHORT"
+                      : call.depth === "medium"
+                        ? "MED"
+                        : "DEEP",
         tagShort:
           call.kind === "run"
             ? "RUN"

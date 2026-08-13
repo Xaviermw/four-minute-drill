@@ -14,9 +14,11 @@ describe("drawPlayOptions (the coverage deal)", () => {
       for (const target of ["wr1", "wr2", "te"]) {
         expect(options.filter((o) => o.kind === "pass" && o.target === target)).toHaveLength(1);
       }
-      // ...exactly one RB run, its gap dealt...
-      const rbRuns = options.filter((o) => o.kind === "runInside" || o.kind === "runOutside");
-      expect(rbRuns).toHaveLength(1);
+      // ...exactly one RB look: a gap run or the dealt swing pass...
+      const rbLooks = options.filter(
+        (o) => o.kind === "runInside" || o.kind === "runOutside" || (o.kind === "pass" && o.target === "rb")
+      );
+      expect(rbLooks).toHaveLength(1);
       // ...and the QB keeper.
       expect(keys).toContain("designedRun");
     }
@@ -26,17 +28,18 @@ describe("drawPlayOptions (the coverage deal)", () => {
     expect(ALL_PLAY_CALLS).toHaveLength(11);
   });
 
-  it("deals every depth and both run gaps across many downs", () => {
+  it("deals every depth and all three RB looks across many downs", () => {
     const depths = new Set<string>();
-    const gaps = new Set<string>();
+    const rbLooks = new Set<string>();
     for (let seed = 0; seed < 500; seed++) {
       for (const call of drawPlayOptions(makeRng(seed))) {
-        if (call.kind === "pass") depths.add(`${call.target}_${call.depth}`);
-        if (call.kind === "runInside" || call.kind === "runOutside") gaps.add(call.kind);
+        if (call.kind === "pass" && call.target !== "rb") depths.add(`${call.target}_${call.depth}`);
+        if (call.kind === "runInside" || call.kind === "runOutside") rbLooks.add(call.kind);
+        if (call.kind === "pass" && call.target === "rb") rbLooks.add("swing");
       }
     }
     expect(depths.size).toBe(9); // 3 receivers x 3 depths all reachable
-    expect(gaps.size).toBe(2); // both run looks get dealt
+    expect(rbLooks.size).toBe(3); // inside, outside, and the swing all get dealt
   });
 
   it("consumes exactly four RNG draws per deal (replay alignment)", () => {

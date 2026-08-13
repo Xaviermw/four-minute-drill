@@ -29,6 +29,7 @@ const CALL_ORDER: PlayCall[] = [
   { kind: "spike" },
   { kind: "runInside" },
   { kind: "runOutside" },
+  { kind: "pass", target: "rb", depth: "short" }, // the dealt swing (2026-08-13)
 ];
 const CALL_INDEX = new Map(CALL_ORDER.map((c, i) => [playCallKey(c), i]));
 

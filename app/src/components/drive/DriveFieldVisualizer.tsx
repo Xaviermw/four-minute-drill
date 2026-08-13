@@ -9,6 +9,7 @@ const ARIA_KIND: Record<string, string> = {
   SHORT: "short route",
   MED: "medium route",
   DEEP: "deep route",
+  SWING: "swing pass out of the backfield",
   IN: "inside run",
   OUT: "outside run",
   QB: "quarterback keeper",

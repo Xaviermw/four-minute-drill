@@ -50,8 +50,9 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
                 <h3>🎲 How plays are decided</h3>
                 <p>
                   Every down, your whole offense is on the field — <strong>one spot per player</strong>. Each
-                  receiver's <strong>depth is dealt</strong>, your back's run look is dealt too (inside or outside,
-                  whatever the front gives), and the QB keeper is always there. Tap anyone.
+                  receiver's <strong>depth is dealt</strong>, your back's look is dealt too (inside, outside, or
+                  slipping out for a swing pass — whatever the front gives), and the QB keeper is always there.
+                  Tap anyone.
                 </p>
                 <p>
                   The result is sampled from that player’s <strong>actual historical plays in a similar
