@@ -192,6 +192,13 @@ export function DriveScreen() {
   if (FIELD_CALLS && !resolving) {
     const lineToGain = live.fieldPosition - live.distance;
     const seated: FieldTarget[] = [];
+    // Same-surname rosters (two Johnsons happen) get first-initial
+    // disambiguation -- with tags gone, the name IS the chip.
+    const lastCounts = new Map<string, number>();
+    for (const slot of ["qb", "rb", "wr1", "wr2", "te"] as const) {
+      const l = roster[slot].displayName.trim().split(/\s+/).slice(-1)[0];
+      lastCounts.set(l, (lastCounts.get(l) ?? 0) + 1);
+    }
     // Open field: ground seats FIRST, anchored at the line where runs make
     // football sense, and the passes flex deeper around them ("the route
     // seats deeper" is always sensible, "the QB runs backward" never is --
@@ -292,7 +299,9 @@ export function DriveScreen() {
         lane = best.lane;
         fp = best.fp;
       }
-      const last = player.displayName.split(" ").slice(-1)[0];
+      const parts = player.displayName.trim().split(/\s+/);
+      const bare = parts[parts.length - 1];
+      const last = (lastCounts.get(bare) ?? 0) > 1 && parts.length > 1 ? `${parts[0][0]}.${bare}` : bare;
       // Chalk: cycle the route family per down (player hash + play count --
       // deterministic, never the engine RNG). The scribble tip lands exactly on
       // the ring (same clamp as the visualizer), and an end-zone shot's route
