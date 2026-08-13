@@ -487,22 +487,6 @@
   top: auto;
   bottom: calc(100% - 4px);
 }
-.field-target-chip b {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  padding: 0 3px;
-  border-radius: 3px;
-  background: rgba(91, 157, 255, 0.18);
-  color: var(--sky);
-}
-.field-target-chip b.tag-run {
-  background: rgba(52, 224, 122, 0.16);
-}
-.field-target-chip b.tag-run {
-  color: var(--grass-bright);
-}
 .field-target-chip i {
   font-style: normal;
   font-family: var(--font-display);
@@ -524,27 +508,13 @@
 .field-target.endzone .field-target-chip {
   border-color: rgba(255, 225, 0, 0.6);
 }
-/* Phones: the field is ~250px of turf, so the chips slim down and the pass
-   tags abbreviate (SHORT -> S). */
-.field-target-chip .tag-abbr {
-  display: none;
-}
 @media (max-width: 430px) {
   .field-target-chip {
     gap: 3px;
     padding: 1px 4px;
   }
-  .field-target-chip b {
-    font-size: 0.6rem;
-  }
   .field-target-chip i {
     font-size: 0.64rem;
-  }
-  .field-target-chip .tag-full {
-    display: none;
-  }
-  .field-target-chip .tag-abbr {
-    display: inline;
   }
 }
 

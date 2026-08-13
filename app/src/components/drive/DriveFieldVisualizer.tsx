@@ -3,6 +3,18 @@ import "./drive.css";
 
 const YARD_TICKS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
+/** Visible depth tags are gone (owner call 2026-08-13: position + route shape
+ * carry it) -- screen readers and the layout audit still get the semantics. */
+const ARIA_KIND: Record<string, string> = {
+  SHORT: "short route",
+  MED: "medium route",
+  DEEP: "deep route",
+  IN: "inside run",
+  OUT: "outside run",
+  QB: "quarterback keeper",
+  RUN: "run",
+};
+
 /** A tappable play-call target seated on the field (spike/field-calls). */
 export interface FieldTarget {
   key: string;
@@ -165,6 +177,8 @@ export function DriveFieldVisualizer({
             <button
               key={t.key}
               type="button"
+              aria-label={`${t.label} — ${ARIA_KIND[t.tag] ?? t.tag}`}
+              data-depth={t.tag === "SHORT" ? "short" : t.tag === "MED" ? "medium" : t.tag === "DEEP" ? "deep" : undefined}
               className={`field-target ${t.beyondSticks ? "sticks" : ""} ${t.endZone ? "endzone" : ""} ${
                 t.chipSide === "above" ? "chip-above" : ""
               }`}
@@ -178,10 +192,6 @@ export function DriveFieldVisualizer({
             >
               <span className={`field-target-ring ${t.tagClass}`} aria-hidden="true" />
               <span className="field-target-chip">
-                <b className={t.tagClass}>
-                  <span className="tag-full">{t.tag}</span>
-                  <span className="tag-abbr">{t.tagShort}</span>
-                </b>
                 <i>{t.label}</i>
               </span>
             </button>

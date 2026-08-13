@@ -89,6 +89,13 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
     }
   }
 
+  // NOTE deliberately absent: a short<med<deep ring-ordering assertion. It
+  // was written when chips carried visible depth tags that could contradict
+  // position; the owner then removed the tags (names only), so position
+  // can't lie -- and duplicate-depth deals (two SHORTs) make strict ordering
+  // geometrically unsatisfiable across three lanes. Seating still PREFERS
+  // depth bands (DriveScreen offsets); spacing outranks ordering.
+
   // Red-zone states are the historically broken ones -- keep a picture.
   const redZone = /AWAY (\d+)/.exec(situation);
   if (redZone && Number(redZone[1]) <= 15) {

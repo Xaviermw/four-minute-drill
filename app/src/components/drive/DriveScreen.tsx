@@ -246,8 +246,26 @@ export function DriveScreen() {
       // Ground: forward first, backfield as relief, then deep-forward
       // fallbacks -- when backed up (fp near 90) the backfield clamps to
       // nothing (audit-caught 9-yd give-up at OWN 10), so forward is the only
-      // real room.
-      const offsets = fp <= 3 ? [0, 8, 16, 24, 32] : isGround ? [0, -8, -16, 8, 16, -24, -32] : [0, -8, -16, -24, -32];
+      // real room. Passes PREFER their depth band (short nudges stay short,
+      // medium mid, deep deeper -- keeps typical layouts honest to the dealt
+      // depth) with wide fallbacks after the band exhausts: duplicate-depth
+      // deals (two SHORTs) genuinely can't fit one band across three lanes,
+      // and with visible depth tags removed (owner call) an out-of-band seat
+      // can't contradict a label -- spacing beats strict ordering.
+      // Compressed red-zone seats (rawFP < 4) keep the wide slide range; the
+      // EZ suffix carries the truth there.
+      const offsets =
+        fp <= 3
+          ? [0, 8, 16, 24, 32]
+          : isGround
+            ? [0, -8, -16, 8, 16, -24, -32]
+            : call.kind === "pass" && rawFP >= 4
+              ? call.depth === "short"
+                ? [0, -4, -7, -12, -18]
+                : call.depth === "medium"
+                  ? [0, -6, 2, -9, -16, -22]
+                  : [0, -8, -16, -24, -32]
+              : [0, -8, -16, -24, -32];
       const base = fp;
       let lane = home;
       let placed = false;
@@ -339,8 +357,9 @@ export function DriveScreen() {
     // their rings.
     const chipSpan = (t: FieldTarget) => {
       // Calibrated against measured chips (audit diagnostics): ~5.2px/char +
-      // 26px of tag/padding at the mobile sizes, on a ~250px turf.
-      const w = (26 + 5.2 * (t.tagShort.length + t.label.length)) / 2.5; // px -> % of turf width
+      // ~20px padding at the mobile sizes, on a ~250px turf. Chips are
+      // name-only now (tags removed, owner call 2026-08-13).
+      const w = (20 + 5.2 * t.label.length) / 2.5; // px -> % of turf width
       const left = Math.max(8, Math.min(92, 100 - t.fieldPosition)); // keep in sync with the visualizer clamp
       return { lo: left - (left / 100) * w, hi: left + (1 - left / 100) * w };
     };
