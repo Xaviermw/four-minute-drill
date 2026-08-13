@@ -41,6 +41,11 @@ function describePlay(
   outcomeRole: PlayerRole,
   name: string,
   yards: number,
+  /** Yards needed for the CURRENT first down -- "moves the chains" phrasing
+   * must come from this, never outcome.isFirstDown (that's whether the
+   * sampled play converted in its ORIGINAL game: owner-caught a "3 yards and
+   * a first down" call on 4th & 6). */
+  distance: number,
   outcome: OutcomeRecord,
   isScramble: boolean,
   rng: RNG,
@@ -94,7 +99,7 @@ function describePlay(
         `Big play! ${name} hauls it in and turns it into ${yards} yards.`,
       ]);
     }
-    if (outcome.isFirstDown) {
+    if (yards >= distance) {
       return pick(rng, [
         `${qbName} finds ${name} to move the chains -- ${yards} yards and a first down.`,
         `${name} comes down with it for ${yards} yards, plenty for the first down.`,
@@ -113,7 +118,7 @@ function describePlay(
   if (yards >= BIG_GAIN_YARDS) {
     return pick(rng, [`${name} breaks loose for a big ${yards}-yard run!`, `${name} bursts through the line for ${yards} yards!`]);
   }
-  if (outcome.isFirstDown) {
+  if (yards >= distance) {
     return pick(rng, [`${name} grinds out ${yards} yards and a first down.`, `${name} runs for ${yards} yards, enough to move the chains.`]);
   }
   return pick(rng, [`${name} runs for ${yards} yards.`, `${name} picks up ${yards} yards on the ground.`]);
@@ -217,7 +222,7 @@ export function resolvePlay(
     ballCarrier: ballCarrierSlot,
     ballCarrierName,
     outcome: effectiveOutcome,
-    description: describePlay(outcomeRole, ballCarrierName, effectiveOutcome.yards, effectiveOutcome, isScramble, rng, roster.qb.displayName),
+    description: describePlay(outcomeRole, ballCarrierName, effectiveOutcome.yards, distance, effectiveOutcome, isScramble, rng, roster.qb.displayName),
   };
 }
 
