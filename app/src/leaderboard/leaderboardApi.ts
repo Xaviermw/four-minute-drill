@@ -341,3 +341,58 @@ export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as StreakRow[];
 }
+
+// ---- Season Score (docs/season-score-spec.md) ------------------------------
+
+/** Season window -- keep in lockstep with migration 011's view constants. */
+export const SEASON_START = "2026-09-10";
+export const SEASON_END = "2027-01-05";
+export const SEASON_LABEL = "2026 Season";
+
+export function isSeasonLive(challengeId: string): boolean {
+  return challengeId >= SEASON_START && challengeId <= SEASON_END;
+}
+
+export interface SeasonRow {
+  user_id: string;
+  name: string;
+  season_points: number;
+  days_played: number;
+  last_played_at: string;
+}
+
+/** The season table: cumulative daily-drill points, named players only
+ * (Anonymous is anti-social-proof -- same rule as streaks). */
+export async function fetchSeasonTable(limit = 100): Promise<SeasonRow[]> {
+  const supabase = await getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("season_totals")
+    .select("*")
+    .neq("name", "Anonymous")
+    .order("season_points", { ascending: false })
+    .order("days_played", { ascending: false })
+    .order("last_played_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SeasonRow[];
+}
+
+/** The viewer's own season line + rank among named players (null rank when
+ * unnamed -- the claim nudge). Null when they've never played a season day. */
+export async function fetchMySeason(): Promise<{ row: SeasonRow; rank: number | null } | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+  const { data, error } = await supabase.from("season_totals").select("*").eq("user_id", userId).maybeSingle();
+  if (error || !data) return null;
+  const row = data as SeasonRow;
+  if (!row.name || row.name === "Anonymous") return { row, rank: null };
+  const { count } = await supabase
+    .from("season_totals")
+    .select("user_id", { count: "exact", head: true })
+    .neq("name", "Anonymous")
+    .gt("season_points", row.season_points);
+  return { row, rank: (count ?? 0) + 1 };
+}

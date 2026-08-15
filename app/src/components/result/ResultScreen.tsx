@@ -16,6 +16,7 @@ import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
 import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
+import { SeasonStrip } from "./SeasonStrip";
 import { burstConfetti } from "../../utils/confetti";
 import { useCountUp } from "../../utils/useCountUp";
 import type { DriveLog } from "../../types/simResult";
@@ -52,6 +53,7 @@ export function ResultScreen() {
   const [replayError, setReplayError] = useState<string | null>(null);
   const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
   const [daily, setDaily] = useState<{ days: number; best: number; state: DailyStreakState } | null>(null);
+  const [seasonTick, setSeasonTick] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
   // Was this the rookie's first-ever drive? Captured at mount, BEFORE the record
   // effect graduates them -- drives the "Play Today's Drill" conversion CTA.
@@ -200,8 +202,17 @@ export function ResultScreen() {
         roster={roster}
         onView={openLeaderboard}
         challengeId={isDaily ? challengeId : null}
-        onSubmitted={isDaily ? markSubmitted : undefined}
+        onSubmitted={
+          isDaily
+            ? () => {
+                markSubmitted();
+                setSeasonTick((t) => t + 1); // the season line updates the moment the score lands
+              }
+            : undefined
+        }
       />
+
+      {isDaily && <SeasonStrip challengeId={challengeId} refreshKey={seasonTick} onView={openLeaderboard} />}
 
       <SharePanel driveLog={driveLog} roster={roster} />
 

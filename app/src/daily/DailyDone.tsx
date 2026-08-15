@@ -9,6 +9,7 @@ import { getPricing } from "../draft/pricing";
 import { fetchDailyFieldSummary } from "../leaderboard/leaderboardApi";
 import { useMode } from "../state/ModeProvider";
 import { DailyStreakBadge } from "../components/result/StreakBanners";
+import { SeasonStrip } from "../components/result/SeasonStrip";
 import { DriveRecap } from "../components/result/DriveRecap";
 import { PlayerCard } from "../components/draft/PlayerCard";
 import { formatBallOn, formatClock } from "../utils/formatting";
@@ -71,6 +72,7 @@ export function DailyDone({ record }: { record: DailyRecord }) {
       </div>
 
       <DailyStreakBadge days={streak.days} best={streak.best} state={streak.state} />
+      <SeasonStrip challengeId={challengeId} refreshKey={0} onView={openLeaderboard} />
 
       <p className="daily-final-spot">
         {driveLog.won

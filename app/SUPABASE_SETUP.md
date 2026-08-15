@@ -208,3 +208,11 @@ first visit and sticky thereafter. `record_drive` gained `p_source` (the old
 3-arg signature was dropped -- defaulted params overload, they don't
 replace). The streak row keeps its FIRST source forever. Cohort question it
 answers: `select source, count(*), avg(best_wins) from streaks group by 1`.
+
+## 7. Season Score (migration 011)
+
+`season_totals` is a read-only view: per user, the sum of their best daily
+score per day within the season window (constants in the view: 2026-09-10 ..
+2027-01-05 -- update both the view and `SEASON_START/END` in
+leaderboardApi.ts together for a new season), days played, latest name.
+Losses count their marginal points. Public select via security_invoker.

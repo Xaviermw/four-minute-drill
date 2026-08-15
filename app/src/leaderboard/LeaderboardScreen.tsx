@@ -12,17 +12,23 @@ import { useModalBehavior } from "../utils/useModalBehavior";
 import {
   fetchDailyLongestDrives,
   fetchDailyScores,
+  fetchMySeason,
   fetchMyStreak,
+  fetchSeasonTable,
   fetchTopScores,
   fetchTopStreaks,
   isNetworkError,
+  isSeasonLive,
+  SEASON_LABEL,
+  SEASON_START,
+  type SeasonRow,
   type LeaderboardRow,
   type StreakRow,
 } from "./leaderboardApi";
 import { getCurrentUserId, isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
-type Tab = "daily" | "score" | "streak";
+type Tab = "daily" | "season" | "score" | "streak";
 
 function scoredDate(iso: string): string {
   const d = new Date(iso);
@@ -139,6 +145,8 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
   const [streaks, setStreaks] = useState<StreakRow[] | null>(null);
   const [myStreak, setMyStreak] = useState<StreakRow | null>(null);
+  const [season, setSeason] = useState<SeasonRow[] | null>(null);
+  const [mySeason, setMySeason] = useState<{ row: SeasonRow; rank: number | null } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -151,6 +159,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
       setDailyDrives([]);
       setRows([]);
       setStreaks([]);
+      setSeason([]);
       return;
     }
     let cancelled = false;
@@ -171,6 +180,8 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     fetchTopScores(100).then((d) => !cancelled && setRows(d)).catch(fail);
     fetchTopStreaks(100).then((d) => !cancelled && setStreaks(d)).catch(fail);
     fetchMyStreak().then((d) => !cancelled && setMyStreak(d)).catch(() => {});
+    fetchSeasonTable(100).then((d) => !cancelled && setSeason(d)).catch(fail);
+    fetchMySeason().then((d) => !cancelled && setMySeason(d)).catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -197,7 +208,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const activeData = tab === "daily" ? daily : tab === "score" ? rows : streaks;
+  const activeData = tab === "daily" ? daily : tab === "season" ? season : tab === "score" ? rows : streaks;
 
   return (
     <div className="leaderboard-overlay" role="dialog" aria-modal="true" aria-label="Leaderboard" onClick={onClose}>
@@ -213,6 +224,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           {(
             [
               ["daily", "Today's Drill"],
+              ["season", "Season"],
               ["score", "All-Time"],
               ["streak", "Win Streaks"],
             ] as [Tab, string][]
@@ -262,6 +274,56 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                   <p className="leaderboard-subnote">How far each drive got — scoreless runs count too.</p>
                   <DriveList rows={dailyDrives} userId={userId} loadingId={loadingId} onPlay={playLineup} />
                 </div>
+              )}
+            </>
+          )}
+
+          {/* ---- Season (cumulative daily-drill points) ---- */}
+          {tab === "season" && season !== null && (
+            <>
+              <p className="leaderboard-subnote">
+                {isSeasonLive(challengeId)
+                  ? `${SEASON_LABEL} · every daily drill adds to your total · a loss still banks its yards`
+                  : `The ${SEASON_LABEL} starts ${formatChallengeDate(SEASON_START)} — every daily drill from opening day counts.`}
+              </p>
+              {mySeason && (
+                <p className={`lb-claim-nudge ${mySeason.rank !== null ? "is-season-me" : ""}`}>
+                  {mySeason.rank !== null ? (
+                    <>
+                      Your season: <b>{mySeason.row.season_points} pts</b> · {mySeason.row.days_played} drill
+                      {mySeason.row.days_played === 1 ? "" : "s"} · <b>#{mySeason.rank}</b>
+                    </>
+                  ) : (
+                    <>
+                      You've banked <b>{mySeason.row.season_points} pts</b> over {mySeason.row.days_played} drill
+                      {mySeason.row.days_played === 1 ? "" : "s"} — but it's unlisted. Put a name on your next
+                      daily to claim your spot on the season table.
+                    </>
+                  )}
+                </p>
+              )}
+              {season.length === 0 ? (
+                <p className="leaderboard-empty">
+                  {isSeasonLive(challengeId)
+                    ? "No season scores yet — today's drill is the first chance to get on the table."
+                    : "The table fills from opening day. Play the dailies now to warm up."}
+                </p>
+              ) : (
+                <ol className="leaderboard-list">
+                  {season.map((row, i) => (
+                    <li className={`streak-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.user_id}>
+                      <span className="lb-rank">{i + 1}</span>
+                      <span className="lb-name">
+                        {row.name}
+                        {userId && row.user_id === userId && <span className="lb-you">you</span>}
+                      </span>
+                      <span className="lb-wins">
+                        {row.days_played} drill{row.days_played === 1 ? "" : "s"}
+                      </span>
+                      <span className="lb-score">{row.season_points}</span>
+                    </li>
+                  ))}
+                </ol>
               )}
             </>
           )}
