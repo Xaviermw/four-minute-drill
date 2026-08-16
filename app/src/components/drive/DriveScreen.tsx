@@ -13,6 +13,7 @@ import { useGameDispatch, useGameState } from "../../state/GameStateProvider";
 import { useMode } from "../../state/ModeProvider";
 import { isRookie } from "../../state/rookie";
 import { ghostDoneAtClock, ghostStepAtClock } from "../../share/ghost";
+import { nameParts } from "../../share/shareText";
 import { useGhost } from "../../share/GhostProvider";
 import { formatBallOn, formatClock } from "../../utils/formatting";
 import type { PlayResult } from "../../types/simResult";
@@ -196,7 +197,7 @@ export function DriveScreen() {
     // disambiguation -- with tags gone, the name IS the chip.
     const lastCounts = new Map<string, number>();
     for (const slot of ["qb", "rb", "wr1", "wr2", "te"] as const) {
-      const l = roster[slot].displayName.trim().split(/\s+/).slice(-1)[0];
+      const l = nameParts(roster[slot].displayName).slice(-1)[0];
       lastCounts.set(l, (lastCounts.get(l) ?? 0) + 1);
     }
     // Open field: ground seats FIRST, anchored at the line where runs make
@@ -299,7 +300,7 @@ export function DriveScreen() {
         lane = best.lane;
         fp = best.fp;
       }
-      const parts = player.displayName.trim().split(/\s+/);
+      const parts = nameParts(player.displayName);
       const bare = parts[parts.length - 1];
       const last = (lastCounts.get(bare) ?? 0) > 1 && parts.length > 1 ? `${parts[0][0]}.${bare}` : bare;
       // Chalk: cycle the route family per down (player hash + play count --

@@ -109,9 +109,20 @@ export function buildDriveCode(driveLog: DriveLog): string {
   return letters.join("");
 }
 
+/** Generational suffixes are not surnames -- "Odell Beckham Jr." is a
+ * Beckham (owner-caught a chip reading just "Jr."). */
+const NAME_SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
+
+/** Name split into [first, ..., last] with suffixes dropped. Always >= 1 part. */
+export function nameParts(displayName: string): string[] {
+  const parts = displayName.trim().split(/\s+/);
+  while (parts.length > 1 && NAME_SUFFIX.test(parts[parts.length - 1])) parts.pop();
+  return parts;
+}
+
 /** First initial + last name, e.g. "Lamar Jackson" -> "L.Jackson". */
 function shortName(displayName: string): string {
-  const parts = displayName.trim().split(/\s+/);
+  const parts = nameParts(displayName);
   if (parts.length < 2) return displayName;
   const last = parts[parts.length - 1];
   return `${parts[0][0]}.${last}`;

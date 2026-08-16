@@ -306,7 +306,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                 <p className="leaderboard-empty">
                   {isSeasonLive(challengeId)
                     ? "No season scores yet — today's drill is the first chance to get on the table."
-                    : "The table fills from opening day. Play the dailies now to warm up."}
+                    : `Today's drill doesn't count yet — the ${SEASON_LABEL} kicks off ${formatChallengeDate(SEASON_START)}. From opening day, every daily adds to your season total. Warm up now.`}
                 </p>
               ) : (
                 <ol className="leaderboard-list">

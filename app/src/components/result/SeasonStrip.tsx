@@ -35,11 +35,13 @@ export function SeasonStrip({
   if (!isLeaderboardEnabled) return null;
 
   if (!live) {
+    const daysOut = Math.max(0, Math.ceil((Date.parse(`${SEASON_START}T04:00:00Z`) - Date.now()) / 86_400_000));
     return (
       <div className="season-strip pre">
         <span className="season-strip-label">{SEASON_LABEL}</span>
         <span className="season-strip-body">
-          Starts {formatChallengeDate(SEASON_START)} — every daily drill from opening day adds to your total.
+          Kicks off in <b>{daysOut} day{daysOut === 1 ? "" : "s"}</b> ({formatChallengeDate(SEASON_START)}). Today
+          is a warm-up — from opening day, every daily adds to your season total.
         </span>
       </div>
     );
