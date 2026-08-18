@@ -63,13 +63,16 @@ At kickoff-scale traffic (~2,000 visitors), today's rates alone would seed
 4. Budget beyond $100: not yet. Re-evaluate after kickoff week with
    attribution-clean cohort data.
 
-## Trickle-era retention check (Aug 18, owner-name excluded)
+## Retention, full window Aug 1–18 (owner-name excluded; corrected)
 
-Named daily players since the trickle began Aug 12: **17** (StopPunting is
-the owner -- excluded from all cohort math from here on). **6 played 2+
-different days (35%)**; 1 regular at 3+ days. Daily player count climbed
-2 → 5-6/day. Device level: 48/62 Reddit-tagged devices (77%) show activity
-beyond their first drive; Meta cohort tiny (3) but same shape. Nearly double
-the smoke test's ~20% multi-day rate, pre-season, before Season Score. The
-"soft spot" is closing as targeting improves; Season Score is the compounding
-mechanism on top.
+An earlier cut counted only from Aug 12 and split players whose days
+straddled the smoke test and the trickle (owner caught it). Full window,
+StopPunting (= owner) excluded: **37 named daily players; 13 played 2+
+different days (35%); 3 played 3+; Khanson25 has played 10 distinct days
+(Aug 5–15) -- a formed daily habit, pre-season, from a $0.14 click.**
+Several 2-day players have LONG gaps (tjoconn Aug 2→17, Gb Aug 7→17):
+latent recall, not consecutive-day-then-gone -- exactly what a season
+table converts. Device level: 48/62 Reddit-tagged devices (77%) show
+activity beyond their first drive; Meta cohort tiny (3) but same shape.
+Daily player count climbed 2 → 5-6/day. The smoke test's "soft spot" was
+partly a measurement-window artifact; the habit signal is real.
