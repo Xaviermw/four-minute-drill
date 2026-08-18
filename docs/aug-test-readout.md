@@ -62,3 +62,14 @@ At kickoff-scale traffic (~2,000 visitors), today's rates alone would seed
    table keeps it.
 4. Budget beyond $100: not yet. Re-evaluate after kickoff week with
    attribution-clean cohort data.
+
+## Trickle-era retention check (Aug 18, owner-name excluded)
+
+Named daily players since the trickle began Aug 12: **17** (StopPunting is
+the owner -- excluded from all cohort math from here on). **6 played 2+
+different days (35%)**; 1 regular at 3+ days. Daily player count climbed
+2 → 5-6/day. Device level: 48/62 Reddit-tagged devices (77%) show activity
+beyond their first drive; Meta cohort tiny (3) but same shape. Nearly double
+the smoke test's ~20% multi-day rate, pre-season, before Season Score. The
+"soft spot" is closing as targeting improves; Season Score is the compounding
+mechanism on top.
