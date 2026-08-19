@@ -50,9 +50,22 @@ const DENYLIST: string[] = [
   "shit",
 ];
 
+// Vulgarities that are safe as WHOLE-WORD matches but not as substrings
+// ("ass" lives inside Cassidy/Bassett/Hassan). The normalized name has no
+// separators, so "whole word" here means the term appears at a position where
+// the surrounding letters don't extend it into an innocent longer word: we
+// match the term followed by a plausible suffix/boundary, checked against the
+// innocent list below. First real case: "thisgamesucksasshole" (2026-08-19).
+const WORDLIST: string[] = ["asshole", "assholes", "bitch", "cunt", "dick", "cock", "whore", "slut"];
+const INNOCENT: string[] = ["dickson", "dickens", "dickinson", "dickerson", "cocker", "cockburn", "hancock", "hitchcock", "peacock", "babcock", "woodcock"];
+
 /** True if the name is acceptable for the public leaderboard. */
 export function isNameAllowed(name: string): boolean {
   const normalized = normalizeName(name);
   if (!normalized) return false; // no letters at all -> reject
-  return !DENYLIST.some((term) => normalized.includes(term));
+  if (DENYLIST.some((term) => normalized.includes(term))) return false;
+  // Word-form vulgarities: reject unless the hit is explained by an innocent
+  // surname that contains it.
+  const stripped = INNOCENT.reduce((s, ok) => s.split(ok).join(""), normalized);
+  return !WORDLIST.some((term) => stripped.includes(term));
 }
