@@ -8,6 +8,15 @@ describe("name filter", () => {
     }
   });
 
+  it("blocks word-form vulgarities without tripping on innocent surnames", () => {
+    for (const name of ["thisgamesucksasshole", "A$$hole", "dickhead", "B1tch"]) {
+      expect(isNameAllowed(name)).toBe(false);
+    }
+    for (const name of ["Cassidy", "Hassan", "Dickson", "Hitchcock", "Dickie", "Scunthorpe"]) {
+      expect(isNameAllowed(name)).toBe(true);
+    }
+  });
+
   it("blocks severe terms, including leetspeak and spacing evasions", () => {
     for (const name of ["n1gg3r", "f u c k", "F4GGOT", "$hit", "H1TLER"]) {
       expect(isNameAllowed(name)).toBe(false);
