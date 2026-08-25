@@ -390,3 +390,66 @@
     order: 3;
   }
 }
+
+/* Opening-day reminder form inside the pre-season strip. */
+.season-strip.pre {
+  flex-wrap: wrap;
+}
+.season-remind {
+  flex-basis: 100%;
+  order: 4; /* after the countdown copy (which is order:3 on phones) */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+.season-remind-input {
+  flex: 1 1 11rem;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  padding: 0.45rem 0.7rem;
+}
+.season-remind-input:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+.season-remind-button {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bg-0);
+  background: var(--amber);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.season-remind-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.season-remind-fine {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  color: var(--dim);
+}
+.season-remind-error {
+  flex-basis: 100%;
+  font-size: 0.8rem;
+  color: var(--loss);
+}
+.season-remind-done {
+  flex-basis: 100%;
+  order: 4;
+  font-size: 0.85rem;
+  color: var(--win);
+}

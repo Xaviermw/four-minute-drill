@@ -9,7 +9,7 @@ aliases, so the data stays faithful to when they last played.
 import nfl_data_py as nfl
 import pandas as pd
 
-_SEASONS = list(range(2015, 2026))
+_SEASONS = list(range(2015, 2027))  # 2026 preseason rosters win: post-offseason teams/jerseys
 _cache = None
 
 

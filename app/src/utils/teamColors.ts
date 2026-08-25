@@ -48,6 +48,7 @@ const ALIASES: Record<string, string> = {
   LA: "LAR",
   JAC: "JAX",
   WSH: "WAS",
+  AZ: "ARI", // nflverse switched Arizona's abbr in the 2026 rosters
 };
 
 const NEUTRAL: TeamColor = { primary: "#3a4356", secondary: "#8c99ad", name: "" };

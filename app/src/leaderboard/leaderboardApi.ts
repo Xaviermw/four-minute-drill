@@ -396,3 +396,33 @@ export async function fetchMySeason(): Promise<{ row: SeasonRow; rank: number | 
     .gt("season_points", row.season_points);
   return { row, rank: (count ?? 0) + 1 };
 }
+
+// ---- Opening-day reminder (migration 013) -----------------------------------
+
+const REMINDER_KEY = "fmd_reminder";
+
+/** Has this device already asked for the opening-day email? */
+export function hasReminder(): boolean {
+  try {
+    return localStorage.getItem(REMINDER_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Store an email for ONE opening-day reminder. Write-only table; duplicates
+ * (409) count as success -- they already asked. Throws on other failures. */
+export async function subscribeReminder(email: string): Promise<void> {
+  const supabase = await getSupabase();
+  if (!supabase) throw new Error("Reminders aren't configured.");
+  const clean = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean) || clean.length > 254) throw new Error("That doesn't look like an email.");
+  await ensureAnonSession();
+  const { error } = await supabase.from("reminders").insert({ email: clean, source: getFirstTouchSource() });
+  if (error && error.code !== "23505") throw new Error(error.message); // 23505 = already on the list
+  try {
+    localStorage.setItem(REMINDER_KEY, "1");
+  } catch {
+    /* fine */
+  }
+}

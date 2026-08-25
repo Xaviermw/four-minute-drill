@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
-import { fetchMySeason, isSeasonLive, SEASON_LABEL, SEASON_START, type SeasonRow } from "../../leaderboard/leaderboardApi";
+import {
+  fetchMySeason,
+  hasReminder,
+  isNetworkError,
+  isSeasonLive,
+  SEASON_LABEL,
+  SEASON_START,
+  subscribeReminder,
+  type SeasonRow,
+} from "../../leaderboard/leaderboardApi";
 import { isLeaderboardEnabled } from "../../leaderboard/supabaseClient";
 
 /**
@@ -20,6 +29,26 @@ export function SeasonStrip({
 }) {
   const [mine, setMine] = useState<{ row: SeasonRow; rank: number | null } | null | undefined>(undefined);
   const live = isSeasonLive(challengeId);
+  // Opening-day reminder (owner call 2026-08-24): one email, no list. State
+  // is per device -- once asked, the form never reappears.
+  const [email, setEmail] = useState("");
+  const [reminder, setReminder] = useState<"idle" | "saving" | "done" | "error">(() => (hasReminder() ? "done" : "idle"));
+  const [reminderError, setReminderError] = useState<string | null>(null);
+
+  async function askForReminder(e: React.FormEvent) {
+    e.preventDefault();
+    setReminder("saving");
+    setReminderError(null);
+    try {
+      await subscribeReminder(email);
+      setReminder("done");
+    } catch (err) {
+      setReminder("error");
+      setReminderError(
+        isNetworkError(err) ? "Can't reach the server right now — try again in a bit." : err instanceof Error ? err.message : "Something went wrong."
+      );
+    }
+  }
 
   useEffect(() => {
     if (!isLeaderboardEnabled || !live) return;
@@ -43,6 +72,26 @@ export function SeasonStrip({
           Kicks off in <b>{daysOut} day{daysOut === 1 ? "" : "s"}</b> ({formatChallengeDate(SEASON_START)}). Today
           is a warm-up — from opening day, every daily adds to your season total.
         </span>
+        {reminder === "done" ? (
+          <span className="season-remind-done">✓ You're on the list — one email on opening day, then we forget you.</span>
+        ) : (
+          <form className="season-remind" onSubmit={askForReminder}>
+            <input
+              type="email"
+              className="season-remind-input"
+              placeholder="you@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              aria-label="Email for the opening-day reminder"
+            />
+            <button type="submit" className="season-remind-button" disabled={reminder === "saving"}>
+              {reminder === "saving" ? "…" : "Remind me on opening day"}
+            </button>
+            <span className="season-remind-fine">One email. That's it.</span>
+            {reminderError && <span className="season-remind-error">{reminderError}</span>}
+          </form>
+        )}
       </div>
     );
   }
