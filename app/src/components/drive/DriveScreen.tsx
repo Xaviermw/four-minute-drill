@@ -31,7 +31,7 @@ const FIELD_CALLS = typeof window === "undefined" || !window.location.search.inc
  * A seat, not a promise -- the engine's depth/gap tiers are unchanged. Ground
  * game sits at/behind the line: keeper tightest, inside at the line, outside
  * a touch wider. */
-const SEAT_YARDS = { short: 6, medium: 14, deep: 24, run: 3, runInside: 2, runOutside: 4, designedRun: 1 } as const;
+const SEAT_YARDS = { short: 6, medium: 14, deep: 24, swing: 3, run: 3, runInside: 2, runOutside: 4, designedRun: 1 } as const;
 
 /** Stable lane (0 top "left" / 1 middle / 2 bottom "right") per player so the
  * same guy sits in the same lane all drive -- deterministic, everyone's daily
@@ -207,8 +207,12 @@ export function DriveScreen() {
     // passes to the band at the line, so THEY anchor and a run yielding
     // backward there reads as a pitch (audit-caught stacking at AWAY 15).
     const playable = options.filter((c) => c.kind !== "fieldGoal" && c.kind !== "spike");
-    const grounds = playable.filter((c) => c.kind !== "pass");
-    const passes = playable.filter((c) => c.kind === "pass");
+    // The RB swing is the back's SPOT: it seats in the ground group near the
+    // line (a fourth downfield route crowded the compressed red-zone band --
+    // audit-caught stacking at AWAY 19), keeping its pass color and route.
+    const seatsLikeGround = (c: PlayCall) => c.kind !== "pass" || c.target === "rb";
+    const grounds = playable.filter(seatsLikeGround);
+    const passes = playable.filter((c) => !seatsLikeGround(c));
     const seatingOrder = live.fieldPosition > 22 ? [...grounds, ...passes] : [...passes, ...grounds];
     for (const call of seatingOrder) {
       const isGround = call.kind !== "pass";
@@ -218,7 +222,7 @@ export function DriveScreen() {
           : call.kind === "designedRun"
             ? roster.qb
             : roster[call.target];
-      const seat = call.kind === "pass" ? SEAT_YARDS[call.depth] : SEAT_YARDS[call.kind];
+      const seat = call.kind === "pass" ? (call.target === "rb" ? SEAT_YARDS.swing : SEAT_YARDS[call.depth]) : SEAT_YARDS[call.kind];
       const rawFP = live.fieldPosition - seat;
       const endZone = call.kind === "pass" && rawFP <= 0;
       // Compressive seating: near the goal line the nominal seats overflow and
@@ -269,7 +273,7 @@ export function DriveScreen() {
       const offsets =
         fp <= 3
           ? [0, 8, 16, 24, 32]
-          : isGround
+          : seatsLikeGround(call)
             ? [0, -8, -16, 8, 16, -24, -32]
             : call.kind === "pass" && rawFP >= 4
               ? call.depth === "short"

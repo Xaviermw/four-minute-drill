@@ -216,3 +216,21 @@ score per day within the season window (constants in the view: 2026-09-10 ..
 2027-01-05 -- update both the view and `SEASON_START/END` in
 leaderboardApi.ts together for a new season), days played, latest name.
 Losses count their marginal points. Public select via security_invoker.
+
+## 8. Opening-day reminders (migration 013)
+
+`reminders` holds emails typed into the pre-season countdown strip. It is
+WRITE-ONLY from the client (insert policy; select/update/delete revoked from
+anon/authenticated) -- addresses are never readable with the publishable key.
+The contract shown to players: ONE email on opening day, nothing else.
+
+**Sending (Sep 9 evening or Sep 10 morning ET, owner):** pull the list via
+the pooler, BCC from the brand Gmail (well under Gmail's daily cap):
+
+```
+psql "<pooler conn string>" -At -c "select string_agg(email, ', ') from reminders;"
+```
+
+Subject/body suggestion lives in docs/launch-kit.md (one email: the season
+starts today, every daily counts, link). After sending, delete the rows --
+that's the promise: `delete from reminders;`
