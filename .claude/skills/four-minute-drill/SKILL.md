@@ -231,6 +231,20 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   policy — requires DROP first, and a recreated **insert policy must re-include
   `name_ok(name)`** (added in 005) or it silently regresses. Always add the
   migration file AND update `app/SUPABASE_SETUP.md`.
+- **Season Score** (migration 011 + `season_totals` view): per-user sum of
+  best-daily-score-per-day inside the season window. Window constants live in
+  BOTH the view and `SEASON_START/END` in leaderboardApi.ts -- change together.
+  Season tab + SeasonStrip (result + DailyDone); named players only.
+- **Opening-day reminders** (migration 013): write-only `reminders` table --
+  insert policy AND select/update/delete revoked from anon/authenticated, so
+  the publishable key cannot read addresses. Promise shown to players is ONE
+  email; the send runbook (pooler pull, BCC, then delete rows) is in
+  SUPABASE_SETUP.md §8.
+- **Data refresh gotcha**: nflverse changes team abbreviations between seasons
+  (2026: ARI -> AZ). After every refresh, check EVERY distinct manifest team
+  against `teamColors.ts` (TEAMS + ALIASES) or players render neutral grey.
+  `identity.py` `_SEASONS` must include the upcoming season for post-offseason
+  teams/jerseys.
 - **Analytics**: Vercel Web Analytics via `inject()` (main.tsx) + custom funnel
   events through `analytics/track.ts` (`trackEvent(name, props)`, best-effort,
   no-ops locally). Events: `draft_started`, `drive_started`, `drive_completed`,
