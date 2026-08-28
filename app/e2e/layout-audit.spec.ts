@@ -17,8 +17,11 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
   const targets = page.locator(".field-target");
   await expect(targets, `${where}: expected the 5-spot coverage`).toHaveCount(5);
 
-  const area = await page.locator(".field-playing-area").boundingBox();
-  expect(area, `${where}: playing area missing`).not.toBeNull();
+  // The broadcast camera makes .field-playing-area WIDER than the screen, so
+  // containment must be judged against the visible track (the camera
+  // viewport) -- otherwise this stops catching targets panned off-screen.
+  const area = await page.locator(".field-track").boundingBox();
+  expect(area, `${where}: field track missing`).not.toBeNull();
 
   const boxes: { x: number; y: number; w: number; h: number }[] = [];
   const chips: { x: number; y: number; w: number; h: number }[] = [];
@@ -157,7 +160,9 @@ test("layout audit: every down of five drives has a playable field", async ({ pa
       }
       await deepest.click({ timeout: 10_000 });
       await page.locator(".result-screen, .field-target:not([disabled])").first().waitFor({ timeout: 20_000 });
-      await page.waitForTimeout(150);
+      // The broadcast camera pans for 800ms after the reveal; measuring
+      // mid-pan reports targets that are only transiently off-screen.
+      await page.waitForTimeout(950);
     }
     await expect(result).toBeVisible({ timeout: 20_000 });
     console.log(`drive ${drive} done at +${Math.round((Date.now() - t0) / 1000)}s`);

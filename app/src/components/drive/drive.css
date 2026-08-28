@@ -83,6 +83,7 @@
 /* ---- Field (broadcast drive chart) ---- */
 .field-track {
   display: flex;
+  position: relative;
   /* 200px floor: at the 17/50/83 lane rows this is the minimum height where
      one lane's "below" label band clears the next lane's "above" band. */
   height: clamp(200px, 24vh, 240px);
@@ -947,4 +948,84 @@
     padding: 0.35rem 0.6rem;
     font-size: 0.68rem;
   }
+}
+
+/* ---- Broadcast camera (docs/mobile-field-plan.md option A) ---- */
+/* The world holds the unchanged endzone|field|endzone flex row. When the
+   camera is on it is wider than the track and slides so the ball's yards get
+   real pixels; off, it is exactly 100% and nothing moves. */
+.field-world {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  /* The track is a flex row: without this the wider-than-viewport world gets
+     shrunk straight back to 100% and the camera pans without zooming. */
+  flex: 0 0 auto;
+  will-change: transform;
+  transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1); /* house movement */
+}
+.field-track.camera {
+  /* Taller too: the camera earns vertical pixels as well as horizontal. */
+  height: clamp(230px, 30vh, 300px);
+}
+/* Landscape phones are short. The floor is set by geometry, not taste: the
+   bottom lane sits at 83%, its ring is 38px and its label hangs ~22px below,
+   so anything under ~235px clips the lowest chip (the track must clip for the
+   camera, so the field has to be tall enough instead). */
+@media (max-height: 520px) {
+  .field-track.camera {
+    height: clamp(235px, 62vh, 260px);
+  }
+}
+
+/* Minimap: the full 120-yard world in one thin strip. */
+.field-minimap {
+  position: relative;
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #5c1620 0 8.5%,
+    #1d5c36 8.5% 91.5%,
+    #17335f 91.5% 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.fm-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: left 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fm-trail {
+  position: absolute;
+  top: 40%;
+  bottom: 40%;
+  background: var(--amber);
+  opacity: 0.85;
+  transition: width 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fm-fd {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ffe100;
+}
+.fm-ball {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: #c97f43;
+  border: 1px solid #3d1e0c;
+  transform: translateY(-50%);
+  transition: left 800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
