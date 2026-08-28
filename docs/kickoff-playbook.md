@@ -19,24 +19,48 @@ before traffic arrives, and let the season table do the retaining.
 **Meta is dead.** $40 bought 8 devices (~$5 each) against Reddit's ~$0.27.
 Do not re-run it; the account stays for a future retry, not for kickoff.
 
-## The spend plan
+## The spend plan (grounded in the measured funnel)
 
-Reddit only. Three phases, ~$150 total (owner sizes it — this is a
-recommendation, and every phase is independently cancellable):
+Measured Aug 28, not assumed:
 
-1. **Bridge, Sep 6–9 — $5/day (~$20).** The trickle campaign ends Sep 5 and
-   the burst starts Sep 8; without a bridge the boards go quiet in the four
-   days when football interest is climbing fastest. Same campaign settings,
-   `utm_campaign=bridge`.
-2. **Kickoff burst, Sep 10–16 — $15/day (~$105).** Starts ON opening day, not
-   before: the ad's promise ("the season starts today, every drill counts")
-   is only true from the 10th. Budget **daily, not lifetime**, so a hot day
-   can't exhaust the week in six hours.
-3. **Hold back ~$25** for a re-push in week 2 if retention holds.
+- **$1 of Reddit spend ≈ 2.5 playing devices** ($0.30 CPC allowing for
+  kickoff-week auction inflation, 75% of clicks reach a played drive)
+- **19% of acquired devices ever play a daily** (30 of 155 Reddit devices)
+- **~22% of those play on any given day** (~6.5 daily actives from a pool
+  of 30)
 
-Expect CPC to rise — every fantasy advertiser bids kickoff week. If it lands
-near $0.30, that is still ~$0.60/player and fine. Kill rule unchanged: CPC
-> $2 sustained, or completion rate collapsing, means stop and diagnose.
+So at *today's* conversion, $1 buys about **0.02 daily players** — and the
+40-player goal would cost ~$280. That is the honest arithmetic, and it is
+why the plan is staged rather than committed up front: kickoff week and the
+season table should both lift those rates, but neither has been measured
+yet. If device→daily rises to ~30% and daily-active to ~30%, the same goal
+costs ~$130.
+
+**Committed now — $125:**
+
+1. **Bridge, Sep 6–9 — $5/day ($20).** The trickle ends Sep 5 and the burst
+   starts Sep 10; without it the boards go quiet exactly as football
+   interest peaks. `utm_campaign=bridge`.
+2. **Burst week 1, Sep 10–16 — $15/day ($105).** Starts ON opening day —
+   the promise "every drill counts toward your season score" is only true
+   from the 10th. Budget **daily, never lifetime**: a lifetime budget can be
+   eaten in six hours on a hot day. `utm_campaign=burst`.
+
+Expected from $125: ~310 new devices → **20 daily players if the rates hold
+flat, ~35 if the season table works.**
+
+**Conditional — up to $150 more, released only at the Sep 17 gate:**
+
+- If ≥10% of burst devices played 2+ separate days → spend $10/day through
+  Sep 23–30. The retention signal justifies buying more of the same.
+- If under 10% → **do not spend it.** More traffic into a leaky funnel buys
+  a bigger number and the same problem; the money goes to product instead.
+
+Ceiling for the whole kickoff period: **$275**, of which only $125 is
+committed today.
+
+**Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
+collapsing, means stop and diagnose rather than ride it out.
 
 ## Creative
 
