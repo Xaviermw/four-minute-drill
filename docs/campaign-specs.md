@@ -82,9 +82,26 @@ adsmanager.facebook.com → Create. Leads with the Reddit-proven creative.
   $0.14 CPC / 4.0% CTR — Meta will likely cost more per click; what matters
   is cost per PLAYING device via the `meta` source tag, readable in SQL.
 
-## Kickoff burst (Sep 8–14) — TBD after the Meta test
+## Bridge (Sep 6–9) — keep the boards warm
 
-Reddit ≥ $40 leading with the PROVEN combo (coach-bot board + robot-coach
-taunt headline); runner-up creative from the trickle's sequential test.
-Meta allocation decided by its $40 test. Benchmarks to beat: $0.14 CPC,
-4.0% CTR, ~$0.25/player.
+Clone of the trickle: $5/day, Traffic, Lowest cost, same communities and
+creative, URL `utm_campaign=bridge`. Exists because the trickle ends Sep 5
+and the burst starts Sep 10.
+
+## Kickoff burst (Sep 10–16) — the push
+
+Reddit only; Meta is out (its $40 bought 8 devices vs Reddit's 154 — see
+docs/kickoff-playbook.md). Settings as the trickle except:
+
+- Name `4md-burst`, URL `utm_campaign=burst`
+- Budget **$15/DAILY** (never lifetime for the burst: a lifetime budget can
+  be eaten in hours on a hot day), Sep 10 → Sep 16
+- Starts ON opening day — the promise "every drill counts toward your season
+  score" is only true from Sep 10
+- Lead creative unchanged (coach-bot board + robot-coach taunt), plus two
+  kickoff-only headlines:
+  - `Week 1 starts today. Every daily drill counts toward your season score.`
+  - `Our robot coach has a season score. Yours starts today.`
+
+Benchmarks to beat: $0.14 CPC, 4.0% CTR, ~$0.27/playing device. Expect CPC
+to rise in kickoff-week auctions; ~$0.30 is still fine.
