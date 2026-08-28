@@ -14,60 +14,55 @@ before traffic arrives, and let the season table do the retaining.
 | Daily players/day, last 9 days | 4–11, no organic push |
 | Devices by source | **Reddit 154 · Meta 8** |
 | Proven creative | coach-bot board + "Our robot coach scored 9 points today. Beat him or live with that." |
-| Benchmarks to beat | $0.14 CPC · 4.0% CTR · ~$0.27 per playing device |
+| Measured cost | **$0.13 CPC · 3.9% CTR** · ~$118.79 spent to date |
 
 **Meta is dead.** $40 bought 8 devices (~$5 each) against Reddit's ~$0.27.
 Do not re-run it; the account stays for a future retry, not for kickoff.
 
-## The spend plan (grounded in the measured funnel)
+## The spend plan (measured, Aug 28 dashboard)
 
-Measured Aug 28, not assumed:
+Real numbers, not estimates:
 
-- **$1 of Reddit spend ≈ 2.5 playing devices** ($0.30 CPC allowing for
-  kickoff-week auction inflation, 75% of clicks reach a played drive)
-- **19% of acquired devices ever play a daily** (30 of 155 Reddit devices)
-- **~22% of those play on any given day** (~6.5 daily actives from a pool
-  of 30)
+| | Smoke | Trickle |
+|---|---|---|
+| Spend | $39.35 | $79.44 |
+| Clicks | 289 | 625 |
+| CPC | $0.14 | **$0.13** |
+| CTR | 4.00% | 3.87% |
 
-So at *today's* conversion, $1 buys about **0.02 daily players** — and the
-40-player goal would cost ~$280. That is the honest arithmetic, and it is
-why the plan is staged rather than committed up front: kickoff week and the
-season table should both lift those rates, but neither has been measured
-yet. If device→daily rises to ~30% and daily-active to ~30%, the same goal
-costs ~$130.
+Trickle runs **$5/day, ends Sep 7**. Total spent to date: **$118.79**.
 
-**The baseline already running: $3–5/day** (the trickle; confirm the exact
-figure in Ads Manager — Campaigns tab, `4md-trickle`, Amount Spent ÷ days
-elapsed). It has been live since Aug 13 and is scheduled to Sep 5, so a
-chunk of any "kickoff budget" is money that gets spent anyway. Framing the
-ask as INCREMENTAL over that baseline is the honest way to size it — and
-the $3-vs-$5 difference moves the kickoff ask by only ~$14, so it does not
-change the plan.
+**The bottleneck is NOT traffic cost.** At $0.13, $5/day buys ~39 clicks a
+day — and that produces ~12–17 new devices and ~6–9 daily players. So the
+leak is downstream: roughly **5% of clicks become someone who plays a daily
+on a given day**. Buying more clicks multiplies the top of that funnel and
+leaves the ratio untouched.
 
-**Step 1 — Sep 6–9: extend, don't build ($20, already the run rate).**
-No bridge campaign needed: just change the trickle's end date from Sep 5 to
-Sep 9. Same settings, same creative, no new setup, no gap in the boards.
+Two consequences, and they point the same way:
 
-**Step 2 — Sep 10–16: raise to $15/day for kickoff week.**
-Full cost $105, of which $21–35 would have been spent at the baseline
-anyway, so the **incremental ask is $70–84**. Starts ON opening day — the promise
-"every drill counts toward your season score" is only true from the 10th.
-Budget **daily, never lifetime**: a lifetime budget can be eaten in six
-hours on a hot day. New campaign `4md-burst`, `utm_campaign=burst`.
+1. **Don't over-buy.** Tripling to $15/day should be read as buying ~3x the
+   clicks at the SAME conversion: expect **~15–20 daily players**, not 40.
+   Anyone promising 40 from budget alone is extrapolating a rate we have
+   never observed.
+2. **The 40-player goal is a retention problem, not a budget problem.** The
+   season table, result cinematics, and the coach's note are what move the
+   5%. That is where the effort belongs — the ad spend just needs to keep
+   enough new faces arriving to measure whether those changes work.
 
-Expected from the kickoff week: ~310 new devices → **20 daily players if
-conversion holds flat, ~35 if the season table works.**
+**Step 1 — Sep 8–9: extend the trickle's end date from Sep 7 to Sep 9.**
+Two days, ~$10, no new campaign, no gap before the burst.
 
-**Step 3 — Sep 17 gate, up to $150 more (conditional):**
+**Step 2 — Sep 10–16: `4md-burst` at $15/day ($105 gross, ~$70
+incremental).** Starts ON opening day; daily budget, never lifetime.
+Honest expectation: ~20 daily players, ~25–30 if the season table lifts the
+conversion.
 
-- If ≥10% of burst devices played 2+ separate days → hold $10/day through
-  Sep 30. The retention signal justifies buying more of the same.
-- If under 10% → **drop back to $5/day or stop.** More traffic into a leaky
-  funnel buys a bigger number and the same problem; the money goes to
-  product instead.
+**Step 3 — Sep 17 gate, up to $150 conditional.** ≥10% of burst devices
+playing 2+ separate days → continue at $10/day. Under that → drop back to
+$5/day and spend the effort on the funnel instead.
 
-**Total incremental ask for kickoff week: ~$70–85.** Everything above that is
-either the existing run rate or conditional on evidence.
+**Total incremental ask: ~$80.** The rest is either the existing run rate
+or conditional on evidence.
 
 **Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
 collapsing, means stop and diagnose rather than ride it out.
