@@ -16,7 +16,8 @@ campaigns, build fresh):
   optional) — pick from the dropdown so they become pills; estimates panel
   should read in the millions
 - Interest groups: empty · Location: United States · Devices: all
-- Budget: **$2/day DAILY** (not lifetime) · Schedule: **Aug 13 → Sep 5**
+- Budget: **$5/day DAILY** (not lifetime; owner set $5) · Schedule: **Aug 13 → Sep 5**,
+  extended to **Sep 9** so it bridges straight into the burst
 - Media: the three `*-1200x628.png` boards · Thumbnails: the three
   `thumb-*.png`
 - CTA: Play Now
@@ -82,11 +83,11 @@ adsmanager.facebook.com → Create. Leads with the Reddit-proven creative.
   $0.14 CPC / 4.0% CTR — Meta will likely cost more per click; what matters
   is cost per PLAYING device via the `meta` source tag, readable in SQL.
 
-## Bridge (Sep 6–9) — keep the boards warm
+## Bridge (Sep 6–9) — no new campaign
 
-Clone of the trickle: $5/day, Traffic, Lowest cost, same communities and
-creative, URL `utm_campaign=bridge`. Exists because the trickle ends Sep 5
-and the burst starts Sep 10.
+Just edit the trickle's end date to Sep 9. Same settings, same creative, no
+setup, no gap in the boards. (An earlier version of this doc called for a
+separate bridge campaign; extending is strictly simpler.)
 
 ## Kickoff burst (Sep 10–16) — the push
 

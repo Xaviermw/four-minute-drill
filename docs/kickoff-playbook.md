@@ -36,28 +36,35 @@ season table should both lift those rates, but neither has been measured
 yet. If device→daily rises to ~30% and daily-active to ~30%, the same goal
 costs ~$130.
 
-**Committed now — $125:**
+**The baseline already running: $5/day.** The trickle has been live since
+Aug 13 and is scheduled to Sep 5 — so a chunk of any "kickoff budget" is
+money that gets spent anyway. Framing the ask as INCREMENTAL over that
+baseline is the honest way to size it.
 
-1. **Bridge, Sep 6–9 — $5/day ($20).** The trickle ends Sep 5 and the burst
-   starts Sep 10; without it the boards go quiet exactly as football
-   interest peaks. `utm_campaign=bridge`.
-2. **Burst week 1, Sep 10–16 — $15/day ($105).** Starts ON opening day —
-   the promise "every drill counts toward your season score" is only true
-   from the 10th. Budget **daily, never lifetime**: a lifetime budget can be
-   eaten in six hours on a hot day. `utm_campaign=burst`.
+**Step 1 — Sep 6–9: extend, don't build ($20, already the run rate).**
+No bridge campaign needed: just change the trickle's end date from Sep 5 to
+Sep 9. Same settings, same creative, no new setup, no gap in the boards.
 
-Expected from $125: ~310 new devices → **20 daily players if the rates hold
-flat, ~35 if the season table works.**
+**Step 2 — Sep 10–16: raise to $15/day for kickoff week.**
+Full cost $105, of which $35 would have been spent at the baseline anyway,
+so the **incremental ask is $70**. Starts ON opening day — the promise
+"every drill counts toward your season score" is only true from the 10th.
+Budget **daily, never lifetime**: a lifetime budget can be eaten in six
+hours on a hot day. New campaign `4md-burst`, `utm_campaign=burst`.
 
-**Conditional — up to $150 more, released only at the Sep 17 gate:**
+Expected from the kickoff week: ~310 new devices → **20 daily players if
+conversion holds flat, ~35 if the season table works.**
 
-- If ≥10% of burst devices played 2+ separate days → spend $10/day through
-  Sep 23–30. The retention signal justifies buying more of the same.
-- If under 10% → **do not spend it.** More traffic into a leaky funnel buys
-  a bigger number and the same problem; the money goes to product instead.
+**Step 3 — Sep 17 gate, up to $150 more (conditional):**
 
-Ceiling for the whole kickoff period: **$275**, of which only $125 is
-committed today.
+- If ≥10% of burst devices played 2+ separate days → hold $10/day through
+  Sep 30. The retention signal justifies buying more of the same.
+- If under 10% → **drop back to $5/day or stop.** More traffic into a leaky
+  funnel buys a bigger number and the same problem; the money goes to
+  product instead.
+
+**Total incremental ask for kickoff week: $70.** Everything above that is
+either the existing run rate or conditional on evidence.
 
 **Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
 collapsing, means stop and diagnose rather than ride it out.
