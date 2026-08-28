@@ -935,12 +935,9 @@
   color: var(--text);
 }
 
-/* Thin out colliding yard numerals on narrow screens (keep the hashes). */
-@media (max-width: 480px) {
-  .field-tick.tick-alt .field-tick-label {
-    display: none;
-  }
-}
+/* (Every 10-yard numeral is drawn, NFL-style. The old narrow-screen thinning
+   that hid 10/30/50/70/90 was a 2.5px-per-yard workaround; the broadcast
+   camera guarantees >=7px/yard, so ~65px between numerals -- they fit.) */
 
 /* Mobile mode toggle sizing. */
 @media (max-width: 560px) {
