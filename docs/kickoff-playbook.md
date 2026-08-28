@@ -36,18 +36,21 @@ season table should both lift those rates, but neither has been measured
 yet. If device→daily rises to ~30% and daily-active to ~30%, the same goal
 costs ~$130.
 
-**The baseline already running: $5/day.** The trickle has been live since
-Aug 13 and is scheduled to Sep 5 — so a chunk of any "kickoff budget" is
-money that gets spent anyway. Framing the ask as INCREMENTAL over that
-baseline is the honest way to size it.
+**The baseline already running: $3–5/day** (the trickle; confirm the exact
+figure in Ads Manager — Campaigns tab, `4md-trickle`, Amount Spent ÷ days
+elapsed). It has been live since Aug 13 and is scheduled to Sep 5, so a
+chunk of any "kickoff budget" is money that gets spent anyway. Framing the
+ask as INCREMENTAL over that baseline is the honest way to size it — and
+the $3-vs-$5 difference moves the kickoff ask by only ~$14, so it does not
+change the plan.
 
 **Step 1 — Sep 6–9: extend, don't build ($20, already the run rate).**
 No bridge campaign needed: just change the trickle's end date from Sep 5 to
 Sep 9. Same settings, same creative, no new setup, no gap in the boards.
 
 **Step 2 — Sep 10–16: raise to $15/day for kickoff week.**
-Full cost $105, of which $35 would have been spent at the baseline anyway,
-so the **incremental ask is $70**. Starts ON opening day — the promise
+Full cost $105, of which $21–35 would have been spent at the baseline
+anyway, so the **incremental ask is $70–84**. Starts ON opening day — the promise
 "every drill counts toward your season score" is only true from the 10th.
 Budget **daily, never lifetime**: a lifetime budget can be eaten in six
 hours on a hot day. New campaign `4md-burst`, `utm_campaign=burst`.
@@ -63,7 +66,7 @@ conversion holds flat, ~35 if the season table works.**
   funnel buys a bigger number and the same problem; the money goes to
   product instead.
 
-**Total incremental ask for kickoff week: $70.** Everything above that is
+**Total incremental ask for kickoff week: ~$70–85.** Everything above that is
 either the existing run rate or conditional on evidence.
 
 **Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
