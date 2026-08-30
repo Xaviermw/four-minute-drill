@@ -28,7 +28,9 @@ engine drives. Key findings the design locks in:
 
 ## Locked decisions
 
-- Cap **$25**, prices **$1–$10 by position rank** (see Pricing).
+- Cap **$25**, prices **$1–$10 by position rank; kickers $1–$5** (2026-08-30 —
+  simulation showed a $10 kicker buys only ~2 win-rate points, so the upper
+  tiers were a trap; see Pricing).
 - **$0 scrub tier** (owner's addition): the bottom of each position is priced
   $0 and **never appears among the 3 dealt options**. Instead, every slot has
   a permanent 4th option: **"Give me a scrub · $0"** — randomly assigns a $0

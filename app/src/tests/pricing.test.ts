@@ -18,8 +18,11 @@ const POSITIONS: Position[] = ["QB", "RB", "WR", "TE", "K"];
 const players = POSITIONS.flatMap((pos) => group(pos, 20));
 
 describe("cap pricing", () => {
-  it("spreads $1-$10 with a $0 scrub tier in every position", () => {
+  it("spreads $1 to the position's cap with a $0 scrub tier everywhere", () => {
     const pricing = getPricing(players);
+    // Kickers top out at $5: simulation showed a $10 kicker buys ~2 points of
+    // win rate, so the upper tiers were a trap rather than a choice.
+    const capFor = (pos: string) => (pos === "K" ? 5 : 10);
     for (const pos of POSITIONS) {
       const dealable = pricing.dealablePool(pos);
       const scrubs = pricing.scrubPool(pos);
@@ -27,7 +30,7 @@ describe("cap pricing", () => {
       expect(scrubs.length).toBeGreaterThanOrEqual(3); // max(3, 20%)
       expect(scrubs.every((p) => pricing.priceFor(p) === 0)).toBe(true);
       expect(Math.min(...prices)).toBe(1);
-      expect(Math.max(...prices)).toBe(10);
+      expect(Math.max(...prices)).toBe(capFor(pos));
       // Scrubs are the lowest-rated and never leak into the dealable pool.
       expect(dealable.some((p) => pricing.isScrub(p))).toBe(false);
     }

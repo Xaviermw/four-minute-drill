@@ -34,7 +34,7 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
               <section className="hiw-section">
                 <h3>💵 The $25 cap — every card has a price</h3>
                 <p>
-                  Each card wears a <strong>price tag, $1–$10</strong>, from that player’s <strong>real NFL
+                  Each card wears a <strong>price tag — $1–$10, or $1–$5 for kickers</strong>, from that player’s <strong>real NFL
                   production, 2015–2025</strong> (nflverse / nflfastR) — the better the player ranks at his
                   position, the more he costs. You get <strong>$25 for all six picks</strong>: roughly one stud and
                   bargains, or a balanced build. Cards you can’t afford lock.

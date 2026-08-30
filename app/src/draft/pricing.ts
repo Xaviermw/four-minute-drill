@@ -15,6 +15,16 @@ import type { ManifestPlayerEntry, Position } from "../types/player";
 export const CAP = 25;
 export const SCRUB_PRICE = 0;
 
+/**
+ * Top price per position. Kickers cap at $5 (owner call 2026-08-30, backed by
+ * simulation): swapping a $1 kicker for a $10 one over 3,000 identical drives
+ * moved win rate only 2.2 points and EV 0.7, while $9 spent on skill players
+ * buys roughly 6 EV -- so the $6-$10 kicker tiers were a trap, not a choice.
+ * A $1-$5 band keeps a real difference (64% -> 74% FG conversion, which
+ * players feel) at a price that can be worth paying.
+ */
+const MAX_PRICE: Record<Position, number> = { QB: 10, RB: 10, WR: 10, TE: 10, K: 5 };
+
 const POSITIONS: Position[] = ["QB", "RB", "WR", "TE", "K"];
 
 export interface Pricing {
@@ -61,8 +71,9 @@ function build(players: ManifestPlayerEntry[]): Built {
       }
       const rank = idx - scrubCount; // 0..m-1 over the priced players
       const m = group.length - scrubCount;
-      const price = m <= 1 ? 10 : Math.round(1 + (9 * rank) / (m - 1));
-      priceOf.set(p.gsisId, Math.max(1, Math.min(10, price)));
+      const top = MAX_PRICE[pos];
+      const price = m <= 1 ? top : Math.round(1 + ((top - 1) * rank) / (m - 1));
+      priceOf.set(p.gsisId, Math.max(1, Math.min(top, price)));
       posDealable.push(p);
     });
 
