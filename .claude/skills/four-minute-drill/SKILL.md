@@ -240,6 +240,13 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   the publishable key cannot read addresses. Promise shown to players is ONE
   email; the send runbook (pooler pull, BCC, then delete rows) is in
   SUPABASE_SETUP.md §8.
+- **Daily board reconstruction** (FieldDraftPanel, migration 014): "how the
+  field drafted" rebuilds the three offered cards from the challenge date
+  rather than storing them — sound ONLY while pricing is frozen, since the
+  dealable pool feeds `drawSlotOptions`. Change prices and every historical
+  reconstruction silently shows a board nobody was offered; the panel's
+  guard (hide when no pick is explained) catches the gross case, not subtle
+  ones. Free play has no equivalent: its boards are random and unstored.
 - **Data refresh gotcha**: nflverse changes team abbreviations between seasons
   (2026: ARI -> AZ). After every refresh, check EVERY distinct manifest team
   against `teamColors.ts` (TEAMS + ALIASES) or players render neutral grey.

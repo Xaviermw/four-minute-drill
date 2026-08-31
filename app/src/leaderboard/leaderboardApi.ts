@@ -426,3 +426,31 @@ export async function subscribeReminder(email: string): Promise<void> {
     /* fine */
   }
 }
+
+// ---- How the field drafted (migration 014) ---------------------------------
+
+/** Below this many entries the percentages are noise dressed as insight
+ * ("80% took Mahomes" meaning four people), so the panel stays hidden. */
+export const MIN_PICK_SAMPLE = 15;
+
+export interface DailyPickCounts {
+  entries: number;
+  /** gsisId -> how many of that day's entrants drafted him. */
+  picks: Record<string, number>;
+}
+
+/** Pick counts for one daily. Null when the leaderboard is off or the day is
+ * too small to say anything true. */
+export async function fetchDailyPicks(challengeId: string): Promise<DailyPickCounts | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  const [countRes, pickRes] = await Promise.all([
+    supabase.from("daily_entry_counts").select("entries").eq("challenge_date", challengeId).maybeSingle(),
+    supabase.from("daily_picks").select("gsis_id,picks").eq("challenge_date", challengeId),
+  ]);
+  const entries = (countRes.data as { entries: number } | null)?.entries ?? 0;
+  if (countRes.error || pickRes.error || entries < MIN_PICK_SAMPLE) return null;
+  const picks: Record<string, number> = {};
+  for (const row of (pickRes.data ?? []) as { gsis_id: string; picks: number }[]) picks[row.gsis_id] = row.picks;
+  return { entries, picks };
+}

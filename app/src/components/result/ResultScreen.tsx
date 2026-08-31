@@ -17,6 +17,7 @@ import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
 import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
 import { SeasonStrip } from "./SeasonStrip";
+import { FieldDraftPanel } from "./FieldDraftPanel";
 import { burstConfetti } from "../../utils/confetti";
 import { useCountUp } from "../../utils/useCountUp";
 import type { DriveLog } from "../../types/simResult";
@@ -213,6 +214,14 @@ export function ResultScreen() {
       />
 
       {isDaily && <SeasonStrip challengeId={challengeId} refreshKey={seasonTick} onView={openLeaderboard} />}
+
+      {isDaily && (
+        <FieldDraftPanel
+          challengeId={challengeId}
+          myIds={LINEUP_SLOT_ORDER.map((s) => roster[s].gsisId)}
+          refreshKey={seasonTick}
+        />
+      )}
 
       <SharePanel driveLog={driveLog} roster={roster} />
 

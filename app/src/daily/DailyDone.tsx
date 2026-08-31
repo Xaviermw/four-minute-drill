@@ -10,6 +10,7 @@ import { fetchDailyFieldSummary } from "../leaderboard/leaderboardApi";
 import { useMode } from "../state/ModeProvider";
 import { DailyStreakBadge } from "../components/result/StreakBanners";
 import { SeasonStrip } from "../components/result/SeasonStrip";
+import { FieldDraftPanel } from "../components/result/FieldDraftPanel";
 import { DriveRecap } from "../components/result/DriveRecap";
 import { PlayerCard } from "../components/draft/PlayerCard";
 import { formatBallOn, formatClock } from "../utils/formatting";
@@ -73,6 +74,9 @@ export function DailyDone({ record }: { record: DailyRecord }) {
 
       <DailyStreakBadge days={streak.days} best={streak.best} state={streak.state} />
       <SeasonStrip challengeId={challengeId} refreshKey={0} onView={openLeaderboard} />
+      {roster && (
+        <FieldDraftPanel challengeId={challengeId} myIds={LINEUP_SLOT_ORDER.map((s) => roster[s].gsisId)} />
+      )}
 
       <p className="daily-final-spot">
         {driveLog.won
