@@ -19,3 +19,15 @@ kickers:
   - { display_name: "Josh Lambo", tier: scrub }
   - { display_name: "Mike Nugent", tier: scrub }
   - { display_name: "Brett Maher", tier: scrub }
+
+  # ---- Added 2026-08-31: prominent 2015-2025 kickers ----
+  - { display_name: "Chris Boswell", tier: star }
+  - { display_name: "Brandon McManus", tier: starter }
+  - { display_name: "Graham Gano", tier: starter }
+  - { display_name: "Jason Myers", tier: starter }
+  - { display_name: "Ka'imi Fairbairn", tier: starter }
+  - { display_name: "Cameron Dicker", tier: star }
+  - { display_name: "Matt Gay", tier: starter }
+  - { display_name: "Robbie Gould", tier: starter }
+  - { display_name: "Mason Crosby", tier: starter }
+  - { display_name: "Stephen Gostkowski", tier: star }

@@ -171,3 +171,55 @@ players:
   - { display_name: "Tyler Warren", position: TE, tier: star }
   - { display_name: "Colston Loveland", position: TE, tier: starter }
   - { display_name: "Mason Taylor", position: TE, tier: starter }
+
+  # ---- Added 2026-08-31: prominent 2015-2025 names the pool was missing ----
+  # QB
+  - { display_name: "Cam Newton", position: QB, tier: star }
+  - { display_name: "Matt Ryan", position: QB, tier: star }
+  - { display_name: "Ben Roethlisberger", position: QB, tier: star }
+  - { display_name: "Philip Rivers", position: QB, tier: star }
+  - { display_name: "Eli Manning", position: QB, tier: starter }
+  - { display_name: "Carson Wentz", position: QB, tier: starter }
+  - { display_name: "Jimmy Garoppolo", position: QB, tier: starter }
+  - { display_name: "Ryan Tannehill", position: QB, tier: starter }
+  - { display_name: "Andrew Luck", position: QB, tier: star }
+  - { display_name: "Nick Foles", position: QB, tier: starter }
+  - { display_name: "Justin Fields", position: QB, tier: starter }
+  - { display_name: "Daniel Jones", position: QB, tier: starter }
+  - { display_name: "Drake Maye", position: QB, tier: starter }
+  # RB
+  - { display_name: "Dalvin Cook", position: RB, tier: star }
+  - { display_name: "Nick Chubb", position: RB, tier: star }
+  - { display_name: "Austin Ekeler", position: RB, tier: star }
+  - { display_name: "David Johnson", position: RB, tier: star, gsis_id: "00-0032187" }
+  - { display_name: "Melvin Gordon", position: RB, tier: starter }
+  - { display_name: "Leonard Fournette", position: RB, tier: starter }
+  - { display_name: "Marshawn Lynch", position: RB, tier: star }
+  - { display_name: "Adrian Peterson", position: RB, tier: star, gsis_id: "00-0025394" }
+  - { display_name: "D'Andre Swift", position: RB, tier: starter }
+  - { display_name: "Isiah Pacheco", position: RB, tier: starter }
+  - { display_name: "Travis Etienne", position: RB, tier: starter }
+  - { display_name: "Frank Gore", position: RB, tier: starter }
+  # WR
+  - { display_name: "Michael Thomas", position: WR, tier: star, gsis_id: "00-0032765" }
+  - { display_name: "Larry Fitzgerald", position: WR, tier: star }
+  - { display_name: "Amari Cooper", position: WR, tier: star }
+  - { display_name: "Deebo Samuel", position: WR, tier: star }
+  - { display_name: "Adam Thielen", position: WR, tier: starter }
+  - { display_name: "Tyler Lockett", position: WR, tier: starter }
+  - { display_name: "D.J. Moore", position: WR, tier: starter, gsis_id: "00-0034827" }
+  - { display_name: "Allen Robinson", position: WR, tier: starter }
+  - { display_name: "Jaxon Smith-Njigba", position: WR, tier: star }
+  - { display_name: "George Pickens", position: WR, tier: starter }
+  - { display_name: "Calvin Ridley", position: WR, tier: starter }
+  - { display_name: "Courtland Sutton", position: WR, tier: starter }
+  # TE
+  - { display_name: "Zach Ertz", position: TE, tier: star }
+  - { display_name: "Jimmy Graham", position: TE, tier: star }
+  - { display_name: "Greg Olsen", position: TE, tier: star }
+  - { display_name: "Dalton Schultz", position: TE, tier: starter }
+  - { display_name: "Tyler Higbee", position: TE, tier: starter }
+  - { display_name: "Isaiah Likely", position: TE, tier: starter }
+  - { display_name: "Tucker Kraft", position: TE, tier: starter }
+  - { display_name: "Mike Gesicki", position: TE, tier: starter }
+  - { display_name: "Noah Fant", position: TE, tier: starter }

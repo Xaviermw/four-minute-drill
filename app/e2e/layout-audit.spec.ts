@@ -10,6 +10,35 @@ const DIR = "C:/Users/XAVIER~1/AppData/Local/Temp/claude/c--Users-Xavier-W-Docum
 // none stacked, and the tapped one genuinely clickable. Red-zone downs get a
 // screenshot for eyeballs.
 
+
+/**
+ * The broadcast camera pans for 800ms after each reveal, so measurement has to
+ * happen on a still frame. Polling for a repeated transform is not enough on
+ * its own: React commits the new transform a frame or two AFTER the targets
+ * render, so two quick reads can both catch the OLD value and declare victory
+ * before the pan starts -- which reported targets 120px off-screen that were
+ * perfectly placed once the camera arrived. Hence the lead-in: give the
+ * transition time to start, THEN wait for it to stop.
+ */
+async function waitForCameraSettled(page: Page): Promise<void> {
+  await page.waitForTimeout(200); // let the transition actually begin
+  await page.evaluate(() => {
+    (window as unknown as { __camPrev?: string }).__camPrev = undefined;
+  });
+  await page.waitForFunction(
+    () => {
+      const el = document.querySelector(".field-world");
+      if (!el) return true; // camera off (desktop) -- nothing to settle
+      const now = getComputedStyle(el).transform;
+      const w = window as unknown as { __camPrev?: string };
+      const settled = w.__camPrev === now;
+      w.__camPrev = now;
+      return settled;
+    },
+    { timeout: 10_000, polling: 150 }
+  );
+}
+
 async function auditDown(page: Page, drive: number, down: number): Promise<void> {
   const situation = (await page.locator(".scoreboard").innerText().catch(() => "?")).replace(/\s+/g, " ");
   const where = `drive ${drive}, down ${down} [${situation}]`;
@@ -17,55 +46,67 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
   const targets = page.locator(".field-target");
   await expect(targets, `${where}: expected the 5-spot coverage`).toHaveCount(5);
 
-  // The broadcast camera makes .field-playing-area WIDER than the screen, so
-  // containment must be judged against the visible track (the camera
-  // viewport) -- otherwise this stops catching targets panned off-screen.
-  const area = await page.locator(".field-track").boundingBox();
+  // ATOMIC MEASUREMENT. Reading the field box and then each target one await
+  // at a time let layout shift mid-measurement -- the two-minute-warning
+  // banner appearing between reads reported a target as off-screen when it
+  // never was (flake, ~1 run in 4). One evaluate, one layout, one truth.
+  // Containment is judged against the visible track: the broadcast camera
+  // makes .field-playing-area wider than the screen, so the playing area
+  // would no longer catch targets panned out of frame.
+  const snap = await page.evaluate(() => {
+    const track = document.querySelector(".field-track");
+    const els = [...document.querySelectorAll(".field-target")];
+    const r = (e: Element | null) => {
+      if (!e) return null;
+      const b = e.getBoundingClientRect();
+      return { x: b.x, y: b.y, w: b.width, h: b.height };
+    };
+    return {
+      area: r(track),
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      targets: els.map((e) => ({
+        box: r(e),
+        chip: r(e.querySelector(".field-target-chip")),
+        text: (e.textContent ?? "").replace(/\s+/g, " ").trim(),
+        above: e.className.includes("chip-above"),
+        disabled: (e as HTMLButtonElement).disabled,
+      })),
+    };
+  });
+  const area = snap.area;
   expect(area, `${where}: field track missing`).not.toBeNull();
 
   const boxes: { x: number; y: number; w: number; h: number }[] = [];
   const chips: { x: number; y: number; w: number; h: number }[] = [];
   const chipDescs: string[] = [];
-  for (let i = 0; i < 5; i++) {
-    const t = targets.nth(i);
-    await expect(t, `${where}: target ${i} disabled`).toBeEnabled();
-    const box = await t.boundingBox();
-    expect(box, `${where}: target ${i} has no box`).not.toBeNull();
-    // Fully on the turf (small tolerance for borders/shadows).
-    expect(box!.x, `${where}: target ${i} spills off the LEFT of the field`).toBeGreaterThanOrEqual(area!.x - 4);
+  for (let i = 0; i < snap.targets.length; i++) {
+    const t = snap.targets[i];
+    expect(t.disabled, `${where}: target ${i} disabled`).toBe(false);
+    expect(t.box, `${where}: target ${i} has no box`).not.toBeNull();
+    expect(t.chip, `${where}: target ${i} chip has no box`).not.toBeNull();
+    const box = t.box!;
+    const chip = t.chip!;
     expect(
-      box!.x + box!.width,
+      box.x,
+      `${where}: target ${i} ("${t.text}") spills off the LEFT — box.x=${Math.round(box.x)} area.x=${Math.round(area!.x)} area.w=${Math.round(area!.w)} short by ${Math.round(area!.x - box.x)}px`
+    ).toBeGreaterThanOrEqual(area!.x - 4);
+    expect(
+      box.x + box.w,
       `${where}: target ${i} spills off the RIGHT of the field (the AWAY-13 bug)`
-    ).toBeLessThanOrEqual(area!.x + area!.width + 4);
-    expect(box!.y, `${where}: target ${i} spills off the TOP`).toBeGreaterThanOrEqual(area!.y - 4);
-    expect(box!.y + box!.height, `${where}: target ${i} spills off the BOTTOM`).toBeLessThanOrEqual(
-      area!.y + area!.height + 4
+    ).toBeLessThanOrEqual(area!.x + area!.w + 4);
+    expect(box.y, `${where}: target ${i} spills off the TOP`).toBeGreaterThanOrEqual(area!.y - 4);
+    expect(box.y + box.h, `${where}: target ${i} spills off the BOTTOM`).toBeLessThanOrEqual(area!.y + area!.h + 4);
+    expect(chip.x, `${where}: target ${i} CHIP spills off the LEFT of the field`).toBeGreaterThanOrEqual(area!.x - 4);
+    expect(chip.x + chip.w, `${where}: target ${i} CHIP spills off the RIGHT of the field`).toBeLessThanOrEqual(
+      area!.x + area!.w + 4
     );
-    boxes.push({ x: box!.x, y: box!.y, w: box!.width, h: box!.height });
-
-    // The label chip overflows the fixed-size button, so check it separately.
-    const chip = await t.locator(".field-target-chip").boundingBox();
-    expect(chip, `${where}: target ${i} chip has no box`).not.toBeNull();
-    expect(chip!.x, `${where}: target ${i} CHIP spills off the LEFT of the field`).toBeGreaterThanOrEqual(
-      area!.x - 4
+    expect(chip.y, `${where}: target ${i} CHIP spills off the TOP of the field`).toBeGreaterThanOrEqual(area!.y - 4);
+    expect(chip.y + chip.h, `${where}: target ${i} CHIP spills off the BOTTOM of the field`).toBeLessThanOrEqual(
+      area!.y + area!.h + 4
     );
-    expect(
-      chip!.x + chip!.width,
-      `${where}: target ${i} CHIP spills off the RIGHT of the field`
-    ).toBeLessThanOrEqual(area!.x + area!.width + 4);
-    expect(chip!.y, `${where}: target ${i} CHIP spills off the TOP of the field`).toBeGreaterThanOrEqual(
-      area!.y - 4
-    );
-    expect(
-      chip!.y + chip!.height,
-      `${where}: target ${i} CHIP spills off the BOTTOM of the field`
-    ).toBeLessThanOrEqual(area!.y + area!.height + 4);
-    chips.push({ x: chip!.x, y: chip!.y, w: chip!.width, h: chip!.height });
-    chipDescs.push(
-      `"${(await t.innerText()).replace(/\s+/g, " ").trim()}" ${
-        (await t.getAttribute("class"))?.includes("chip-above") ? "above" : "below"
-      } @${Math.round(chip!.x)}..${Math.round(chip!.x + chip!.width)},y${Math.round(chip!.y)}`
-    );
+    boxes.push({ x: box.x, y: box.y, w: box.w, h: box.h });
+    chips.push({ x: chip.x, y: chip.y, w: chip.w, h: chip.h });
+    chipDescs.push(`"${t.text}" ${t.above ? "above" : "below"} @${Math.round(chip.x)}..${Math.round(chip.x + chip.w)},y${Math.round(chip.y)}`);
   }
 
   // No two labels may overlap -- the mobile "texts mash together" bug. A 2px
@@ -105,9 +146,8 @@ async function auditDown(page: Page, drive: number, down: number): Promise<void>
     await page.screenshot({ path: `${DIR}/audit-redzone.png` });
   }
 
-  // The page itself must never scroll sideways.
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  expect(overflow, `${where}: horizontal page overflow`).toBeLessThanOrEqual(1);
+  // The page itself must never scroll sideways (from the same snapshot).
+  expect(snap.overflow, `${where}: horizontal page overflow`).toBeLessThanOrEqual(1);
 }
 
 test("layout audit: every down of five drives has a playable field", async ({ page }) => {
@@ -141,6 +181,7 @@ test("layout audit: every down of five drives has a playable field", async ({ pa
     }
     await page.getByRole("button", { name: /Run the Drive/ }).click({ timeout: 15_000 });
     await page.locator(".field-target").first().waitFor({ timeout: 20_000 });
+    await waitForCameraSettled(page);
     console.log(`drive ${drive} underway at +${Math.round((Date.now() - t0) / 1000)}s`);
 
     for (let down = 1; down <= 20; down++) {
@@ -160,9 +201,7 @@ test("layout audit: every down of five drives has a playable field", async ({ pa
       }
       await deepest.click({ timeout: 10_000 });
       await page.locator(".result-screen, .field-target:not([disabled])").first().waitFor({ timeout: 20_000 });
-      // The broadcast camera pans for 800ms after the reveal; measuring
-      // mid-pan reports targets that are only transiently off-screen.
-      await page.waitForTimeout(950);
+      await waitForCameraSettled(page);
     }
     await expect(result).toBeVisible({ timeout: 20_000 });
     console.log(`drive ${drive} done at +${Math.round((Date.now() - t0) / 1000)}s`);
