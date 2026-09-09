@@ -454,3 +454,36 @@ export async function fetchDailyPicks(challengeId: string): Promise<DailyPickCou
   for (const row of (pickRes.data ?? []) as { gsis_id: string; picks: number }[]) picks[row.gsis_id] = row.picks;
   return { entries, picks };
 }
+
+// ---- Suggested handle (2026-09-08) -----------------------------------------
+
+const HANDLE_KEY = "fmd_suggested_name";
+const HANDLE_WORDS = [
+  "Coach", "Gunslinger", "FourthDown", "TwoMinute", "RedZone", "Chainmover",
+  "Blitz", "Audible", "HailMary", "Pocket", "Scramble", "Clutch",
+];
+
+/**
+ * A ready-to-use handle so the name box is NEVER blank. Measurement (Sep 8):
+ * of 413 devices that won a drive and could have posted, only 102 did -- and
+ * every non-poster was someone who had never posted, i.e. always faced an
+ * empty box. A pre-filled name turns "compose an identity" into "tap post",
+ * and it is theirs to overwrite. Stable per device so a player keeps the same
+ * handle across drives instead of becoming a new stranger each time.
+ */
+export function suggestedName(): string {
+  try {
+    const saved = localStorage.getItem(HANDLE_KEY);
+    if (saved) return saved;
+  } catch {
+    /* private mode -- fall through and generate a throwaway */
+  }
+  const word = HANDLE_WORDS[Math.floor(Math.random() * HANDLE_WORDS.length)];
+  const handle = `${word}${Math.floor(Math.random() * 900) + 100}`;
+  try {
+    localStorage.setItem(HANDLE_KEY, handle);
+  } catch {
+    /* fine -- it just won't persist */
+  }
+  return handle;
+}

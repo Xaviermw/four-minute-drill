@@ -10,6 +10,7 @@ import {
   fetchDailyDrivePercentile,
   getStoredName,
   isNetworkError,
+  suggestedName,
   setStoredName,
   submitScore,
 } from "./leaderboardApi";
@@ -37,7 +38,9 @@ export function SubmitScorePanel({
   challengeId?: string | null;
   onSubmitted?: () => void;
 }) {
-  const [name, setName] = useState(getStoredName);
+  // Never a blank box: returning players see their own name, first-timers get
+  // a ready handle they can post as-is or type over.
+  const [name, setName] = useState(() => getStoredName()?.trim() || suggestedName());
   const [state, setState] = useState<"idle" | "submitting" | "done">("idle");
   const [rank, setRank] = useState<number | null>(null);
   const [percentile, setPercentile] = useState<number | null>(null);
@@ -120,6 +123,11 @@ export function SubmitScorePanel({
   return (
     <div className="submit-panel">
       <p className="eyebrow submit-title">{scored ? "Put it on the board" : "Log your drive"}</p>
+      <p className="submit-why">
+        {isDaily
+          ? "Posting puts you on today's board and starts your season score."
+          : "Posting puts you on the all-time board and your win streak."}
+      </p>
       <div className="submit-row">
         <input
           className="submit-input"
@@ -132,7 +140,7 @@ export function SubmitScorePanel({
           disabled={state === "submitting"}
         />
         <button type="button" className="cta-button" onClick={handleSubmit} disabled={state === "submitting"}>
-          {state === "submitting" ? "Submitting…" : "Submit"}
+          {state === "submitting" ? "Submitting…" : "Post"}
         </button>
       </div>
       {error && <p className="error">{error}</p>}
