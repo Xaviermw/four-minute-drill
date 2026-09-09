@@ -49,20 +49,24 @@ Two consequences, and they point the same way:
    5%. That is where the effort belongs — the ad spend just needs to keep
    enough new faces arriving to measure whether those changes work.
 
-**Step 1 — Sep 8–9: extend the trickle's end date from Sep 7 to Sep 9.**
-Two days, ~$10, no new campaign, no gap before the burst.
+**WHAT ACTUALLY HAPPENED (Sep 8):** rather than build a separate burst
+campaign, the owner kept `4md-trickle` running and raised it $5 -> $15/day
+on Sep 7. Simpler, and it avoids a cold-start learning phase on a new
+campaign — but two consequences to hold onto:
 
-**Step 2 — Sep 10–16: `4md-burst` at $15/day ($105 gross, ~$70
-incremental).** Starts ON opening day; daily budget, never lifetime.
-Honest expectation: ~20 daily players, ~25–30 if the season table lifts the
-conversion.
+1. **Cohorts separate by DATE, not by utm tag.** Everything is tagged
+   `utm_campaign=trickle`, so the Sep 17 readout compares devices acquired
+   from Sep 7 onward (the $15/day era) against Aug 13–Sep 6 ($5/day).
+   Attribution still works; it is just a date filter instead of a tag.
+2. **Budget runs ahead of plan.** $15/day from Sep 7 through Sep 16 is
+   ~$150, on top of ~$154 already spent — call it ~$300 total by kickoff
+   week's end, against the $275 ceiling this doc sketched. Not a problem,
+   but it is a decision that was made, not a drift to ignore: the Sep 17
+   gate matters more now, not less.
 
-**Step 3 — Sep 17 gate, up to $150 conditional.** ≥10% of burst devices
-playing 2+ separate days → continue at $10/day. Under that → drop back to
-$5/day and spend the effort on the funnel instead.
-
-**Total incremental ask: ~$80.** The rest is either the existing run rate
-or conditional on evidence.
+**Sep 17 gate (unchanged in substance):** ≥10% of devices acquired since
+Sep 7 playing 2+ separate days → keep spending at $10–15/day. Under that →
+drop back to $5/day and put the effort into the funnel.
 
 **Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
 collapsing, means stop and diagnose rather than ride it out.
