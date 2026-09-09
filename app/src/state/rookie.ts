@@ -8,6 +8,15 @@
  * returning player has at least one (seen-intro, streaks, daily records, name),
  * so veterans from before this feature are grandfathered automatically.
  *
+ * EXCEPT keys that get written without anyone playing anything. `fmd_src` is
+ * stamped on boot for every arrival carrying a utm_source, so from 2026-08-25
+ * (when attribution shipped) until this fix, EVERY ad-acquired visitor was
+ * misread as a veteran: no gate, no practice option, none of the teaching
+ * hints — precisely the audience we pay for. The check stays a denylist rather
+ * than an allowlist on purpose: missing a key here shows a returning player an
+ * extra prompt, while missing one in an allowlist would gate a veteran out of
+ * their daily, which is the worse failure.
+ *
  * The check is SNAPSHOTTED per page load: keys written mid-session (e.g.
  * dismissing the coach strip sets fmd_seen_intro) must not flip an in-progress
  * rookie to veteran mid-drive. Only graduation (markRookieDone) flips it live.
@@ -17,6 +26,9 @@
  */
 const KEY = "fmd_rookie_done";
 
+/** fmd_* keys that can exist before a visitor has played a single down. */
+const NON_PLAY_KEYS = new Set(["fmd_src"]);
+
 let snapshot: boolean | null = null;
 
 function compute(): boolean {
@@ -24,7 +36,7 @@ function compute(): boolean {
     if (localStorage.getItem(KEY)) return false;
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith("fmd_")) {
+      if (k && k.startsWith("fmd_") && !NON_PLAY_KEYS.has(k)) {
         // Pre-feature veteran: backfill the flag so future checks are O(1).
         localStorage.setItem(KEY, "1");
         return false;
