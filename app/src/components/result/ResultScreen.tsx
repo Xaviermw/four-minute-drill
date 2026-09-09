@@ -16,6 +16,7 @@ import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
 import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
+import { OutcomeStamp } from "./OutcomeStamp";
 import { SeasonStrip } from "./SeasonStrip";
 import { FieldDraftPanel } from "./FieldDraftPanel";
 import { burstConfetti } from "../../utils/confetti";
@@ -129,7 +130,12 @@ export function ResultScreen() {
         <span className="eyebrow">
           {isDaily ? `Today's Drill · ${formatChallengeDate(challengeId)}` : driveLog.won ? "Drive result" : "Drive over"}
         </span>
-        <h1 className="result-headline">{END_REASON_TEXT[driveLog.endReason]}</h1>
+
+        <OutcomeStamp
+          endReason={driveLog.endReason}
+          driveKey={driveLog}
+          fallback={END_REASON_TEXT[driveLog.endReason]}
+        />
         <p className="result-sub">{END_REASON_SUB[driveLog.endReason]}</p>
         <div className="result-score">
           <span className={`result-score-num ${driveLog.score > 0 ? "" : "zero"}`}>
@@ -171,7 +177,10 @@ export function ResultScreen() {
               <span>{driveLog.scoreBreakdown.baseLabel}</span>
               <span>{driveLog.scoreBreakdown.basePoints} pts</span>
             </li>
-            <li style={{ "--i": 1 } as CSSProperties}>
+            <li
+              className={driveLog.scoreBreakdown.clockMultiplier >= 1.25 ? "clutch-hit" : ""}
+              style={{ "--i": 1 } as CSSProperties}
+            >
               <span>Time bonus · less time left = more</span>
               <span>&times;{driveLog.scoreBreakdown.clockMultiplier.toFixed(2)}</span>
             </li>

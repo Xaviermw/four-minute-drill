@@ -552,3 +552,56 @@
   color: var(--dim);
   line-height: 1.5;
 }
+
+/* ---- Outcome stamp (result cinematics, 2026-09-09) ---------------------- */
+/* The booth's call, stamped onto the hero. Slams in, overshoots slightly,
+   settles -- a rubber stamp hitting paper, not a fade. */
+.outcome-stamp {
+  align-self: center;
+  margin: 0.35rem 0 0.5rem;
+  padding: 0.3rem 1.1rem;
+  border: 3px solid currentColor;
+  border-radius: var(--radius);
+  transform: rotate(-3deg);
+  animation: stamp-slam 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.outcome-stamp.win {
+  color: var(--win);
+  background: color-mix(in srgb, var(--win) 12%, transparent);
+}
+.outcome-stamp.loss {
+  color: var(--loss);
+  background: color-mix(in srgb, var(--loss) 10%, transparent);
+}
+.outcome-stamp-text {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 7vw, 2.3rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  text-align: center;
+  text-wrap: balance; /* long calls wrap evenly instead of cramping */
+}
+@keyframes stamp-slam {
+  0% {
+    opacity: 0;
+    transform: rotate(-3deg) scale(2.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-3deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+/* The clutch bonus earned its keep -- make the multiplier read as a reward
+   rather than a line item. */
+.score-breakdown-items li.clutch-hit span:last-child {
+  color: var(--amber);
+  font-weight: 700;
+}
