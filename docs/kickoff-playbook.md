@@ -58,15 +58,24 @@ campaign — but two consequences to hold onto:
    `utm_campaign=trickle`, so the Sep 17 readout compares devices acquired
    from Sep 7 onward (the $15/day era) against Aug 13–Sep 6 ($5/day).
    Attribution still works; it is just a date filter instead of a tag.
-2. **Budget runs ahead of plan.** $15/day from Sep 7 through Sep 16 is
-   ~$150, on top of ~$154 already spent — call it ~$300 total by kickoff
-   week's end, against the $275 ceiling this doc sketched. Not a problem,
-   but it is a decision that was made, not a drift to ignore: the Sep 17
-   gate matters more now, not less.
+2. **Budget: $15/day through Sep 30** (owner decision, Sep 8). That is
+   ~$360 for September on top of ~$154 already spent — **~$515 total**,
+   well past the $275 this doc originally sketched. It buys roughly 2,700
+   clicks and 700–900 new devices for the month.
 
-**Sep 17 gate (unchanged in substance):** ≥10% of devices acquired since
-Sep 7 playing 2+ separate days → keep spending at $10–15/day. Under that →
-drop back to $5/day and put the effort into the funnel.
+**What that money is buying, honestly.** At the measured ~5% clicks→
+daily-player rate, $15/day should sustain **~15–20 daily players** — call
+it ~$18 per daily player per month. Whether that is a good trade depends
+entirely on whether they come BACK, which is the one thing spend cannot
+buy. So the Sep 17 checkpoint stops being a spending gate (the spend is
+decided) and becomes a **product verdict**:
+
+- ≥10% of devices acquired since Sep 7 play 2+ separate days → the funnel
+  holds; the money is buying an audience.
+- Under 10% → the money is buying visits, not players, and the answer is
+  product work (cinematics, coach's note, comeback loop), not more clicks.
+
+Either way the readout lands Sep 17 with the cohort split by date.
 
 **Kill rule** (unchanged): CPC > $2 sustained, or drive-completion rate
 collapsing, means stop and diagnose rather than ride it out.
