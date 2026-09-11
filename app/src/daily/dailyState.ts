@@ -10,11 +10,12 @@ export interface DailyRecord {
   submitted: boolean;
 }
 
-const key = (id: string) => `fmd_daily_${id}`;
+/** Exported so a tab can recognize ANOTHER tab banking today's drill (storage event). */
+export const dailyRecordKey = (id: string) => `fmd_daily_${id}`;
 
 export function getDailyRecord(challengeId: string): DailyRecord | null {
   try {
-    const raw = localStorage.getItem(key(challengeId));
+    const raw = localStorage.getItem(dailyRecordKey(challengeId));
     return raw ? (JSON.parse(raw) as DailyRecord) : null;
   } catch {
     return null;
@@ -23,7 +24,7 @@ export function getDailyRecord(challengeId: string): DailyRecord | null {
 
 export function saveDailyRecord(rec: DailyRecord): void {
   try {
-    localStorage.setItem(key(rec.challengeId), JSON.stringify(rec));
+    localStorage.setItem(dailyRecordKey(rec.challengeId), JSON.stringify(rec));
   } catch {
     /* ignore storage failures -- worst case the one-shot gate is skipped */
   }
@@ -32,4 +33,10 @@ export function saveDailyRecord(rec: DailyRecord): void {
 export function markDailySubmitted(challengeId: string): void {
   const rec = getDailyRecord(challengeId);
   if (rec) saveDailyRecord({ ...rec, submitted: true });
+}
+
+/** Is `a` the same drive as `b`? A stored record holds the JSON round-trip of
+ * the drive that banked it, so comparing serialized logs identifies it exactly. */
+export function isSameDrive(a: DriveLog, b: DriveLog): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
 }

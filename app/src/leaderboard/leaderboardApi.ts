@@ -6,6 +6,9 @@ import { getFirstTouchSource } from "../analytics/source";
 import { ensureAnonSession, getCurrentUserId, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
+/** Every DAILY read goes through this view, not the table: one entry per device
+ * per day -- its first post (migration 015). A stale tab could post twice. */
+const DAILY_VIEW = "daily_entries";
 
 /** One drafted player as stored on a leaderboard row (enough to rebuild the
  * lineup and render it without re-reading the manifest). */
@@ -122,7 +125,7 @@ export async function submitScore(entry: LeaderboardSubmission): Promise<{ rank:
   // 2026-08-07) -- exclude them from rank math too, or "#4" counts ghosts
   // of the old economy.
   let q = supabase
-    .from(TABLE)
+    .from(entry.challenge_date ? DAILY_VIEW : TABLE)
     .select("id", { count: "exact", head: true })
     .gt("score", entry.score)
     .not("spend", "is", null);
@@ -157,7 +160,7 @@ export async function fetchDailyScores(challengeId: string, limit = 100): Promis
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(DAILY_VIEW)
     .select("*")
     .eq("challenge_date", challengeId)
     .order("score", { ascending: false })
@@ -176,7 +179,7 @@ export async function fetchDailyLongestDrives(challengeId: string, limit = 100):
   if (!supabase) return [];
 
   const { data, error } = await supabase
-    .from(TABLE)
+    .from(DAILY_VIEW)
     .select("*")
     .eq("challenge_date", challengeId)
     .order("final_field_position", { ascending: true })
@@ -198,13 +201,13 @@ export async function fetchDailyDrivePercentile(
   if (!supabase) return null;
 
   const total = supabase
-    .from(TABLE)
+    .from(DAILY_VIEW)
     .select("id", { count: "exact", head: true })
     .eq("challenge_date", challengeId);
   // Entries this drive reached or beat = those that ended no closer to the end
   // zone (final_field_position >= ours). Lower position = further downfield.
   const beaten = supabase
-    .from(TABLE)
+    .from(DAILY_VIEW)
     .select("id", { count: "exact", head: true })
     .eq("challenge_date", challengeId)
     .gte("final_field_position", finalPosition);
@@ -223,9 +226,9 @@ export async function fetchDailyFieldSummary(challengeId: string): Promise<{ tot
   const supabase = await getSupabase();
   if (!supabase) return { total: 0, scored: 0 };
 
-  const totalQ = supabase.from(TABLE).select("id", { count: "exact", head: true }).eq("challenge_date", challengeId);
+  const totalQ = supabase.from(DAILY_VIEW).select("id", { count: "exact", head: true }).eq("challenge_date", challengeId);
   const scoredQ = supabase
-    .from(TABLE)
+    .from(DAILY_VIEW)
     .select("id", { count: "exact", head: true })
     .eq("challenge_date", challengeId)
     .gt("score", 0);

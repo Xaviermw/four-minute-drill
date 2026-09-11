@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { trackEvent } from "../../analytics/track";
 import { useManifest } from "../../data/dataContext";
 import { startDrive } from "../../data/startDrive";
@@ -14,6 +14,7 @@ import { isRookie, markRookieDone } from "../../state/rookie";
 import { useGhost } from "../../share/GhostProvider";
 import { LINEUP_SLOT_ORDER } from "../../share/lineupCode";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
+import { getDailyRecord, isSameDrive } from "../../daily/dailyState";
 import { dailyStreakDisplay, recordDailyWin, type DailyStreakState } from "../../daily/dailyStreak";
 import { DailyStreakBadge, FreeStreakBanner } from "./StreakBanners";
 import { OutcomeStamp } from "./OutcomeStamp";
@@ -48,9 +49,18 @@ export function ResultScreen() {
   const dispatch = useGameDispatch();
   const { manifest } = useManifest();
   const { open: openLeaderboard } = useLeaderboardUI();
-  const { mode, challengeId, saveDaily, markSubmitted, setMode } = useMode();
+  const { mode, challengeId, dailyRecord, saveDaily, markSubmitted, setMode } = useMode();
   const { ghost } = useGhost();
   const isDaily = mode === "daily";
+  // First finish wins: if another tab banked today's drill while this drive was
+  // running, this drive is played out but never recorded or posted. Storage is
+  // read fresh (the context copy can lag the other tab); `dailyRecord` covers
+  // unavailable storage and re-runs this once our own save lands.
+  const lostDailyRace = useMemo(() => {
+    if (mode !== "daily" || state.phase !== "result") return false;
+    const banked = getDailyRecord(challengeId) ?? dailyRecord;
+    return banked !== null && !isSameDrive(banked.driveLog, state.driveLog);
+  }, [mode, challengeId, dailyRecord, state]);
   const [replaying, setReplaying] = useState(false);
   const [replayError, setReplayError] = useState<string | null>(null);
   const [freeStreak, setFreeStreak] = useState<StreakUpdate | null>(null);
@@ -91,6 +101,9 @@ export function ResultScreen() {
     // and the teaching hints retire from the next drive on.
     markRookieDone();
     if (mode === "daily") {
+      // Another tab finished today's drill first: leave its record alone and
+      // don't credit this drive to the day streak (the result says why).
+      if (lostDailyRace) return;
       saveDaily({
         challengeId,
         driveLog: state.driveLog,
@@ -105,7 +118,7 @@ export function ResultScreen() {
       const storedName = getStoredName();
       void recordDrive(state.driveLog, isNameAllowed(storedName) ? storedName : "").then(setFreeStreak);
     }
-  }, [state, mode, challengeId, saveDaily, wasRookie]);
+  }, [state, mode, challengeId, saveDaily, wasRookie, lostDailyRace]);
 
   if (state.phase !== "result") return null;
   const { driveLog, roster } = state;
@@ -207,20 +220,27 @@ export function ResultScreen() {
         </div>
       ) : null}
 
-      <SubmitScorePanel
-        driveLog={driveLog}
-        roster={roster}
-        onView={openLeaderboard}
-        challengeId={isDaily ? challengeId : null}
-        onSubmitted={
-          isDaily
-            ? () => {
-                markSubmitted();
-                setSeasonTick((t) => t + 1); // the season line updates the moment the score lands
-              }
-            : undefined
-        }
-      />
+      {lostDailyRace ? (
+        <p className="hint" role="status">
+          You finished today's drill in another tab first — that drive is the one that counts. This one stays off
+          the board.
+        </p>
+      ) : (
+        <SubmitScorePanel
+          driveLog={driveLog}
+          roster={roster}
+          onView={openLeaderboard}
+          challengeId={isDaily ? challengeId : null}
+          onSubmitted={
+            isDaily
+              ? () => {
+                  markSubmitted();
+                  setSeasonTick((t) => t + 1); // the season line updates the moment the score lands
+                }
+              : undefined
+          }
+        />
+      )}
 
       {isDaily && <SeasonStrip challengeId={challengeId} refreshKey={seasonTick} onView={openLeaderboard} />}
 

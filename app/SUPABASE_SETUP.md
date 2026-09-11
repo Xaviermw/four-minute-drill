@@ -211,11 +211,19 @@ answers: `select source, count(*), avg(best_wins) from streaks group by 1`.
 
 ## 7. Season Score (migration 011)
 
-`season_totals` is a read-only view: per user, the sum of their best daily
-score per day within the season window (constants in the view: 2026-09-10 ..
+`season_totals` is a read-only view: per user, the sum of their daily score
+per day within the season window (constants in the view: 2026-09-10 ..
 2027-01-05 -- update both the view and `SEASON_START/END` in
 leaderboardApi.ts together for a new season), days played, latest name.
 Losses count their marginal points. Public select via security_invoker.
+
+**One entry per device per day (migration 015).** Every daily surface --
+today's board, rank, field summary, pick rates, the season table, the recap
+bot -- reads `daily_entries`, which keeps each device's FIRST daily post of
+the day. A second post (a stale tab could make one before the Sep 11 client
+fix) stays in `scores` but counts nowhere. The view's `*` is fixed when it is
+created: after adding a column to `scores`, re-run its `create or replace
+view` or daily surfaces won't see the column.
 
 ## 8. Opening-day reminders (migration 013)
 

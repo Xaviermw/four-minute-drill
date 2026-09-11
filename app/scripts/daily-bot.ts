@@ -143,7 +143,8 @@ interface BoardRow {
 }
 
 export function composeRecap(rows: BoardRow[], coachScore: number, dateLabel: string): string | null {
-  // One entry per PERSON: dedupe repeat submitters to their best score (never
+  // One entry per PERSON: the board already holds one post per device (its
+  // first -- migration 015); a name on two devices keeps its best (never
   // inflate the count), and the bot's own row never counts as a player.
   const best = new Map<string, BoardRow>();
   for (const r of rows) {
@@ -171,7 +172,7 @@ async function fetchBoard(id: string): Promise<BoardRow[]> {
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("recap mode needs SUPABASE_URL + SUPABASE_ANON_KEY");
   const res = await fetch(
-    `${url}/rest/v1/scores?select=name,score,spend&challenge_date=eq.${id}&order=score.desc&limit=200`,
+    `${url}/rest/v1/daily_entries?select=name,score,spend&challenge_date=eq.${id}&order=score.desc&limit=200`,
     { headers: { apikey: key, Authorization: `Bearer ${key}` } }
   );
   if (!res.ok) throw new Error(`board fetch failed: HTTP ${res.status}`);

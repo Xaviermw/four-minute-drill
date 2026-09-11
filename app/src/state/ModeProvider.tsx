@@ -1,6 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { todaysChallengeId } from "../daily/dailyChallenge";
-import { getDailyRecord, markDailySubmitted, saveDailyRecord, type DailyRecord } from "../daily/dailyState";
+import {
+  dailyRecordKey,
+  getDailyRecord,
+  markDailySubmitted,
+  saveDailyRecord,
+  type DailyRecord,
+} from "../daily/dailyState";
 import { isRookie } from "./rookie";
 import { useGameDispatch } from "./GameStateProvider";
 
@@ -17,6 +23,9 @@ interface ModeContextValue {
   /** Persist a finished daily drill (enforces the one-shot gate). */
   saveDaily: (record: DailyRecord) => void;
   markSubmitted: () => void;
+  /** Re-read today's record from storage -- another tab may have banked the
+   * drill since this page loaded -- and return it (null = still unplayed). */
+  syncDaily: () => DailyRecord | null;
 }
 
 const ModeContext = createContext<ModeContextValue | null>(null);
@@ -50,9 +59,28 @@ export function ModeProvider({ children }: { children: ReactNode }) {
     setDailyRecord((r) => (r ? { ...r, submitted: true } : r));
   }, [challengeId]);
 
+  // Storage is the truth: the copy read at mount goes stale the moment another
+  // tab finishes the drill (by Sep 11, 9 devices had posted a daily twice that
+  // way). Memory only ever GAINS a record here, so a storage failure or a
+  // cleared key can't reopen a drill this page already saw played.
+  const syncDaily = useCallback(() => {
+    const stored = getDailyRecord(challengeId);
+    if (stored) setDailyRecord(stored);
+    return stored;
+  }, [challengeId]);
+
+  // `storage` fires only in OTHER tabs -- exactly the ones holding a stale copy.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === dailyRecordKey(challengeId)) syncDaily();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [challengeId, syncDaily]);
+
   const value = useMemo(
-    () => ({ mode, challengeId, dailyRecord, setMode, saveDaily, markSubmitted }),
-    [mode, challengeId, dailyRecord, setMode, saveDaily, markSubmitted]
+    () => ({ mode, challengeId, dailyRecord, setMode, saveDaily, markSubmitted, syncDaily }),
+    [mode, challengeId, dailyRecord, setMode, saveDaily, markSubmitted, syncDaily]
   );
 
   return <ModeContext.Provider value={value}>{children}</ModeContext.Provider>;

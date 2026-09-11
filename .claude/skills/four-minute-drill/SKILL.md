@@ -231,10 +231,16 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   policy — requires DROP first, and a recreated **insert policy must re-include
   `name_ok(name)`** (added in 005) or it silently regresses. Always add the
   migration file AND update `app/SUPABASE_SETUP.md`.
-- **Season Score** (migration 011 + `season_totals` view): per-user sum of
-  best-daily-score-per-day inside the season window. Window constants live in
+- **Season Score** (migration 011, rebased in 015): per-user sum of each
+  day's FIRST daily post inside the season window. Window constants live in
   BOTH the view and `SEASON_START/END` in leaderboardApi.ts -- change together.
   Season tab + SeasonStrip (result + DailyDone); named players only.
+- **One daily entry per device per day** (migration 015): daily surfaces read
+  the `daily_entries` view (first post per user_id/day), never `scores`
+  directly -- new daily queries and views must too. The client one-shot gate
+  has three layers: cross-tab `storage` sync (ModeProvider), a re-check at
+  "Run the Drive" (DraftScreen), and first-finish-wins at the result
+  (ResultScreen). `e2e/daily-one-shot.spec.ts` covers each, Supabase blocked.
 - **Opening-day reminders** (migration 013): write-only `reminders` table --
   insert policy AND select/update/delete revoked from anon/authenticated, so
   the publishable key cannot read addresses. Promise shown to players is ONE

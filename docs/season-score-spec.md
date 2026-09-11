@@ -18,7 +18,8 @@ that compounds.
 
 1. **`season_totals` view** (migration 011, read-only): sum of daily scores +
    days played per user_id within the season window, joined to the latest
-   name. Season window is a constant in the view (2026-09-10 .. 2027-01-05);
+   name. One score per device per day: its first post (migration 015,
+   2026-09-11 -- it was the day's max until stale tabs double-posted). Season window is a constant in the view (2026-09-10 .. 2027-01-05);
    pre-season scores are warmup, deliberately excluded. No new writes, no RLS
    surface beyond select.
 2. **"Season" tab** on the leaderboard: rank · name · days played · season

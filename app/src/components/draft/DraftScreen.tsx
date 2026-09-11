@@ -31,7 +31,7 @@ const SLOTS: { key: RosterSlotKey; label: string; position: Position }[] = [
 export function DraftScreen() {
   const { manifest, error } = useManifest();
   const dispatch = useGameDispatch();
-  const { mode, challengeId, dailyRecord, setMode } = useMode();
+  const { mode, challengeId, dailyRecord, setMode, syncDaily } = useMode();
   const [roster, setRoster] = useState<Partial<Record<RosterSlotKey, ManifestPlayerEntry>>>({});
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -121,6 +121,10 @@ export function DraftScreen() {
   }
 
   async function handleContinue() {
+    // Last line of the one-shot gate: another tab may have banked today's drill
+    // since this draft loaded (and its storage event may never have arrived).
+    // Syncing flips this screen to the recap instead of starting a second daily.
+    if (isDaily && syncDaily()) return;
     const finalRoster = roster as DraftedRoster;
     setLoading(true);
     setLoadError(null);
