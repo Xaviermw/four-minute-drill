@@ -240,7 +240,11 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   directly -- new daily queries and views must too. The client one-shot gate
   has three layers: cross-tab `storage` sync (ModeProvider), a re-check at
   "Run the Drive" (DraftScreen), and first-finish-wins at the result
-  (ResultScreen). `e2e/daily-one-shot.spec.ts` covers each, Supabase blocked.
+  (ResultScreen). `e2e/daily-one-shot.spec.ts` covers each, Supabase blocked. Abandoning a
+  daily mid-drive (reload, or Free->Daily) still re-opens the draft: left open
+  deliberately (owner, 2026-09-12 -- closing it would burn a crashed player's
+  day), with `scores.daily_attempt` (016) measuring how often it ends in a
+  second posted attempt.
 - **Opening-day reminders** (migration 013): write-only `reminders` table --
   insert policy AND select/update/delete revoked from anon/authenticated, so
   the publishable key cannot read addresses. Promise shown to players is ONE

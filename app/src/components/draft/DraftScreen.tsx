@@ -15,6 +15,7 @@ import { RookieGate } from "./RookieGate";
 import type { ManifestPlayerEntry, Position } from "../../types/player";
 import type { DraftedRoster, RosterSlotKey } from "../../types/roster";
 import { DailyDone } from "../../daily/DailyDone";
+import { countDailyStart } from "../../daily/dailyState";
 import { RosterSlotPicker } from "./RosterSlotPicker";
 import { BudgetTracker, TeamPanel } from "./TeamPanel";
 import "./draft.css";
@@ -125,6 +126,9 @@ export function DraftScreen() {
     // since this draft loaded (and its storage event may never have arrived).
     // Syncing flips this screen to the recap instead of starting a second daily.
     if (isDaily && syncDaily()) return;
+    // Count every daily drive this device STARTS -- posted with the score, so we
+    // can see whether anyone bails mid-drive and re-drafts. Measurement only.
+    if (isDaily) countDailyStart(challengeId);
     const finalRoster = roster as DraftedRoster;
     setLoading(true);
     setLoadError(null);

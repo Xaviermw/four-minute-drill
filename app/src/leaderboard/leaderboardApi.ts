@@ -3,6 +3,7 @@ import { finalFieldPosition, type DriveChoice, type DriveLog } from "../types/si
 import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import { getFirstTouchSource } from "../analytics/source";
+import { dailyTries } from "../daily/dailyState";
 import { ensureAnonSession, getCurrentUserId, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
@@ -60,6 +61,9 @@ export interface LeaderboardSubmission {
   challenge_date: string | null;
   /** First-touch acquisition tag (utm_source), or null for organic. */
   source: string | null;
+  /** Which daily drive of the day this device was on (1 = its first); null for
+   * free play or unusable storage. Measurement only -- see migration 016. */
+  daily_attempt: number | null;
 }
 
 function rosterToPlayers(roster: DraftedRoster): LeaderboardPlayer[] {
@@ -92,6 +96,9 @@ export function buildSubmission(
     choices: driveLog.choices,
     challenge_date: challengeId,
     source: getFirstTouchSource(),
+    // Which daily drive of the day this device is posting (migration 016). 0
+    // tries means storage is unusable, which is a null, not a first attempt.
+    daily_attempt: challengeId ? dailyTries(challengeId) || null : null,
   };
 }
 

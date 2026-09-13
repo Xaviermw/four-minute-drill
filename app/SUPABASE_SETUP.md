@@ -225,6 +225,13 @@ fix) stays in `scores` but counts nowhere. The view's `*` is fixed when it is
 created: after adding a column to `scores`, re-run its `create or replace
 view` or daily surfaces won't see the column.
 
+**Attempt counting (migration 016).** `scores.daily_attempt` records which
+daily drive of the day the device was posting (1 = its first; null = free
+play, a pre-2026-09-12 client, or unusable storage). The one-shot rule counts
+FINISHED drives, so bailing mid-drive re-opens the draft -- deliberately left
+open (owner, 2026-09-12); this measures how often that becomes a second
+posted attempt. Client-reported: a metric, never an enforcement input.
+
 ## 8. Opening-day reminders (migration 013)
 
 `reminders` holds emails typed into the pre-season countdown strip. It is

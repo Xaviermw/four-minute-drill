@@ -40,3 +40,30 @@ export function markDailySubmitted(challengeId: string): void {
 export function isSameDrive(a: DriveLog, b: DriveLog): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
+
+// How many daily drives this device has STARTED today. The one-shot rule counts
+// FINISHED drives, so a player can bail mid-drive (reload, or switch modes) and
+// draft again; posting this count is how we measure whether anyone actually does
+// (owner call 2026-09-12: measure, don't police).
+const triesKey = (id: string) => `fmd_daily_tries_${id}`;
+
+/** Records the start of a daily drive; returns which attempt of the day it is. */
+export function countDailyStart(challengeId: string): number {
+  const next = dailyTries(challengeId) + 1;
+  try {
+    localStorage.setItem(triesKey(challengeId), String(next));
+  } catch {
+    /* ignore -- the metric is best-effort, the game is not */
+  }
+  return next;
+}
+
+/** Daily drives started today on this device; 0 when unknown. */
+export function dailyTries(challengeId: string): number {
+  try {
+    const raw = Number(localStorage.getItem(triesKey(challengeId)));
+    return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+  } catch {
+    return 0;
+  }
+}
