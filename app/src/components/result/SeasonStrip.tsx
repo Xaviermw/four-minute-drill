@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { formatChallengeDate } from "../../daily/dailyChallenge";
+import { weekStartFor } from "../../daily/season";
 import {
   fetchMySeason,
+  fetchMyWeek,
   hasReminder,
   isNetworkError,
   isSeasonLive,
@@ -9,6 +11,7 @@ import {
   SEASON_START,
   subscribeReminder,
   type SeasonRow,
+  type WeekRow,
 } from "../../leaderboard/leaderboardApi";
 import { isLeaderboardEnabled } from "../../leaderboard/supabaseClient";
 
@@ -17,6 +20,8 @@ import { isLeaderboardEnabled } from "../../leaderboard/supabaseClient";
  * Accumulation framing only: what you've built, never what you missed (the
  * daily streak carries the attendance pressure). Pre-season it teases opening
  * day; in-season it shows the running total + rank, refetching after a submit.
+ * The week rank rides along: a newcomer can't catch the season leader, but
+ * "#3 this week" is within reach by Wednesday.
  */
 export function SeasonStrip({
   challengeId,
@@ -28,6 +33,7 @@ export function SeasonStrip({
   onView: () => void;
 }) {
   const [mine, setMine] = useState<{ row: SeasonRow; rank: number | null } | null | undefined>(undefined);
+  const [myWeek, setMyWeek] = useState<{ row: WeekRow; rank: number | null } | null>(null);
   const live = isSeasonLive(challengeId);
   // Opening-day reminder (owner call 2026-08-24): one email, no list. State
   // is per device -- once asked, the form never reappears.
@@ -56,10 +62,13 @@ export function SeasonStrip({
     fetchMySeason()
       .then((d) => !cancelled && setMine(d))
       .catch(() => !cancelled && setMine(null));
+    fetchMyWeek(weekStartFor(challengeId))
+      .then((d) => !cancelled && setMyWeek(d))
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [live, refreshKey]);
+  }, [live, refreshKey, challengeId]);
 
   if (!isLeaderboardEnabled) return null;
 
@@ -107,6 +116,12 @@ export function SeasonStrip({
           <>
             {" "}
             · <b>#{rank}</b>
+            {myWeek?.rank != null && (
+              <>
+                {" "}
+                · this week <b>#{myWeek.rank}</b>
+              </>
+            )}
           </>
         ) : (
           <> · unranked — name your next daily to claim a spot</>

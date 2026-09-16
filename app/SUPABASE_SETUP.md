@@ -249,3 +249,15 @@ psql "<pooler conn string>" -At -c "select string_agg(email, ', ') from reminder
 Subject/body suggestion lives in docs/launch-kit.md (one email: the season
 starts today, every daily counts, link). After sending, delete the rows --
 that's the promise: `delete from reminders;`
+
+## 9. Weekly winners (migration 017)
+
+`weekly_totals` is a read-only view: per (player, NFL week) inside the season
+window, the sum of each day's first post (`daily_entries`), days played, total
+cap spend and latest name. Weeks run Thursday to Wednesday from opening night;
+`week_start` is the Thursday as an ISO date -- lockstep with `weekStartFor()`
+in `app/src/daily/season.ts`. `weekly_winners` is the #1 named row of each
+week (points, then lower total spend, then earliest); the client hides the
+week in progress. Coach Bot's `weekly` mode (Thursday cron) reads
+`weekly_totals` for the week that just ended. In the app the "This Week" tab
+replaced the all-time free-play tab (owner call 2026-09-16).

@@ -98,7 +98,9 @@ export function SubmitScorePanel({
             <p className="submit-rank">
               #{rank} <span>{isDaily ? "today" : "all-time"}</span>
             </p>
-            <p className="submit-done-sub">Your score is on the board.</p>
+            <p className="submit-done-sub">
+              {isDaily ? "Your score is on the board." : "That's where it ranks among every free-play drive ever posted."}
+            </p>
           </>
         ) : (
           <>
@@ -126,7 +128,7 @@ export function SubmitScorePanel({
       <p className="submit-why">
         {isDaily
           ? "Posting puts you on today's board and starts your season score."
-          : "Posting puts you on the all-time board and your win streak."}
+          : "Posting ranks your drive against every free-play drive ever posted."}
       </p>
       <div className="submit-row">
         <input

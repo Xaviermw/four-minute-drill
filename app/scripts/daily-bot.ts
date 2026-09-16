@@ -2,7 +2,7 @@
  * Coach Bot -- the automated daily drumbeat (docs/marketing-plan.md, house
  * ghost ritual; evening recap per docs/marketing-automation-plan.md A2).
  *
- * Two modes (BOT_MODE env, default "challenge"):
+ * Three modes (BOT_MODE env, default "challenge"):
  *   challenge -- every morning: play TODAY'S daily exactly as a human would
  *     (same board, same prices, same drive seed), build the share text with a
  *     raceable ghost link, post a standing "beat the Coach" challenge.
@@ -10,6 +10,9 @@
  *     and post the results ("41 players, 12 beat the Coach, top drive 214").
  *     Quiet days (< MIN_RECAP_PLAYERS scores) post NOTHING -- "3 players
  *     showed up" reads as an ad against us.
+ *   weekly -- Thursday morning: crown the NFL week that ended at midnight
+ *     (weekly_totals, migration 017) and open the next race. Same quiet-week
+ *     rule; nothing to post until week 1 is complete.
  *
  * Deterministic per day: anyone who runs challenge mode for the same
  * challenge id gets the same drive, so recap mode can recompute the Coach's
@@ -17,8 +20,10 @@
  * dry run that prints the post (and writes the GitHub Actions job summary).
  *
  * Env:
- *   BOT_MODE=challenge|recap (default challenge)
- *   SUPABASE_URL + SUPABASE_ANON_KEY -> recap board fetch (public values; the
+ *   BOT_MODE=challenge|recap|weekly (default challenge)
+ *   BOT_NOW=<ISO instant> -> pretend it is that moment (dry runs of a future
+ *     Thursday, or a recap of a past day); never set in the workflow
+ *   SUPABASE_URL + SUPABASE_ANON_KEY -> board fetches (public values; the
  *     workflow scrapes them from the live bundle, same as the keep-alive step)
  *   BLUESKY_IDENTIFIER + BLUESKY_APP_PASSWORD  -> posts to Bluesky
  *   X_APP_KEY + X_APP_SECRET + X_ACCESS_TOKEN + X_ACCESS_SECRET -> posts to X
@@ -31,6 +36,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createDriveSession, kickDistanceFor, makeRng, MAX_REALISTIC_FIELD_GOAL_DISTANCE } from "../src/engine";
 import { dailyDraftRng, dailyDriveSeed, formatChallengeDate, seedFromString, todaysChallengeId } from "../src/daily/dailyChallenge";
+import { lastCompletedWeekStart, SEASON_END, SEASON_LABEL, weekEndFor, weekNumberFor } from "../src/daily/season";
 import { drawSlotOptions } from "../src/draft/draftPool";
 import { getPricing } from "../src/draft/pricing";
 import { capForChallenge } from "../src/draft/capConfig";
@@ -49,13 +55,14 @@ const DATA = join(__dirname, "..", "public", "data");
 const manifest = JSON.parse(readFileSync(join(DATA, "manifest.json"), "utf8")) as Manifest;
 const loadData = (id: string) => JSON.parse(readFileSync(join(DATA, "players", `${id}.json`), "utf8"));
 
-const challengeId = todaysChallengeId();
+const now = process.env.BOT_NOW ? new Date(process.env.BOT_NOW) : new Date();
+const challengeId = todaysChallengeId(now);
 // Recap targets "the evening being recapped", robust to GitHub cron lag: a
 // 12-hour shift maps any run between noon ET and noon-ET-next-day onto the
 // day whose board it should read. (Audit finding 2026-08-05: the 11pm cron
 // fired at 1:51am ET, read the NEW day's empty board, and skipped the
 // 9-player Aug 4 recap.)
-const recapChallengeId = todaysChallengeId(new Date(Date.now() - 12 * 3600 * 1000));
+const recapChallengeId = todaysChallengeId(new Date(now.getTime() - 12 * 3600 * 1000));
 
 // ---- The Coach's daily drive (deterministic; used by BOTH modes) ----------
 
@@ -122,7 +129,7 @@ function composeChallenge(): { post: string; url: string } {
   // one-tap ghost race stays for friend-to-friend shares from the app.
   const url = ORIGIN;
 
-  const dateLabel = new Date().toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
+  const dateLabel = now.toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
   const grid = buildDriveGrid(log);
   const scoreLine = log.won
     ? `🤖 ${BOT_NAME}: ${log.score} pts on a $${spend} squad. Beat his drive ▶`
@@ -167,16 +174,66 @@ export function composeRecap(rows: BoardRow[], coachScore: number, dateLabel: st
   return post;
 }
 
-async function fetchBoard(id: string): Promise<BoardRow[]> {
+// ---- Compose: weekly winner -------------------------------------------------
+
+interface WeekRow {
+  name: string;
+  week_points: number;
+  days_played: number;
+  total_spend: number | null;
+}
+
+/** Rows arrive already ranked (points, then the cheaper squad, then who got
+ * there first -- the view's own order). `nextWeek` is null after the final
+ * week: the season closes instead of promising another race. */
+export function composeWeekly(rows: WeekRow[], week: number, nextWeek: number | null): string | null {
+  const players = rows.filter((r) => r.name !== BOT_NAME && r.name !== "Anonymous");
+  if (players.length < MIN_RECAP_PLAYERS) return null;
+  const [winner, ...rest] = players;
+  const drills = `${winner.days_played} drill${winner.days_played === 1 ? "" : "s"}`;
+  const podium = rest
+    .slice(0, 2)
+    .map((r, i) => `${i === 0 ? "🥈" : "🥉"} ${r.name} ${r.week_points}`)
+    .join(" · ");
+  const opener =
+    nextWeek === null
+      ? `That's a wrap on the ${SEASON_LABEL}. Thanks for every drive ▶ ${ORIGIN}`
+      : `Week ${nextWeek} starts now — fresh race, every drill counts ▶ ${ORIGIN}`;
+  let post = [`🏆 Week ${week} is in the books. ${winner.name} takes it — ${winner.week_points} pts over ${drills}.`, podium, opener]
+    .filter(Boolean)
+    .join("\n");
+  if (post.length > 292) post = [`🏆 Week ${week}: ${winner.name} wins with ${winner.week_points} pts.`, opener].join("\n");
+  return post;
+}
+
+// ---- Public board reads (anon key; both values are public by design) ---------
+
+function boardHeaders(): { url: string; headers: Record<string, string> } {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("recap mode needs SUPABASE_URL + SUPABASE_ANON_KEY");
+  if (!url || !key) throw new Error("board reads need SUPABASE_URL + SUPABASE_ANON_KEY");
+  return { url, headers: { apikey: key, Authorization: `Bearer ${key}` } };
+}
+
+async function fetchBoard(id: string): Promise<BoardRow[]> {
+  const { url, headers } = boardHeaders();
   const res = await fetch(
     `${url}/rest/v1/daily_entries?select=name,score,spend&challenge_date=eq.${id}&order=score.desc&limit=200`,
-    { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    { headers }
   );
   if (!res.ok) throw new Error(`board fetch failed: HTTP ${res.status}`);
   return (await res.json()) as BoardRow[];
+}
+
+async function fetchWeekTop(weekStart: string): Promise<WeekRow[]> {
+  const { url, headers } = boardHeaders();
+  const res = await fetch(
+    `${url}/rest/v1/weekly_totals?select=name,week_points,days_played,total_spend&week_start=eq.${weekStart}` +
+      `&order=week_points.desc,total_spend.asc.nullslast,last_played_at.asc&limit=10`,
+    { headers }
+  );
+  if (!res.ok) throw new Error(`week fetch failed: HTTP ${res.status}`);
+  return (await res.json()) as WeekRow[];
 }
 
 // ---- Post (each platform independently gated on its secrets) ----------------
@@ -247,11 +304,11 @@ async function publish(kind: string, post: string, url: string, id: string = cha
 }
 
 // ---- Mode dispatch (only when run as a script -- import stays side-effect-free
-// so composeRecap is testable) --------------------------------------------------
+// so the compose functions are testable) --------------------------------------
 
 const isMain = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1].replace(/\\/g, "/")}`).href;
 if (isMain) {
-  const mode = process.env.BOT_MODE === "recap" ? "recap" : "challenge";
+  const mode = process.env.BOT_MODE === "recap" || process.env.BOT_MODE === "weekly" ? process.env.BOT_MODE : "challenge";
   if (mode === "recap") {
     const rows = await fetchBoard(recapChallengeId);
     const post = composeRecap(
@@ -263,6 +320,21 @@ if (isMain) {
       console.log(`recap: skipped -- quiet day (${rows.length} rows, need ${MIN_RECAP_PLAYERS}+ non-bot players)`);
     } else {
       await publish("recap", post, ORIGIN, recapChallengeId);
+    }
+  } else if (mode === "weekly") {
+    const done = lastCompletedWeekStart(challengeId);
+    if (done === null) {
+      console.log(`weekly: skipped -- no completed week yet as of ${challengeId}`);
+    } else {
+      const week = weekNumberFor(done);
+      const finale = weekEndFor(done) >= SEASON_END;
+      const rows = await fetchWeekTop(done);
+      const post = composeWeekly(rows, week, finale ? null : week + 1);
+      if (post === null) {
+        console.log(`weekly: skipped -- quiet week ${week} (${rows.length} rows, need ${MIN_RECAP_PLAYERS}+ named players)`);
+      } else {
+        await publish("weekly", post, ORIGIN, done);
+      }
     }
   } else {
     const { post, url } = composeChallenge();

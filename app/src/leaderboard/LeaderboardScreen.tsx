@@ -3,6 +3,7 @@ import { useManifest } from "../data/dataContext";
 import { startDrive } from "../data/startDrive";
 import { payoutMultiplier } from "../engine";
 import { formatChallengeDate } from "../daily/dailyChallenge";
+import { weekLabel, weekNumberFor, weekStartFor } from "../daily/season";
 import { rosterFromIdList } from "../share/sharedLineup";
 import { outcomeLabel } from "../share/shareText";
 import { useGameDispatch } from "../state/GameStateProvider";
@@ -14,31 +15,25 @@ import {
   fetchDailyScores,
   fetchMySeason,
   fetchMyStreak,
+  fetchMyWeek,
   fetchSeasonTable,
-  fetchTopScores,
   fetchTopStreaks,
+  fetchWeekTable,
+  fetchWeekWinners,
   isNetworkError,
   isSeasonLive,
+  SEASON_END,
   SEASON_LABEL,
   SEASON_START,
   type SeasonRow,
   type LeaderboardRow,
   type StreakRow,
+  type WeekRow,
 } from "./leaderboardApi";
 import { getCurrentUserId, isLeaderboardEnabled } from "./supabaseClient";
 import "./leaderboard.css";
 
-type Tab = "daily" | "season" | "score" | "streak";
-
-function scoredDate(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}),
-  });
-}
+type Tab = "daily" | "week" | "season" | "streak";
 
 function ScoreList({
   rows,
@@ -46,15 +41,12 @@ function ScoreList({
   loadingId,
   onPlay,
   playLabel,
-  showDate = false,
 }: {
   rows: LeaderboardRow[];
   userId: string | null;
   loadingId: string | null;
   onPlay: (row: LeaderboardRow) => void;
   playLabel: string;
-  /** All-time board: show when each score was posted (daily is one date). */
-  showDate?: boolean;
 }) {
   return (
     <ol className="leaderboard-list">
@@ -64,7 +56,6 @@ function ScoreList({
           <span className="lb-name">
             {row.name}
             {userId && row.user_id === userId && <span className="lb-you">you</span>}
-            {showDate && <span className="lb-date">{scoredDate(row.created_at)}</span>}
           </span>
           <span className="lb-ovr" title={row.spend != null ? "Team salary (of $25 cap)" : "Roster payout multiplier"}>
             {row.spend != null ? `$${row.spend}` : formatPayout(payoutMultiplier(row.team_ovr))}
@@ -139,10 +130,14 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const { manifest } = useManifest();
   const dispatch = useGameDispatch();
   const { mode, challengeId } = useMode();
-  const [tab, setTab] = useState<Tab>(mode === "daily" ? "daily" : "score");
+  // Free play's home is the streak board (the all-time free-play table was
+  // retired for the weekly race, owner call 2026-09-16).
+  const [tab, setTab] = useState<Tab>(mode === "daily" ? "daily" : "streak");
   const [daily, setDaily] = useState<LeaderboardRow[] | null>(null);
   const [dailyDrives, setDailyDrives] = useState<LeaderboardRow[] | null>(null);
-  const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
+  const [week, setWeek] = useState<WeekRow[] | null>(null);
+  const [winners, setWinners] = useState<WeekRow[]>([]);
+  const [myWeek, setMyWeek] = useState<{ row: WeekRow; rank: number | null } | null>(null);
   const [streaks, setStreaks] = useState<StreakRow[] | null>(null);
   const [myStreak, setMyStreak] = useState<StreakRow | null>(null);
   const [season, setSeason] = useState<SeasonRow[] | null>(null);
@@ -153,11 +148,16 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
   const modalRef = useRef<HTMLDivElement>(null);
   useModalBehavior(modalRef, onClose);
 
+  const live = isSeasonLive(challengeId);
+  const seasonOver = challengeId > SEASON_END;
+  const weekStart = weekStartFor(challengeId);
+  const weekNo = weekNumberFor(weekStart);
+
   useEffect(() => {
     if (!isLeaderboardEnabled) {
       setDaily([]);
       setDailyDrives([]);
-      setRows([]);
+      setWeek([]);
       setStreaks([]);
       setSeason([]);
       return;
@@ -172,12 +172,15 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           ? "The leaderboard is unreachable right now — scores are safe, check back soon."
           : err.message
       );
+    const thisWeek = weekStartFor(challengeId);
     // getCurrentUserId doesn't create a session -- only players who've already
     // played have one, so we can highlight their rows as "you".
     getCurrentUserId().then((id) => !cancelled && setUserId(id));
     fetchDailyScores(challengeId, 100).then((d) => !cancelled && setDaily(d)).catch(fail);
     fetchDailyLongestDrives(challengeId, 25).then((d) => !cancelled && setDailyDrives(d)).catch(fail);
-    fetchTopScores(100).then((d) => !cancelled && setRows(d)).catch(fail);
+    fetchWeekTable(thisWeek, 100).then((d) => !cancelled && setWeek(d)).catch(fail);
+    fetchWeekWinners(thisWeek).then((d) => !cancelled && setWinners(d)).catch(() => {});
+    fetchMyWeek(thisWeek).then((d) => !cancelled && setMyWeek(d)).catch(() => {});
     fetchTopStreaks(100).then((d) => !cancelled && setStreaks(d)).catch(fail);
     fetchMyStreak().then((d) => !cancelled && setMyStreak(d)).catch(() => {});
     fetchSeasonTable(100).then((d) => !cancelled && setSeason(d)).catch(fail);
@@ -208,7 +211,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const activeData = tab === "daily" ? daily : tab === "season" ? season : tab === "score" ? rows : streaks;
+  const activeData = tab === "daily" ? daily : tab === "week" ? week : tab === "season" ? season : streaks;
 
   return (
     <div className="leaderboard-overlay" role="dialog" aria-modal="true" aria-label="Leaderboard" onClick={onClose}>
@@ -224,8 +227,8 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
           {(
             [
               ["daily", "Today's Drill"],
+              ["week", "This Week"],
               ["season", "Season"],
-              ["score", "All-Time"],
               ["streak", "Win Streaks"],
             ] as [Tab, string][]
           ).map(([id, label]) => (
@@ -278,11 +281,89 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
             </>
           )}
 
+          {/* ---- This Week (NFL week, Thursday to Wednesday) ---- */}
+          {tab === "week" && week !== null && (
+            <>
+              <p className="leaderboard-subnote">
+                {live
+                  ? `Week ${weekNo} · ${weekLabel(weekStart)} · a fresh race every Thursday · a loss still banks its yards`
+                  : seasonOver
+                    ? `The ${SEASON_LABEL} is over — the winners below stand.`
+                    : `Weekly races begin with the ${SEASON_LABEL} on ${formatChallengeDate(SEASON_START)} — a fresh table every Thursday.`}
+              </p>
+              {live && myWeek && (
+                <p className={`lb-claim-nudge ${myWeek.rank !== null ? "is-season-me" : ""}`}>
+                  {myWeek.rank !== null ? (
+                    <>
+                      Your week: <b>{myWeek.row.week_points} pts</b> · {myWeek.row.days_played} drill
+                      {myWeek.row.days_played === 1 ? "" : "s"} · <b>#{myWeek.rank}</b>
+                    </>
+                  ) : (
+                    <>
+                      You've banked <b>{myWeek.row.week_points} pts</b> this week over {myWeek.row.days_played} drill
+                      {myWeek.row.days_played === 1 ? "" : "s"} — but it's unlisted. Put a name on your next daily to
+                      claim your spot.
+                    </>
+                  )}
+                </p>
+              )}
+              {week.length === 0 ? (
+                <p className="leaderboard-empty">
+                  {live
+                    ? "No scores yet this week — today's drill is the first chance to lead it."
+                    : seasonOver
+                      ? "No week in progress."
+                      : `Today's drill doesn't count yet — the ${SEASON_LABEL} kicks off ${formatChallengeDate(SEASON_START)}. Warm up now.`}
+                </p>
+              ) : (
+                <ol className="leaderboard-list">
+                  {week.map((row, i) => (
+                    <li className={`streak-row ${userId && row.user_id === userId ? "is-you" : ""}`} key={row.user_id}>
+                      <span className="lb-rank">{i + 1}</span>
+                      <span className="lb-name">
+                        {row.name}
+                        {userId && row.user_id === userId && <span className="lb-you">you</span>}
+                      </span>
+                      <span className="lb-wins">
+                        {row.days_played} drill{row.days_played === 1 ? "" : "s"}
+                      </span>
+                      <span className="lb-score">{row.week_points}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              {/* Past winners -- announced by Coach Bot every Thursday morning. */}
+              {winners.length > 0 && (
+                <div className="leaderboard-section">
+                  <p className="leaderboard-section-title">Weekly winners</p>
+                  <p className="leaderboard-subnote">Most points over the week · ties go to the cheaper squad</p>
+                  <ol className="leaderboard-list">
+                    {winners.map((row) => (
+                      <li
+                        className={`streak-row winner-row ${userId && row.user_id === userId ? "is-you" : ""}`}
+                        key={row.week_start}
+                      >
+                        <span className="lb-rank lb-week">Wk {weekNumberFor(row.week_start)}</span>
+                        <span className="lb-name">
+                          🏆 {row.name}
+                          {userId && row.user_id === userId && <span className="lb-you">you</span>}
+                        </span>
+                        <span className="lb-wins">{weekLabel(row.week_start)}</span>
+                        <span className="lb-score">{row.week_points}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </>
+          )}
+
           {/* ---- Season (cumulative daily-drill points) ---- */}
           {tab === "season" && season !== null && (
             <>
               <p className="leaderboard-subnote">
-                {isSeasonLive(challengeId)
+                {live
                   ? `${SEASON_LABEL} · every daily drill adds to your total · a loss still banks its yards`
                   : `The ${SEASON_LABEL} starts ${formatChallengeDate(SEASON_START)} — every daily drill from opening day counts.`}
               </p>
@@ -304,7 +385,7 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
               )}
               {season.length === 0 ? (
                 <p className="leaderboard-empty">
-                  {isSeasonLive(challengeId)
+                  {live
                     ? "No season scores yet — today's drill is the first chance to get on the table."
                     : `Today's drill doesn't count yet — the ${SEASON_LABEL} kicks off ${formatChallengeDate(SEASON_START)}. From opening day, every daily adds to your season total. Warm up now.`}
                 </p>
@@ -326,22 +407,6 @@ export function LeaderboardScreen({ onClose }: { onClose: () => void }) {
                 </ol>
               )}
             </>
-          )}
-
-          {/* ---- All-time (free play) ---- */}
-          {tab === "score" && rows !== null && (
-            rows.length === 0 ? (
-              <p className="leaderboard-empty">No scores yet — be the first to put one up.</p>
-            ) : (
-              <ScoreList
-                rows={rows}
-                userId={userId}
-                loadingId={loadingId}
-                onPlay={playLineup}
-                playLabel="Play this lineup"
-                showDate
-              />
-            )
           )}
 
           {/* ---- Win streaks ---- */}

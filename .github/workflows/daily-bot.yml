@@ -1,8 +1,9 @@
-# Coach Bot: two runs a day. Morning -- plays today's daily and posts the
-# "beat the Coach" challenge with a raceable ghost link. Evening -- posts the
-# day's results pulled from the public board (skips quiet days). With no
-# secrets configured both are dry runs whose post text lands in the job
-# summary for manual copy-paste.
+# Coach Bot: two runs a day, plus one a week. Morning -- plays today's daily
+# and posts the "beat the Coach" challenge with a raceable ghost link.
+# Evening -- posts the day's results pulled from the public board (skips
+# quiet days). Thursday morning -- crowns the NFL week that ended at midnight
+# ET and opens the next race. With no secrets configured all are dry runs
+# whose post text lands in the job summary for manual copy-paste.
 #
 # Secrets (Settings -> Secrets and variables -> Actions):
 #   BLUESKY_IDENTIFIER, BLUESKY_APP_PASSWORD          -> enables Bluesky
@@ -18,12 +19,16 @@ on:
     # "the evening being recapped" via a 12h shift, so even a huge delay
     # posts about the right day.
     - cron: "23 1 * * *"
+    # Weekly winner: Thursdays 9:45am ET summer (8:45 winter), ahead of the
+    # challenge post. Announces the week that ended at midnight; a lagged run
+    # still names the same week, since it looks back from "today".
+    - cron: "45 13 * * 4"
   workflow_dispatch:
     inputs:
       mode:
         description: "Post to make"
         type: choice
-        options: [challenge, recap]
+        options: [challenge, recap, weekly]
         default: challenge
 
 permissions:
@@ -61,14 +66,14 @@ jobs:
           status=$(curl -s -o /dev/null -w "%{http_code}" -m 20 "$url/rest/v1/scores?select=id&limit=1" -H "apikey: $key" -H "Authorization: Bearer $key")
           echo "Supabase ping: HTTP $status"
           if [ "$status" != "200" ]; then echo "::error::Supabase unreachable (HTTP $status) -- the project may be paused; restore it at supabase.com"; exit 1; fi
-          # Recap mode reads the board with the same public values.
+          # Recap and weekly modes read the boards with the same public values.
           echo "SUPABASE_URL=$url" >> "$GITHUB_ENV"
           echo "SUPABASE_ANON_KEY=$key" >> "$GITHUB_ENV"
       - name: Play the daily and post
         run: npx tsx scripts/daily-bot.ts
         env:
           # Scheduled runs pick their mode by which cron fired; manual runs by input.
-          BOT_MODE: ${{ github.event.inputs.mode || (github.event.schedule == '23 1 * * *' && 'recap' || 'challenge') }}
+          BOT_MODE: ${{ github.event.inputs.mode || (github.event.schedule == '23 1 * * *' && 'recap' || github.event.schedule == '45 13 * * 4' && 'weekly' || 'challenge') }}
           BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
           X_APP_KEY: ${{ secrets.X_APP_KEY }}

@@ -354,13 +354,82 @@ export async function fetchTopStreaks(limit = 100): Promise<StreakRow[]> {
 
 // ---- Season Score (docs/season-score-spec.md) ------------------------------
 
-/** Season window -- keep in lockstep with migration 011's view constants. */
-export const SEASON_START = "2026-09-10";
-export const SEASON_END = "2027-01-05";
-export const SEASON_LABEL = "2026 Season";
+/** The season window and NFL-week math live in daily/season.ts (shared with
+ * Coach Bot, which can't import this module's Vite env); re-exported so the
+ * UI keeps one import. Lockstep with the 011 and 017 view constants. */
+export { SEASON_START, SEASON_END, SEASON_LABEL, isSeasonLive } from "../daily/season";
 
-export function isSeasonLive(challengeId: string): boolean {
-  return challengeId >= SEASON_START && challengeId <= SEASON_END;
+// ---- Weekly winners (migration 017) ----------------------------------------
+
+export interface WeekRow {
+  user_id: string;
+  name: string;
+  /** ISO date of the week's Thursday (see weekStartFor). */
+  week_start: string;
+  week_points: number;
+  days_played: number;
+  /** Cap spend summed over the week's drives -- the tie-break (cheaper wins). */
+  total_spend: number | null;
+  last_played_at: string;
+}
+
+/** One NFL week's table: cumulative daily points, named players only, ranked
+ * by points, then the cheaper squad (as on the daily board), then who got
+ * there first -- the same order weekly_winners and Coach Bot use. */
+export async function fetchWeekTable(weekStart: string, limit = 100): Promise<WeekRow[]> {
+  const supabase = await getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("weekly_totals")
+    .select("*")
+    .eq("week_start", weekStart)
+    .neq("name", "Anonymous")
+    .order("week_points", { ascending: false })
+    .order("total_spend", { ascending: true, nullsFirst: false })
+    .order("last_played_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as WeekRow[];
+}
+
+/** The viewer's own line for one week + rank among named players (null rank
+ * when unnamed -- the claim nudge). Null when they haven't played that week. */
+export async function fetchMyWeek(weekStart: string): Promise<{ row: WeekRow; rank: number | null } | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .from("weekly_totals")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("week_start", weekStart)
+    .maybeSingle();
+  if (error || !data) return null;
+  const row = data as WeekRow;
+  if (!row.name || row.name === "Anonymous") return { row, rank: null };
+  const { count } = await supabase
+    .from("weekly_totals")
+    .select("user_id", { count: "exact", head: true })
+    .eq("week_start", weekStart)
+    .neq("name", "Anonymous")
+    .gt("week_points", row.week_points);
+  return { row, rank: (count ?? 0) + 1 };
+}
+
+/** Winners of every COMPLETED week (newest first) -- weeks before the one
+ * starting `beforeWeekStart`, so the race in progress never shows a winner. */
+export async function fetchWeekWinners(beforeWeekStart: string, limit = 20): Promise<WeekRow[]> {
+  const supabase = await getSupabase();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("weekly_winners")
+    .select("*")
+    .lt("week_start", beforeWeekStart)
+    .order("week_start", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as WeekRow[];
 }
 
 export interface SeasonRow {

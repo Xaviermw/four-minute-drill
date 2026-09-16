@@ -33,6 +33,16 @@ that compounds.
    built," not "you missed 3 days." The daily streak already carries the
    attendance pressure; Season Score is the trophy shelf.
 
+## Weekly winners (added 2026-09-16)
+
+The season table rewards the day-one regulars; a newcomer can't catch the
+leader. NFL weeks (Thursday to Wednesday, opening night included) give
+everyone a fresh race within a week: a "This Week" tab (replacing the
+all-time free-play tab), "this week #N" on the season strip, a past-winners
+list, and Coach Bot crowning the week every Thursday morning. Ties: points,
+then lower total cap spend, then earliest. Views `weekly_totals` and
+`weekly_winners` (migration 017); week math in `daily/season.ts`.
+
 ## Deliberately deferred
 
 - **User pages** (routes, share surface, moderation) -- revisit post-launch

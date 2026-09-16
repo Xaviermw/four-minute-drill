@@ -235,6 +235,15 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   day's FIRST daily post inside the season window. Window constants live in
   BOTH the view and `SEASON_START/END` in leaderboardApi.ts -- change together.
   Season tab + SeasonStrip (result + DailyDone); named players only.
+- **Weekly winners** (migration 017): `weekly_totals` / `weekly_winners`
+  views over `daily_entries`. NFL weeks run Thursday→Wednesday from opening
+  night; ALL week math goes through `daily/season.ts` (`weekStartFor`,
+  `weekNumberFor`, `lastCompletedWeekStart`), which Coach Bot shares -- the
+  bot must never import leaderboardApi (Vite env). The "This Week" tab
+  replaced the all-time free-play tab (owner call 2026-09-16); free play's
+  home is the streak board, and its post still reports a board-less all-time
+  rank. Bot `weekly` mode: Thursday `45 13 * * 4` cron; `BOT_NOW` fakes the
+  clock for dry runs of a future Thursday.
 - **One daily entry per device per day** (migration 015): daily surfaces read
   the `daily_entries` view (first post per user_id/day), never `scores`
   directly -- new daily queries and views must too. The client one-shot gate
