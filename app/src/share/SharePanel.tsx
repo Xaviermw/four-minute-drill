@@ -1,13 +1,16 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "../analytics/track";
 import { useManifest } from "../data/dataContext";
 import { getPricing } from "../draft/pricing";
 import { capForChallenge } from "../draft/capConfig";
+import { seasonDayNumber } from "../daily/season";
 import { useMode } from "../state/ModeProvider";
 import type { DraftedRoster } from "../types/roster";
 import type { DriveLog } from "../types/simResult";
-import { getStoredName } from "../leaderboard/leaderboardApi";
+import { fetchDailyScorePercentile, getStoredName, type ScorePercentile } from "../leaderboard/leaderboardApi";
+import { isLeaderboardEnabled } from "../leaderboard/supabaseClient";
 import { ResultCard } from "./ResultCard";
+import { coachLike } from "./coachLike";
 import { buildShareText } from "./shareText";
 import { LINEUP_SLOT_ORDER } from "./lineupCode";
 import { canShareImage, copyText, downloadBlob, nodeToPngBlob } from "./shareImage";
@@ -25,10 +28,34 @@ export function SharePanel({ driveLog, roster }: { driveLog: DriveLog; roster: D
   const spend = pricing ? LINEUP_SLOT_ORDER.reduce((sum, s) => sum + pricing.priceFor(roster[s]), 0) : undefined;
   // The cap this drive was built under (theme days can vary it); free play is standard.
   const { cap } = capForChallenge(mode === "daily" ? challengeId : null);
+
+  // The identity lines (docs/outreach-plan.md, Step 0): the daily's number,
+  // where the score stands, and whose play-calling the drive resembled. The
+  // percentile is the one network read; the card renders without it and
+  // re-renders when it lands.
+  const isDaily = mode === "daily";
+  const dayNumber = isDaily ? seasonDayNumber(challengeId) : null;
+  const coach = useMemo(() => coachLike(driveLog)?.name ?? null, [driveLog]);
+  const [percentile, setPercentile] = useState<ScorePercentile | null>(null);
+  useEffect(() => {
+    if (!isDaily || !isLeaderboardEnabled) return;
+    let cancelled = false;
+    fetchDailyScorePercentile(challengeId, driveLog.score)
+      .then((p) => !cancelled && setPercentile(p))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isDaily, challengeId, driveLog.score]);
+
   // Exactly what "Copy result" puts on the clipboard -- shown read-only so the
   // player sees the emoji drive grid before they share it. The link carries the
   // ghost (this drive's seed+choices) so the receiver races it.
-  const shareText = buildShareText(driveLog, roster, spend, undefined, cap, getStoredName() || undefined);
+  const shareText = buildShareText(driveLog, roster, spend, undefined, cap, getStoredName() || undefined, {
+    dayNumber,
+    percentile,
+    coach,
+  });
 
   function flash(s: Status) {
     setStatus(s);

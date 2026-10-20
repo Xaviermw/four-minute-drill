@@ -1,6 +1,7 @@
 import type { DraftedRoster } from "../types/roster";
-import type { DriveLog } from "../types/simResult";
+import { finalFieldPosition, type DriveLog } from "../types/simResult";
 import { CAP } from "../draft/pricing";
+import { formatBallOn, formatClock } from "../utils/formatting";
 import { encodeGhostParam } from "./ghost";
 import { encodeLineup } from "./lineupCode";
 
@@ -129,10 +130,39 @@ function shortName(displayName: string): string {
 }
 
 /**
+ * The lines that make a card about the PERSON, not just the drive (the
+ * Two-Minute Drill lesson, docs/outreach-plan.md): a daily number so it reads
+ * as a ritual, where the score stands, and whose play-calling it resembled.
+ * Every field is optional -- free play and offline cards simply omit them.
+ */
+export interface ShareExtras {
+  /** Season daily number, "#41". */
+  dayNumber?: number | null;
+  /** "Better than 74% of today's field" (or this season's drives). */
+  percentile?: { pct: number; scope: "today" | "season" } | null;
+  /** "Called it like Dan Campbell". */
+  coach?: string | null;
+}
+
+/** Below this, the standing line stays off the card: "Better than 2%" is a
+ * self-own nobody posts, and the score line already tells the truth. */
+export const MIN_BRAG_PCT = 10;
+
+/** How the drive ended, with the detail that makes it a sentence: the clock
+ * on a score, the spot on a stall. */
+function outcomeDetail(driveLog: DriveLog): string {
+  if (driveLog.won) return ` with ${formatClock(driveLog.clockSecondsRemaining)} left`;
+  if (driveLog.plays.length === 0) return "";
+  const spot = finalFieldPosition(driveLog);
+  return spot > 0 ? ` at ${formatBallOn(spot)}` : "";
+}
+
+/**
  * Wordle/82-0-style shareable summary: a headline with the score, the outcome
- * and cap spend, the six-player lineup, and (when encodable) a race-my-drive
- * link carrying the ghost. `spend` is the team's total salary; when omitted
- * the cap line is dropped. Pass `url: null` to omit the link.
+ * and cap spend, the identity lines, the drive grid, the six-player lineup, and
+ * (when encodable) a race-my-drive link carrying the ghost. `spend` is the
+ * team's total salary; when omitted the cap line is dropped. Pass `url: null`
+ * to omit the link.
  */
 export function buildShareText(
   driveLog: DriveLog,
@@ -140,18 +170,26 @@ export function buildShareText(
   spend?: number,
   url: string | null | undefined = undefined,
   cap = CAP,
-  sharerName?: string
+  sharerName?: string,
+  extras: ShareExtras = {}
 ): string {
   if (url === undefined) url = buildShareUrl(roster, undefined, driveLog, sharerName, spend);
   const scoreLine = driveLog.score > 0 ? `${driveLog.score} pts` : "no score";
   const grid = buildDriveGrid(driveLog);
-  const lines = [`🏈 Four Minute Drill — ${scoreLine}`];
+  const title = extras.dayNumber ? `Four Minute Drill #${extras.dayNumber}` : "Four Minute Drill";
+  const lines = [`🏈 ${title} — ${scoreLine}`];
+  const outcome = `${outcomeLabel(driveLog.endReason)}${outcomeDetail(driveLog)}`;
   if (spend !== undefined) {
-    lines.push(`${outcomeLabel(driveLog.endReason)} · built for $${spend} of $${cap}`);
+    lines.push(`${outcome} · built for $${spend} of $${cap}`);
     if (spend < cap) lines.push(`💰 $${cap - spend} under the cap`);
   } else {
-    lines.push(outcomeLabel(driveLog.endReason));
+    lines.push(outcome);
   }
+  if (extras.percentile && extras.percentile.pct >= MIN_BRAG_PCT) {
+    const { pct, scope } = extras.percentile;
+    lines.push(`Better than ${pct}% of ${scope === "today" ? "today's field" : "this season's drives"}`);
+  }
+  if (extras.coach) lines.push(`Called it like ${extras.coach}`);
   if (grid) lines.push(grid);
   lines.push(
     `QB ${shortName(roster.qb.displayName)}  RB ${shortName(roster.rb.displayName)}  WR ${shortName(

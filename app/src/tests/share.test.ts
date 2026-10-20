@@ -127,6 +127,40 @@ describe("share text + url", () => {
     expect(text).toContain("built for $25 of $25");
     expect(text).not.toContain("under the cap");
   });
+
+  it("makes the card about the person: day number, standing, coach, and the clock", () => {
+    const text = buildShareText(wonLog(152, "WIN_FIELD_GOAL"), makeRoster(), 19, null, 25, undefined, {
+      dayNumber: 41,
+      percentile: { pct: 74, scope: "today" },
+      coach: "Dan Campbell",
+    });
+    const lines = text.split("\n");
+    expect(lines[0]).toBe("🏈 Four Minute Drill #41 — 152 pts");
+    expect(lines[1]).toBe("🟢 Field goal with 0:42 left · built for $19 of $25");
+    expect(text).toContain("Better than 74% of today's field");
+    expect(text).toContain("Called it like Dan Campbell");
+    // Identity lines sit above the grid/lineup, where a skim lands.
+    expect(text.indexOf("Called it like")).toBeLessThan(text.indexOf("QB L.Jackson"));
+  });
+
+  it("words the season-wide standing differently and drops absent extras", () => {
+    const text = buildShareText(wonLog(100, "WIN_TOUCHDOWN"), makeRoster(), 25, null, 25, undefined, {
+      dayNumber: null,
+      percentile: { pct: 61, scope: "season" },
+      coach: null,
+    });
+    expect(text).toContain("🏈 Four Minute Drill — 100 pts");
+    expect(text).toContain("Better than 61% of this season's drives");
+    expect(text).not.toContain("Called it like");
+  });
+
+  it("keeps a self-own off the card", () => {
+    const text = buildShareText(wonLog(0, "LOSS_TURNOVER_ON_DOWNS"), makeRoster(), 0, null, 25, undefined, {
+      percentile: { pct: 2, scope: "season" },
+    });
+    expect(text).not.toContain("Better than");
+    expect(text).toContain("no score"); // the truth is still there
+  });
 });
 
 describe("drive emoji grid", () => {

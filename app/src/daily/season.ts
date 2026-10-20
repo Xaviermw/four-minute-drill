@@ -24,6 +24,12 @@ function addDays(id: string, days: number): string {
   return new Date(Date.parse(`${id}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
+/** Wordle-style number of a season daily: opening night is #1. Null outside
+ * the season window (pre-season warm-ups and the offseason are unnumbered). */
+export function seasonDayNumber(id: string): number | null {
+  return isSeasonLive(id) ? daysFromOpening(id) + 1 : null;
+}
+
 /** First day (a Thursday) of the NFL week containing `id`: weeks run Thursday
  * to Wednesday, opening night included. */
 export function weekStartFor(id: string): string {

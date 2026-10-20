@@ -4,6 +4,7 @@ import { teamOverall } from "../utils/rosterStats";
 import { LINEUP_SLOT_ORDER } from "../share/lineupCode";
 import { getFirstTouchSource } from "../analytics/source";
 import { dailyTries } from "../daily/dailyState";
+import { SEASON_END, SEASON_START } from "../daily/season";
 import { ensureAnonSession, getCurrentUserId, getSupabase } from "./supabaseClient";
 
 const TABLE = "scores";
@@ -224,6 +225,41 @@ export async function fetchDailyDrivePercentile(
   if (e2) throw new Error(e2.message);
   if (!totalCount) return null;
   return (beatenCount ?? 0) / totalCount;
+}
+
+/** Where a daily SCORE stands -- the share card's "Better than X%" line. Today's
+ * field when it is big enough to mean something, else this season's dailies
+ * (a stable, apples-to-roughly-apples distribution while days are small).
+ * Null when the leaderboard is off or neither sample is big enough. */
+export const MIN_PERCENTILE_FIELD = 10;
+
+export interface ScorePercentile {
+  /** Whole-number share of the field this score beat, 0-100. */
+  pct: number;
+  scope: "today" | "season";
+  n: number;
+}
+
+export async function fetchDailyScorePercentile(challengeId: string, score: number): Promise<ScorePercentile | null> {
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  const field = async (scope: "today" | "season"): Promise<ScorePercentile | null> => {
+    let total = supabase.from(DAILY_VIEW).select("id", { count: "exact", head: true });
+    let below = supabase.from(DAILY_VIEW).select("id", { count: "exact", head: true }).lt("score", score);
+    if (scope === "today") {
+      total = total.eq("challenge_date", challengeId);
+      below = below.eq("challenge_date", challengeId);
+    } else {
+      total = total.gte("challenge_date", SEASON_START).lte("challenge_date", SEASON_END);
+      below = below.gte("challenge_date", SEASON_START).lte("challenge_date", SEASON_END);
+    }
+    const [{ count: n, error: e1 }, { count: b, error: e2 }] = await Promise.all([total, below]);
+    if (e1) throw new Error(e1.message);
+    if (e2) throw new Error(e2.message);
+    if (!n || n < MIN_PERCENTILE_FIELD) return null;
+    return { pct: Math.round((100 * (b ?? 0)) / n), scope, n };
+  };
+  return (await field("today")) ?? (await field("season"));
 }
 
 /** Headline counts for today's field: how many drives were logged and how many

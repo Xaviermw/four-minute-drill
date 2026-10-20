@@ -244,6 +244,16 @@ data-pipeline/ (Python, offline)  →  app/public/data/*.json (committed)
   home is the streak board, and its post still reports a board-less all-time
   rank. Bot `weekly` mode: Thursday `45 13 * * 4` cron; `BOT_NOW` fakes the
   clock for dry runs of a future Thursday.
+- **Share card identity lines** (2026-10-20, docs/outreach-plan.md Step 0):
+  `buildShareText(..., extras)` adds the season day number (`#41`,
+  `seasonDayNumber`), "Better than X% of today's field / this season's
+  drives" (`fetchDailyScorePercentile`: today when >= 10 entries, else the
+  season), and "Called it like <coach>" (`share/coachLike.ts`). The coach
+  table `share/coachTendencies.generated.ts` is WRITTEN by
+  `data-pipeline/src/build_coach_tendencies.py` from nflverse pbp -- never
+  hand-edit it, never type a coach's numbers in; rerun it after each data
+  refresh (and mid-season so new head coaches qualify). The matcher is a
+  rank-space nearest neighbour and must stay a compliment or neutral.
 - **One daily entry per device per day** (migration 015): daily surfaces read
   the `daily_entries` view (first post per user_id/day), never `scores`
   directly -- new daily queries and views must too. The client one-shot gate

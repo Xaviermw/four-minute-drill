@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   lastCompletedWeekStart,
+  seasonDayNumber,
   SEASON_END,
   SEASON_START,
   weekEndFor,
@@ -37,6 +38,13 @@ describe("NFL weeks (Thursday to Wednesday)", () => {
   it("labels a week's dates", () => {
     expect(weekLabel("2026-09-17")).toBe("Sep 17–23");
     expect(weekLabel("2026-12-31")).toBe("Dec 31 – Jan 5");
+  });
+
+  it("numbers the dailies from opening night", () => {
+    expect(seasonDayNumber("2026-09-10")).toBe(1);
+    expect(seasonDayNumber("2026-10-20")).toBe(41);
+    expect(seasonDayNumber("2026-09-09")).toBeNull(); // warm-up, unnumbered
+    expect(seasonDayNumber(SEASON_END)).toBe(118);
   });
 
   it("knows which week just finished", () => {

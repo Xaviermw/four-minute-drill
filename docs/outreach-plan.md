@@ -26,6 +26,12 @@ current card ("33 pts, built for $0 of $25" says nothing about the reader).
      built from nflverse pbp 2023–2025 in the pipeline. Deterministic, one
      coach per drive, never a dig at a coach (it is a compliment or neutral).
    - the verdict line comes from #2.
+   - **Shipped Oct 20** (text card; image card and OG unfurl unchanged).
+     Two calls made on the first real card: the standing line stays off
+     below 10% ("Better than 2%" is a self-own nobody posts; the score line
+     already tells the truth), and the coach table is limited to head
+     coaches active in the latest season (26) -- the first run matched a
+     four-and-out to Frank Reich, which reads as a dig.
 2. **The daily is a real moment.** Keep the draft and the cap — that is the
    game — but set each daily's scenario (score, clock, spot, opponent) to a
    real ending from the previous NFL week with 2:00–4:00 left and the team
